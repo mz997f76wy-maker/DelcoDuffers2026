@@ -1,133 +1,1621 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hackers vs Shankers Cup</title>
-  <style>
-    body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
-    header{background:#111827;color:#fff;padding:20px;text-align:center}
-    main{max-width:900px;margin:auto;padding:16px}
-    .card{background:#fff;border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0001}
-    .score{font-size:32px;font-weight:800}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#e5e7eb;margin:3px}
-    input,select,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #ccc;margin:4px}
-    button{background:#111827;color:#fff;font-weight:700}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Hackers vs Shankers Cup</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  margin:0;
+  background:#f3f4f6;
+  color:#111827;
+}
+
+header{
+  background:#111827;
+  color:white;
+  text-align:center;
+  padding:18px 12px;
+}
+
+header h1{
+  margin:0 0 5px;
+}
+
+main{
+  max-width:1000px;
+  margin:auto;
+  padding:12px;
+}
+
+.nav{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  margin-bottom:12px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:10px 13px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.primary{
+  background:#111827;
+  color:white;
+}
+
+.card{
+  background:white;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 2px 10px #00000012;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.field{
+  flex:1;
+  min-width:130px;
+  margin-bottom:8px;
+}
+
+label{
+  display:block;
+  font-size:12px;
+  font-weight:bold;
+  color:#6b7280;
+  margin-bottom:4px;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  font-size:16px;
+}
+
+.match{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:12px;
+  margin:10px 0;
+}
+
+.players{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.pill{
+  display:inline-block;
+  background:#f3f4f6;
+  padding:5px 8px;
+  border-radius:99px;
+  font-size:12px;
+  margin:2px;
+}
+
+.scoreboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.team{
+  color:white;
+  border-radius:12px;
+  padding:15px;
+}
+
+.hackers{
+  background:#2563eb;
+}
+
+.shankers{
+  background:#dc2626;
+}
+
+.big{
+  font-size:36px;
+  font-weight:900;
+}
+
+.muted{
+  color:#6b7280;
+}
+
+.tablewrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:7px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.scoretable{
+  min-width:850px;
+}
+
+.scoretable th,
+.scoretable td{
+  text-align:center;
+  border:1px solid #e5e7eb;
+  padding:4px;
+}
+
+.scoretable input{
+  width:52px;
+  text-align:center;
+  padding:7px;
+}
+
+.notice{
+  background:#fffbeb;
+  color:#92400e;
+  border:1px solid #fde68a;
+  padding:10px;
+  border-radius:8px;
+}
+
+.good{
+  background:#d1fae5;
+  color:#065f46;
+}
+
+.danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+@media(max-width:650px){
+  .players{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
+
+
 <body>
+
 <header>
-  <h1>🏆 Hackers vs Shankers Cup</h1>
-  <div>32 Players • 40 Ryder Cup Points • First to 20.5</div>
+<h1>🏆 Hackers vs Shankers Cup</h1>
+<div>32 Players • 40 Ryder Cup Points • First to 20.5</div>
 </header>
 
 <main>
-  <div class="card">
-    <div class="score" id="teamCount">Hackers 0 — Shankers 0</div>
-    <p>
-      <span class="pill">R1 Tobacco Road • 2v2 Best Ball • 8 pts • Skins</span>
-      <span class="pill">R2 Mid South • 2v2 Best Ball • 8 pts • Skins</span>
-      <span class="pill">R3 Talamore • 2-man Scramble • 8 pts • No Skins</span>
-      <span class="pill">R4 Legacy • 1v1 Match Play • 16 pts • Skins</span>
-    </p>
-  </div>
 
-  <div class="card">
-    <h2>Add Player</h2>
-    <div class="row">
-      <input id="name" placeholder="Player name" />
-      <input id="hcp" type="number" placeholder="Handicap" />
-      <select id="team">
-        <option value="Hackers">Hackers</option>
-        <option value="Shankers">Shankers</option>
-      </select>
-      <select id="group">
-        <option value="A">Group A</option>
-        <option value="B">Group B</option>
-      </select>
-      <button onclick="addPlayer()">Add Player</button>
-    </div>
-  </div>
+<div class="nav" id="nav"></div>
 
-  <div class="card">
-    <h2>Roster <span id="count">(0/32)</span></h2>
-    <div id="roster"></div>
-  </div>
+<div id="app"></div>
+
 </main>
 
+
 <script>
-  const STORAGE_KEY = "delcoDuffers2026";
-  let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"players":[]}');
 
-  function save(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    render();
-  }
+const STORAGE_KEY="delcoDuffers2026";
 
-  function addPlayer(){
-    const name = document.getElementById("name").value.trim();
-    const hcp = document.getElementById("hcp").value || 0;
-    const team = document.getElementById("team").value;
-    const group = document.getElementById("group").value;
+const ROUNDS=[
+{
+ id:1,
+ course:"Tobacco Road",
+ format:"2v2 Best Ball",
+ matches:8,
+ type:"bestball"
+},
+{
+ id:2,
+ course:"Mid South",
+ format:"2v2 Best Ball",
+ matches:8,
+ type:"bestball"
+},
+{
+ id:3,
+ course:"Talamore",
+ format:"2-Man Scramble",
+ matches:8,
+ type:"scramble"
+},
+{
+ id:4,
+ course:"Legacy",
+ format:"1v1 Match Play",
+ matches:16,
+ type:"singles"
+}
+];
 
-    if(!name) return alert("Enter a player name.");
-    if(data.players.length >= 32) return alert("Roster is full.");
 
-    const teamCount = data.players.filter(p => p.team === team).length;
-const groupCount = data.players.filter(p => p.group === group).length;
+let data;
 
-if(teamCount >= 16){
-  return alert(team + " already has 16 players.");
+try{
+ data=JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"players":[]}');
+}
+catch{
+ data={players:[]};
 }
 
-if(groupCount >= 16){
-  return alert("Group " + group + " already has 16 players.");
+data.players ||= [];
+data.matchups ||= {};
+data.scores ||= {};
+data.results ||= {};
+
+let page="dashboard";
+let currentRound=1;
+
+
+function save(){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ render();
 }
 
-    data.players.push({
-      id: Date.now(),
-      name,
-      handicap: hcp,
-      team,
-      group
-    });
 
-    document.getElementById("name").value = "";
-    document.getElementById("hcp").value = "";
-    save();
+function getPlayer(id){
+ return data.players.find(p=>String(p.id)===String(id));
+}
+
+
+function currentRoundInfo(){
+ return ROUNDS[currentRound-1];
+}
+
+
+function nav(){
+
+ const tabs=[
+  ["dashboard","Dashboard"],
+  ["players","Players"],
+  ["matchups","Matchups"],
+  ["scoring","Scoring"]
+ ];
+
+ document.getElementById("nav").innerHTML=
+ tabs.map(t=>`
+ <button
+ class="${page===t[0] ? "primary" : ""}"
+ onclick="page='${t[0]}';render()">
+ ${t[1]}
+ </button>
+ `).join("");
+}
+
+
+
+function teamPoints(){
+
+ let hackers=0;
+ let shankers=0;
+ let completed=0;
+
+ Object.values(data.results).forEach(r=>{
+
+  if(!r)return;
+
+  if(r.winner==="Hackers"){
+   hackers++;
+   completed++;
   }
 
-  function deletePlayer(id){
-    data.players = data.players.filter(p => p.id !== id);
-    save();
+  if(r.winner==="Shankers"){
+   shankers++;
+   completed++;
   }
 
-  function render(){
-    const hackers = data.players.filter(p => p.team === "Hackers").length;
-    const shankers = data.players.filter(p => p.team === "Shankers").length;
-
-    document.getElementById("teamCount").textContent =
-      "Hackers " + hackers + " — Shankers " + shankers;
-
-    document.getElementById("count").textContent =
-      "(" + data.players.length + "/32)";
-
-    document.getElementById("roster").innerHTML =
-      data.players.length
-      ? data.players.map((p,i) =>
-          "<div style='padding:8px 0;border-bottom:1px solid #eee'>" +
-          "<b>" + (i+1) + ". " + p.name + "</b>" +
-          " — " + p.team +
-          " — Group " + p.group +
-          " — HCP " + p.handicap +
-          " <button onclick='deletePlayer(" + p.id + ")'>Delete</button>" +
-          "</div>"
-        ).join("")
-      : "<p>No players added yet.</p>";
+  if(r.winner==="Halved"){
+   hackers+=.5;
+   shankers+=.5;
+   completed++;
   }
 
-  render();
+ });
+
+ return {hackers,shankers,completed};
+
+}
+
+
+
+function dashboard(){
+
+ const points=teamPoints();
+
+ const hackers=data.players.filter(p=>p.team==="Hackers").length;
+ const shankers=data.players.filter(p=>p.team==="Shankers").length;
+
+ const groupA=data.players.filter(p=>p.group==="A").length;
+ const groupB=data.players.filter(p=>p.group==="B").length;
+
+ return `
+
+ <div class="card">
+
+ <h2>Ryder Cup Score</h2>
+
+ <div class="scoreboard">
+
+ <div class="team hackers">
+ HACKERS
+ <div class="big">${points.hackers}</div>
+ </div>
+
+ <div class="team shankers">
+ SHANKERS
+ <div class="big">${points.shankers}</div>
+ </div>
+
+ </div>
+
+ <p>
+ ${40-points.completed} matches remaining
+ </p>
+
+ </div>
+
+
+ <div class="card">
+
+ <h2>Roster</h2>
+
+ <p>
+ Hackers: <b>${hackers}/16</b><br>
+ Shankers: <b>${shankers}/16</b>
+ </p>
+
+ <p>
+ Group A: <b>${groupA}/16</b><br>
+ Group B: <b>${groupB}/16</b>
+ </p>
+
+ </div>
+
+
+ <div class="card">
+
+ <h2>Rounds</h2>
+
+ ${ROUNDS.map(r=>`
+
+ <div class="match">
+
+ <b>Round ${r.id} — ${r.course}</b>
+
+ <br>
+
+ <span class="muted">
+ ${r.format} • ${r.matches} Ryder Cup Points
+ </span>
+
+ </div>
+
+ `).join("")}
+
+ </div>
+
+ `;
+
+}
+
+
+
+function playersPage(){
+
+ return `
+
+ <div class="card">
+
+ <h2>Add Player</h2>
+
+ <div class="row">
+
+ <div class="field">
+ <label>Name</label>
+ <input id="name" placeholder="Player name">
+ </div>
+
+ <div class="field">
+ <label>Handicap</label>
+ <input id="hcp" type="number" step=".1">
+ </div>
+
+ <div class="field">
+ <label>Team</label>
+
+ <select id="team">
+ <option>Hackers</option>
+ <option>Shankers</option>
+ </select>
+
+ </div>
+
+ <div class="field">
+
+ <label>Group</label>
+
+ <select id="group">
+ <option>A</option>
+ <option>B</option>
+ </select>
+
+ </div>
+
+ </div>
+
+ <button class="primary" onclick="addPlayer()">
+ Add Player
+ </button>
+
+ </div>
+
+
+ <div class="card">
+
+ <h2>Roster (${data.players.length}/32)</h2>
+
+ <div class="tablewrap">
+
+ <table>
+
+ <tr>
+ <th>Name</th>
+ <th>Team</th>
+ <th>Group</th>
+ <th>HCP</th>
+ <th></th>
+ </tr>
+
+ ${data.players.map(p=>`
+
+ <tr>
+
+ <td>${p.name}</td>
+
+ <td>${p.team}</td>
+
+ <td>${p.group}</td>
+
+ <td>${p.handicap}</td>
+
+ <td>
+ <button
+ class="danger"
+ onclick="deletePlayer('${p.id}')">
+ Delete
+ </button>
+ </td>
+
+ </tr>
+
+ `).join("")}
+
+ </table>
+
+ </div>
+
+ </div>
+
+ `;
+
+}
+
+
+
+function addPlayer(){
+
+ const name=document.getElementById("name").value.trim();
+
+ const handicap=
+ document.getElementById("hcp").value || 0;
+
+ const team=
+ document.getElementById("team").value;
+
+ const group=
+ document.getElementById("group").value;
+
+
+ if(!name){
+  alert("Enter a player name.");
+  return;
+ }
+
+
+ if(data.players.length>=32){
+  alert("Roster is full.");
+  return;
+ }
+
+
+ if(
+ data.players.filter(p=>p.team===team).length>=16
+ ){
+  alert(team+" already has 16 players.");
+  return;
+ }
+
+
+ if(
+ data.players.filter(p=>p.group===group).length>=16
+ ){
+  alert("Group "+group+" already has 16 players.");
+  return;
+ }
+
+
+ data.players.push({
+
+  id:"p"+Date.now()+Math.random(),
+
+  name,
+
+  handicap,
+
+  team,
+
+  group
+
+ });
+
+ save();
+
+}
+
+
+
+function deletePlayer(id){
+
+ if(!confirm("Delete player?"))return;
+
+ data.players=
+ data.players.filter(
+ p=>String(p.id)!==String(id)
+ );
+
+ save();
+
+}
+
+
+
+function setupMatches(){
+
+ const round=currentRoundInfo();
+
+ if(!data.matchups[currentRound]){
+  data.matchups[currentRound]=[];
+ }
+
+
+ while(
+ data.matchups[currentRound].length <
+ round.matches
+ ){
+
+  const i=data.matchups[currentRound].length;
+
+  let group;
+
+  if(round.type==="singles"){
+   group=i<8 ? "A":"B";
+  }
+  else{
+   group=i<4 ? "A":"B";
+  }
+
+
+  data.matchups[currentRound].push({
+
+   id:"R"+currentRound+"M"+(i+1),
+
+   group,
+
+   hackers:[],
+
+   shankers:[]
+
+  });
+
+ }
+
+ return data.matchups[currentRound];
+
+}
+
+
+
+function playerOptions(team,group,current){
+
+ return `
+
+ <option value="">
+ Select Player
+ </option>
+
+ ${data.players
+
+ .filter(
+ p=>p.team===team && p.group===group
+ )
+
+ .map(p=>`
+
+ <option
+ value="${p.id}"
+ ${String(p.id)===String(current) ? "selected":""}>
+
+ ${p.name} — HCP ${p.handicap}
+
+ </option>
+
+ `).join("")}
+
+ `;
+
+}
+
+
+
+function matchupPage(){
+
+ const round=currentRoundInfo();
+
+ const matches=setupMatches();
+
+ return `
+
+ <div class="card">
+
+ <div class="row">
+
+ <div style="flex:1">
+
+ <h2>
+ Round ${round.id} — ${round.course}
+ </h2>
+
+ <div class="muted">
+ ${round.format}
+ </div>
+
+ </div>
+
+ <button
+ onclick="currentRound=Math.max(1,currentRound-1);render()">
+ ←
+ </button>
+
+ <button
+ onclick="currentRound=Math.min(4,currentRound+1);render()">
+ →
+ </button>
+
+ </div>
+
+
+ ${matches.map(
+ (match,index)=>matchupCard(round,match,index)
+ ).join("")}
+
+
+ <button
+ class="primary"
+ onclick="validateRound()">
+
+ Validate Matchups
+
+ </button>
+
+ </div>
+
+ `;
+
+}
+
+
+
+function matchupCard(round,match,index){
+
+ const playersNeeded=
+ round.type==="singles" ? 1:2;
+
+
+ while(match.hackers.length<playersNeeded){
+  match.hackers.push("");
+ }
+
+ while(match.shankers.length<playersNeeded){
+  match.shankers.push("");
+ }
+
+
+ let hackerBoxes="";
+
+ let shankerBoxes="";
+
+
+ for(let i=0;i<playersNeeded;i++){
+
+ hackerBoxes+=`
+
+ <select
+ onchange="
+ setMatchPlayer(
+ ${index},
+ 'hackers',
+ ${i},
+ this.value
+ )">
+
+ ${playerOptions(
+ "Hackers",
+ match.group,
+ match.hackers[i]
+ )}
+
+ </select>
+
+ `;
+
+
+ shankerBoxes+=`
+
+ <select
+ onchange="
+ setMatchPlayer(
+ ${index},
+ 'shankers',
+ ${i},
+ this.value
+ )">
+
+ ${playerOptions(
+ "Shankers",
+ match.group,
+ match.shankers[i]
+ )}
+
+ </select>
+
+ `;
+
+ }
+
+
+ return `
+
+ <div class="match">
+
+ <h3>
+ Match ${index+1}
+ <span class="pill">
+ Group ${match.group}
+ </span>
+ </h3>
+
+
+ <div class="players">
+
+
+ <div>
+
+ <b>Hackers</b>
+
+ ${hackerBoxes}
+
+ </div>
+
+
+ <div>
+
+ <b>Shankers</b>
+
+ ${shankerBoxes}
+
+ </div>
+
+
+ </div>
+
+ </div>
+
+ `;
+
+}
+
+
+
+function setMatchPlayer(
+ matchIndex,
+ side,
+ playerIndex,
+ id
+){
+
+ data.matchups[currentRound]
+ [matchIndex]
+ [side]
+ [playerIndex]=id;
+
+ localStorage.setItem(
+ STORAGE_KEY,
+ JSON.stringify(data)
+ );
+
+ render();
+
+}
+
+
+
+function validateRound(){
+
+ const round=currentRoundInfo();
+
+ const matches=setupMatches();
+
+ const used=new Set();
+
+
+ for(let i=0;i<matches.length;i++){
+
+  const match=matches[i];
+
+  const required=
+  round.type==="singles" ? 1:2;
+
+
+  if(
+  match.hackers.filter(Boolean).length!==required ||
+  match.shankers.filter(Boolean).length!==required
+  ){
+
+   alert(
+   "Match "+(i+1)+" is incomplete."
+   );
+
+   return;
+
+  }
+
+
+  for(
+  const id of [
+  ...match.hackers,
+  ...match.shankers
+  ]
+  ){
+
+   if(used.has(String(id))){
+
+    alert(
+    "A player appears more than once."
+    );
+
+    return;
+
+   }
+
+   used.add(String(id));
+
+  }
+
+ }
+
+
+ if(used.size!==32){
+
+  alert(
+  "All 32 players must be used."
+  );
+
+  return;
+
+ }
+
+
+ alert(
+ "Round "+currentRound+
+ " matchups are ready!"
+ );
+
+ save();
+
+}
+
+
+
+function getScore(matchId){
+
+ if(!data.scores[matchId]){
+
+  data.scores[matchId]={
+
+   holes:Array.from(
+   {length:18},
+   ()=>({})
+   )
+
+  };
+
+ }
+
+
+ return data.scores[matchId];
+
+}
+
+
+
+function scoringPage(){
+
+ const round=currentRoundInfo();
+
+ const matches=setupMatches();
+
+
+ return `
+
+ <div class="card">
+
+ <div class="row">
+
+ <div style="flex:1">
+
+ <h2>
+ Round ${round.id} Scoring
+ </h2>
+
+ <div class="muted">
+
+ ${round.course}
+ •
+ ${round.format}
+
+ </div>
+
+ </div>
+
+
+ <button
+ onclick="
+ currentRound=Math.max(1,currentRound-1);
+ render()
+ ">
+ ←
+ </button>
+
+
+ <button
+ onclick="
+ currentRound=Math.min(4,currentRound+1);
+ render()
+ ">
+ →
+ </button>
+
+
+ </div>
+
+
+ ${matches.map(
+ (match,index)=>
+ scoreCard(
+ round,
+ match,
+ index
+ )
+ ).join("")}
+
+ </div>
+
+ `;
+
+}
+
+
+
+function scoreCard(
+ round,
+ match,
+ index
+){
+
+ const score=getScore(match.id);
+
+ const players=[
+ ...match.hackers,
+ ...match.shankers
+ ]
+ .map(getPlayer)
+ .filter(Boolean);
+
+
+ const required=
+ round.type==="singles"
+ ? 2
+ : 4;
+
+
+ if(players.length<required){
+
+  return `
+
+  <div class="match">
+
+  <h3>
+  Match ${index+1}
+  </h3>
+
+  <div class="notice">
+
+  Set this matchup first.
+
+  </div>
+
+  </div>
+
+  `;
+
+ }
+
+
+ let header="";
+
+ let rows="";
+
+
+ if(round.type==="scramble"){
+
+ header=`
+
+ <tr>
+
+ <th>Hole</th>
+
+ <th>
+ Hackers Team
+ </th>
+
+ <th>
+ Shankers Team
+ </th>
+
+ </tr>
+
+ `;
+
+
+ for(let hole=0;hole<18;hole++){
+
+  const scores=
+  score.holes[hole] || {};
+
+
+  rows+=`
+
+  <tr>
+
+  <td>
+  ${hole+1}
+  </td>
+
+  <td>
+
+  <input
+  type="number"
+  min="1"
+  max="20"
+  value="${scores.H ?? ""}"
+  onchange="
+  enterScore(
+  '${match.id}',
+  ${hole},
+  'H',
+  this.value
+  )">
+
+  </td>
+
+  <td>
+
+  <input
+  type="number"
+  min="1"
+  max="20"
+  value="${scores.S ?? ""}"
+  onchange="
+  enterScore(
+  '${match.id}',
+  ${hole},
+  'S',
+  this.value
+  )">
+
+  </td>
+
+  </tr>
+
+  `;
+
+ }
+
+ }
+
+ else{
+
+ header=`
+
+ <tr>
+
+ <th>Hole</th>
+
+ ${players.map(p=>`
+
+ <th>
+
+ ${p.name}
+
+ <br>
+
+ <span class="muted">
+ HCP ${p.handicap}
+ </span>
+
+ </th>
+
+ `).join("")}
+
+ </tr>
+
+ `;
+
+
+ for(let hole=0;hole<18;hole++){
+
+  const scores=
+  score.holes[hole] || {};
+
+
+  rows+=`
+
+  <tr>
+
+  <td>
+  ${hole+1}
+  </td>
+
+
+  ${players.map(p=>`
+
+  <td>
+
+  <input
+  type="number"
+  min="1"
+  max="20"
+  value="${scores[p.id] ?? ""}"
+  onchange="
+  enterScore(
+  '${match.id}',
+  ${hole},
+  '${p.id}',
+  this.value
+  )">
+
+  </td>
+
+  `).join("")}
+
+  </tr>
+
+  `;
+
+ }
+
+ }
+
+
+ return `
+
+ <div class="match">
+
+ <h3>
+
+ Match ${index+1}
+
+ <span class="pill">
+
+ ${matchStatus(
+ round,
+ match,
+ score
+ )}
+
+ </span>
+
+ </h3>
+
+
+ <div>
+
+ ${players.map(p=>`
+
+ <span class="pill">
+
+ ${p.name}
+ •
+ HCP ${p.handicap}
+
+ </span>
+
+ `).join("")}
+
+ </div>
+
+
+ <div class="tablewrap">
+
+ <table class="scoretable">
+
+ ${header}
+
+ ${rows}
+
+ </table>
+
+ </div>
+
+
+ <button
+ class="good"
+ onclick="
+ finalizeMatch(
+ '${match.id}'
+ )
+ ">
+
+ Finalize Match
+
+ </button>
+
+
+ </div>
+
+ `;
+
+}
+
+
+
+function enterScore(
+ matchId,
+ hole,
+ player,
+ value
+){
+
+ const score=getScore(matchId);
+
+ score.holes[hole][player]=
+ value===""
+ ? ""
+ : Number(value);
+
+
+ localStorage.setItem(
+ STORAGE_KEY,
+ JSON.stringify(data)
+ );
+
+}
+
+
+
+function holeWinner(
+ round,
+ match,
+ scores
+){
+
+ if(round.type==="bestball"){
+
+  const hackerScores=
+  match.hackers
+  .map(id=>Number(scores[id]))
+  .filter(n=>n>0);
+
+
+  const shankerScores=
+  match.shankers
+  .map(id=>Number(scores[id]))
+  .filter(n=>n>0);
+
+
+  if(
+  hackerScores.length<2 ||
+  shankerScores.length<2
+  ){
+   return null;
+  }
+
+
+  const h=
+  Math.min(...hackerScores);
+
+  const s=
+  Math.min(...shankerScores);
+
+
+  if(h<s)return "Hackers";
+
+  if(s<h)return "Shankers";
+
+  return "Tie";
+
+ }
+
+
+
+ if(round.type==="singles"){
+
+  const h=
+  Number(
+  scores[match.hackers[0]]
+  );
+
+  const s=
+  Number(
+  scores[match.shankers[0]]
+  );
+
+
+  if(!h || !s)return null;
+
+  if(h<s)return "Hackers";
+
+  if(s<h)return "Shankers";
+
+  return "Tie";
+
+ }
+
+
+
+ const h=
+ Number(scores.H);
+
+ const s=
+ Number(scores.S);
+
+
+ if(!h || !s)return null;
+
+ if(h<s)return "Hackers";
+
+ if(s<h)return "Shankers";
+
+ return "Tie";
+
+}
+
+
+
+function matchStatus(
+ round,
+ match,
+ score
+){
+
+ let hackers=0;
+
+ let shankers=0;
+
+ let played=0;
+
+
+ score.holes.forEach(scores=>{
+
+  const winner=
+  holeWinner(
+  round,
+  match,
+  scores
+  );
+
+
+  if(!winner)return;
+
+  played++;
+
+
+  if(winner==="Hackers"){
+   hackers++;
+  }
+
+  if(winner==="Shankers"){
+   shankers++;
+  }
+
+ });
+
+
+ if(!played){
+  return "Not Started";
+ }
+
+
+ const difference=
+ hackers-shankers;
+
+
+ if(played===18){
+
+  if(difference===0){
+   return "Halved";
+  }
+
+  return difference>0
+  ? "Hackers Win"
+  : "Shankers Win";
+
+ }
+
+
+ if(difference===0){
+
+  return "AS through "+played;
+
+ }
+
+
+ return (
+ Math.abs(difference)+
+ " UP "+
+ (difference>0
+ ? "Hackers"
+ : "Shankers")+
+ " through "+
+ played
+ );
+
+}
+
+
+
+function finalizeMatch(matchId){
+
+ const round=currentRoundInfo();
+
+ const match=
+ data.matchups[currentRound]
+ .find(m=>m.id===matchId);
+
+ const score=
+ getScore(matchId);
+
+
+ for(let hole=0;hole<18;hole++){
+
+  if(
+  !holeWinner(
+  round,
+  match,
+  score.holes[hole]
+  )
+  ){
+
+   alert(
+   "Complete all 18 holes first."
+   );
+
+   return;
+
+  }
+
+ }
+
+
+ let hackers=0;
+
+ let shankers=0;
+
+
+ score.holes.forEach(scores=>{
+
+  const winner=
+  holeWinner(
+  round,
+  match,
+  scores
+  );
+
+
+  if(winner==="Hackers"){
+   hackers++;
+  }
+
+  if(winner==="Shankers"){
+   shankers++;
+  }
+
+ });
+
+
+ let winner="Halved";
+
+
+ if(hackers>shankers){
+  winner="Hackers";
+ }
+
+
+ if(shankers>hackers){
+  winner="Shankers";
+ }
+
+
+ data.results[matchId]={
+  winner
+ };
+
+
+ save();
+
+
+ alert(
+ "Match saved: "+winner
+ );
+
+}
+
+
+
+function render(){
+
+ nav();
+
+ document.getElementById("app").innerHTML=
+
+ page==="dashboard"
+ ? dashboard()
+
+ :page==="players"
+ ? playersPage()
+
+ :page==="matchups"
+ ? matchupPage()
+
+ :scoringPage();
+
+}
+
+
+render();
+
 </script>
+
 </body>
 </html>
