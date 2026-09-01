@@ -4,257 +4,298 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
+
 <title>Hackers vs Shankers Cup</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+box-sizing:border-box;
+}
 
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  margin:0;
-  background:#f3f4f6;
-  color:#111827;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+margin:0;
+background:#f3f4f6;
+color:#111827;
 }
 
 header{
-  background:#111827;
-  color:#fff;
-  text-align:center;
-  padding:18px 12px;
+background:#111827;
+color:white;
+text-align:center;
+padding:18px 12px;
 }
 
 header h1{
-  margin:0 0 5px;
-  font-size:30px;
+margin:0 0 5px;
+font-size:30px;
 }
 
 main{
-  max-width:1050px;
-  margin:auto;
-  padding:12px;
+max-width:1050px;
+margin:auto;
+padding:12px;
 }
 
 .nav{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  margin-bottom:12px;
+display:flex;
+gap:8px;
+overflow-x:auto;
+margin-bottom:12px;
 }
 
 button{
-  border:0;
-  border-radius:10px;
-  padding:11px 14px;
-  font-weight:800;
-  cursor:pointer;
-  font-size:15px;
+border:0;
+border-radius:10px;
+padding:11px 14px;
+font-weight:800;
+cursor:pointer;
+font-size:15px;
 }
 
 .primary{
-  background:#111827;
-  color:white;
+background:#111827;
+color:white;
 }
 
 .good{
-  background:#d1fae5;
-  color:#065f46;
+background:#d1fae5;
+color:#065f46;
 }
 
 .danger{
-  background:#fee2e2;
-  color:#991b1b;
+background:#fee2e2;
+color:#991b1b;
 }
 
 .card{
-  background:white;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:12px;
-  box-shadow:0 2px 10px #00000010;
+background:white;
+border-radius:16px;
+padding:16px;
+margin-bottom:12px;
+box-shadow:0 2px 10px #00000010;
 }
 
 .row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  align-items:center;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+align-items:center;
 }
 
 .field{
-  flex:1;
-  min-width:130px;
+flex:1;
+min-width:130px;
 }
 
 label{
-  display:block;
-  font-size:12px;
-  font-weight:bold;
-  color:#6b7280;
-  margin-bottom:4px;
+display:block;
+font-size:12px;
+font-weight:bold;
+color:#6b7280;
+margin-bottom:4px;
 }
 
-input,select{
-  width:100%;
-  padding:11px;
-  border:1px solid #d1d5db;
-  border-radius:9px;
-  font-size:16px;
-  background:white;
+input,
+select{
+width:100%;
+padding:11px;
+border:1px solid #d1d5db;
+border-radius:9px;
+font-size:16px;
+background:white;
 }
 
 .match{
-  border:1px solid #e5e7eb;
-  border-radius:14px;
-  padding:14px;
-  margin:12px 0;
+border:1px solid #e5e7eb;
+border-radius:14px;
+padding:14px;
+margin:12px 0;
 }
 
 .match h3{
-  margin-top:0;
+margin-top:0;
 }
 
 .players{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
 }
 
 .pill{
-  display:inline-block;
-  background:#f3f4f6;
-  padding:5px 8px;
-  border-radius:99px;
-  font-size:12px;
-  margin:2px;
+display:inline-block;
+background:#f3f4f6;
+padding:5px 8px;
+border-radius:99px;
+font-size:12px;
+margin:2px;
+}
+
+.resultBanner{
+margin-top:12px;
+padding:12px;
+border-radius:10px;
+font-size:18px;
+font-weight:900;
+text-align:center;
+}
+
+.resultHackers{
+background:#dbeafe;
+color:#1d4ed8;
+}
+
+.resultShankers{
+background:#fee2e2;
+color:#b91c1c;
+}
+
+.resultHalved{
+background:#e5e7eb;
+color:#374151;
 }
 
 .scoreboard{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
 }
 
 .team{
-  color:white;
-  border-radius:14px;
-  padding:16px;
+color:white;
+border-radius:14px;
+padding:16px;
 }
 
 .hackers{
-  background:#2563eb;
+background:#2563eb;
 }
 
 .shankers{
-  background:#dc2626;
+background:#dc2626;
 }
 
 .big{
-  font-size:38px;
-  font-weight:900;
+font-size:38px;
+font-weight:900;
 }
 
 .muted{
-  color:#6b7280;
+color:#6b7280;
 }
 
 .tablewrap{
-  overflow-x:auto;
+overflow-x:auto;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
+width:100%;
+border-collapse:collapse;
 }
 
-th,td{
-  padding:8px;
-  border-bottom:1px solid #e5e7eb;
+th,
+td{
+padding:8px;
+border-bottom:1px solid #e5e7eb;
 }
 
 .scoretable{
-  min-width:850px;
+min-width:850px;
 }
 
 .scoretable th,
 .scoretable td{
-  text-align:center;
-  border:1px solid #e5e7eb;
-  padding:5px;
+text-align:center;
+border:1px solid #e5e7eb;
+padding:5px;
 }
 
 .scoretable th:first-child,
 .scoretable td:first-child{
-  position:sticky;
-  left:0;
-  background:white;
-  z-index:2;
+position:sticky;
+left:0;
+background:white;
+z-index:2;
 }
 
 .scoretable input{
-  width:55px;
-  text-align:center;
-  padding:8px;
+width:55px;
+text-align:center;
+padding:8px;
 }
 
 .notice{
-  background:#fffbeb;
-  color:#92400e;
-  border:1px solid #fde68a;
-  padding:11px;
-  border-radius:9px;
+background:#fffbeb;
+color:#92400e;
+border:1px solid #fde68a;
+padding:11px;
+border-radius:9px;
 }
 
 .roundnav{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:center;
+display:flex;
+justify-content:space-between;
+gap:10px;
+align-items:center;
 }
 
 .roundbuttons{
-  display:flex;
-  gap:6px;
+display:flex;
+gap:6px;
 }
 
 @media(max-width:650px){
 
-  .players{
-    grid-template-columns:1fr;
-  }
+.players{
+grid-template-columns:1fr;
+}
 
-  header h1{
-    font-size:27px;
-  }
+header h1{
+font-size:27px;
+}
 
-  .big{
-    font-size:32px;
-  }
+.big{
+font-size:32px;
+}
 
 }
-</style>
-</head>
 
+</style>
+
+</head>
 
 <body>
 
 <header>
-<h1>🏆 Hackers vs Shankers Cup</h1>
-<div>32 Players • 40 Ryder Cup Points • First to 20.5</div>
-</header>
 
+<h1>🏆 Hackers vs Shankers Cup</h1>
+
+<div>
+32 Players • 40 Ryder Cup Points • First to 20.5
+</div>
+
+</header>
 
 <main>
 
-<div class="nav" id="nav"></div>
+<div
+class="nav"
+id="nav">
+</div>
 
-<div id="app"></div>
+<div
+id="app">
+</div>
 
 </main>
 
-
 <script>
 
-const STORAGE_KEY="delcoDuffers2026";
+const STORAGE_KEY=
+"delcoDuffers2026";
+
 
 const ROUNDS=[
 
@@ -299,6 +340,7 @@ skins:true
 
 let data;
 
+
 try{
 
 data=
@@ -309,31 +351,48 @@ localStorage.getItem(STORAGE_KEY)
 );
 
 }
+
 catch{
 
-data={players:[]};
+data={
+players:[]
+};
 
 }
 
 
 data.players ||= [];
+
 data.matchups ||= {};
+
 data.scores ||= {};
+
 data.results ||= {};
 
 
-let page="dashboard";
-
-let currentRound=1;
-
+let page=
+"dashboard";
 
 
-function save(){
+let currentRound=
+1;
+
+
+
+function saveData(){
 
 localStorage.setItem(
 STORAGE_KEY,
 JSON.stringify(data)
 );
+
+}
+
+
+
+function saveAndRender(){
+
+saveData();
 
 render();
 
@@ -344,7 +403,11 @@ render();
 function getPlayer(id){
 
 return data.players.find(
-p=>String(p.id)===String(id)
+
+p=>
+String(p.id)===
+String(id)
+
 );
 
 }
@@ -353,7 +416,9 @@ p=>String(p.id)===String(id)
 
 function roundInfo(){
 
-return ROUNDS[currentRound-1];
+return ROUNDS[
+currentRound-1
+];
 
 }
 
@@ -363,33 +428,57 @@ function nav(){
 
 const tabs=[
 
-["dashboard","Dashboard"],
+[
+"dashboard",
+"Dashboard"
+],
 
-["players","Players"],
+[
+"players",
+"Players"
+],
 
-["matchups","Matchups"],
+[
+"matchups",
+"Matchups"
+],
 
-["scoring","Scoring"]
+[
+"scoring",
+"Scoring"
+]
 
 ];
 
 
-document.getElementById("nav").innerHTML=
+document.getElementById(
+"nav"
+).innerHTML=
 
-tabs.map(t=>`
+tabs.map(
+tab=>`
 
 <button
-class="${page===t[0] ? "primary":""}"
+
+class="${
+page===tab[0]
+?
+"primary"
+:
+""
+}"
+
 onclick="
-page='${t[0]}';
+page='${tab[0]}';
 render();
 ">
 
-${t[1]}
+${tab[1]}
 
 </button>
 
-`).join("");
+`
+).join("");
 
 }
 
@@ -397,50 +486,76 @@ ${t[1]}
 
 function teamPoints(){
 
-let hackers=0;
+let hackers=
+0;
 
-let shankers=0;
+let shankers=
+0;
 
-let completed=0;
-
-
-Object.values(data.results)
-.forEach(result=>{
-
-if(!result)return;
+let completed=
+0;
 
 
-if(result.winner==="Hackers"){
+Object.values(
+data.results
+)
+.forEach(
+result=>{
+
+if(!result){
+return;
+}
+
+
+if(
+result.winner===
+"Hackers"
+){
 
 hackers+=1;
+
 completed+=1;
 
 }
 
 
-if(result.winner==="Shankers"){
+else if(
+result.winner===
+"Shankers"
+){
 
 shankers+=1;
+
 completed+=1;
 
 }
 
 
-if(result.winner==="Halved"){
+else if(
+result.winner===
+"Halved"
+){
 
 hackers+=0.5;
+
 shankers+=0.5;
+
 completed+=1;
 
 }
 
-});
+}
+);
 
 
 return{
+
 hackers,
+
 shankers,
+
 completed
+
 };
 
 }
@@ -449,30 +564,43 @@ completed
 
 function dashboard(){
 
-const points=teamPoints();
+const points=
+teamPoints();
 
 
 const hackers=
+
 data.players.filter(
-p=>p.team==="Hackers"
+p=>
+p.team===
+"Hackers"
 ).length;
 
 
 const shankers=
+
 data.players.filter(
-p=>p.team==="Shankers"
+p=>
+p.team===
+"Shankers"
 ).length;
 
 
 const groupA=
+
 data.players.filter(
-p=>p.group==="A"
+p=>
+p.group===
+"A"
 ).length;
 
 
 const groupB=
+
 data.players.filter(
-p=>p.group==="B"
+p=>
+p.group===
+"B"
 ).length;
 
 
@@ -480,16 +608,24 @@ return`
 
 <div class="card">
 
-<h2>Ryder Cup Score</h2>
+<h2>
+Ryder Cup Score
+</h2>
+
 
 <div class="scoreboard">
 
+
 <div class="team hackers">
 
-<b>HACKERS</b>
+<b>
+HACKERS
+</b>
 
 <div class="big">
+
 ${points.hackers}
+
 </div>
 
 </div>
@@ -497,49 +633,74 @@ ${points.hackers}
 
 <div class="team shankers">
 
-<b>SHANKERS</b>
+<b>
+SHANKERS
+</b>
 
 <div class="big">
+
 ${points.shankers}
+
 </div>
 
 </div>
+
 
 </div>
 
 
 <p>
-<b>${40-points.completed}</b>
+
+<b>
+${40-points.completed}
+</b>
+
 matches remaining
+
 </p>
 
-</div>
 
+</div>
 
 
 <div class="card">
 
-<h2>Roster</h2>
+<h2>
+Roster
+</h2>
+
 
 <p>
+
 Hackers:
-<b>${hackers}/16</b>
+<b>
+${hackers}/16
+</b>
 
 <br>
 
 Shankers:
-<b>${shankers}/16</b>
+<b>
+${shankers}/16
+</b>
+
 </p>
 
 
 <p>
+
 Group A:
-<b>${groupA}/16</b>
+<b>
+${groupA}/16
+</b>
 
 <br>
 
 Group B:
-<b>${groupB}/16</b>
+<b>
+${groupB}/16
+</b>
+
 </p>
 
 
@@ -554,40 +715,57 @@ They do not restrict Ryder Cup matchups.
 </div>
 
 
-
 <div class="card">
 
-<h2>Tournament Schedule</h2>
+<h2>
+Tournament Schedule
+</h2>
 
-${ROUNDS.map(r=>`
+
+${ROUNDS.map(
+round=>`
 
 <div class="match">
 
 <b>
-Round ${r.id}
+
+Round ${round.id}
+
 —
-${r.course}
+
+${round.course}
+
 </b>
+
 
 <br>
 
+
 <span class="muted">
 
-${r.format}
+${round.format}
 
 •
 
-${r.matches} points
+${round.matches} points
 
 •
 
-${r.skins ? "Skins":"No Skins"}
+${
+round.skins
+?
+"Skins"
+:
+"No Skins"
+}
 
 </span>
 
 </div>
 
-`).join("")}
+`
+).join("")}
+
 
 </div>
 
@@ -603,7 +781,10 @@ return`
 
 <div class="card">
 
-<h2>Add Player</h2>
+<h2>
+Add Player
+</h2>
+
 
 <div class="row">
 
@@ -616,8 +797,7 @@ Player Name
 
 <input
 id="name"
-placeholder="Player name"
->
+placeholder="Player name">
 
 </div>
 
@@ -631,8 +811,7 @@ Handicap
 <input
 id="hcp"
 type="number"
-step=".1"
->
+step=".1">
 
 </div>
 
@@ -684,22 +863,26 @@ Group B
 
 <button
 class="primary"
-onclick="addPlayer()"
->
+onclick="
+addPlayer()
+">
 
 Add Player
 
 </button>
 
-</div>
 
+</div>
 
 
 <div class="card">
 
 <h2>
+
 Roster
+
 (${data.players.length}/32)
+
 </h2>
 
 
@@ -707,47 +890,75 @@ Roster
 
 <table>
 
+
 <tr>
 
-<th>Name</th>
+<th>
+Name
+</th>
 
-<th>Team</th>
+<th>
+Team
+</th>
 
-<th>Skins</th>
+<th>
+Skins
+</th>
 
-<th>HCP</th>
+<th>
+HCP
+</th>
 
-<th></th>
+<th>
+</th>
 
 </tr>
 
 
-${data.players.map(p=>`
+${data.players.map(
+player=>`
 
 <tr>
 
 <td>
-<b>${p.name}</b>
+
+<b>
+${player.name}
+</b>
+
 </td>
 
-<td>
-${p.team}
-</td>
 
 <td>
-Group ${p.group}
+
+${player.team}
+
 </td>
 
+
 <td>
-${p.handicap}
+
+Group ${player.group}
+
 </td>
+
+
+<td>
+
+${player.handicap}
+
+</td>
+
 
 <td>
 
 <button
 class="danger"
+
 onclick="
-deletePlayer('${p.id}')
+deletePlayer(
+'${player.id}'
+)
 ">
 
 Delete
@@ -758,7 +969,9 @@ Delete
 
 </tr>
 
-`).join("")}
+`
+).join("")}
+
 
 </table>
 
@@ -775,25 +988,33 @@ Delete
 function addPlayer(){
 
 const name=
-document.getElementById("name")
+
+document
+.getElementById("name")
 .value
 .trim();
 
 
 const handicap=
-document.getElementById("hcp")
+
+document
+.getElementById("hcp")
 .value
 ||
 0;
 
 
 const team=
-document.getElementById("team")
+
+document
+.getElementById("team")
 .value;
 
 
 const group=
-document.getElementById("group")
+
+document
+.getElementById("group")
 .value;
 
 
@@ -808,7 +1029,9 @@ return;
 }
 
 
-if(data.players.length>=32){
+if(
+data.players.length>=32
+){
 
 alert(
 "Roster is full."
@@ -820,9 +1043,12 @@ return;
 
 
 if(
+
 data.players.filter(
-p=>p.team===team
+p=>
+p.team===team
 ).length>=16
+
 ){
 
 alert(
@@ -836,9 +1062,12 @@ return;
 
 
 if(
+
 data.players.filter(
-p=>p.group===group
+p=>
+p.group===group
 ).length>=16
+
 ){
 
 alert(
@@ -870,7 +1099,7 @@ group
 });
 
 
-save();
+saveAndRender();
 
 }
 
@@ -882,21 +1111,26 @@ if(
 !confirm(
 "Delete this player?"
 )
-)return;
+){
+
+return;
+
+}
 
 
 data.players=
 
 data.players.filter(
 
-p=>
-String(p.id)!==
+player=>
+
+String(player.id)!==
 String(id)
 
 );
 
 
-save();
+saveAndRender();
 
 }
 
@@ -925,17 +1159,20 @@ round.matches
 
 ){
 
-const i=
-data.matchups[currentRound].length;
+const index=
+
+data.matchups[currentRound]
+.length;
 
 
-data.matchups[currentRound].push({
+data.matchups[currentRound]
+.push({
 
 id:
 "R"+
 currentRound+
 "M"+
-(i+1),
+(index+1),
 
 hackers:[],
 
@@ -946,7 +1183,9 @@ shankers:[]
 }
 
 
-return data.matchups[currentRound];
+return data.matchups[
+currentRound
+];
 
 }
 
@@ -960,40 +1199,53 @@ currentPlayer
 return`
 
 <option value="">
+
 Select Player
+
 </option>
+
 
 ${data.players
 
 .filter(
-p=>p.team===team
+player=>
+player.team===
+team
 )
 
-.map(p=>`
+.map(
+player=>`
 
 <option
 
-value="${p.id}"
+value="${player.id}"
 
 ${
-String(p.id)===
+String(player.id)===
 String(currentPlayer)
 
-? "selected"
-: ""
+?
+"selected"
+:
+""
 }
 
 >
 
-${p.name}
+${player.name}
+
 —
-HCP ${p.handicap}
+
+HCP ${player.handicap}
+
 —
-Group ${p.group}
+
+Group ${player.group}
 
 </option>
 
-`).join("")}
+`
+).join("")}
 
 `;
 
@@ -1024,10 +1276,13 @@ return`
 <h2>
 
 Round ${round.id}
+
 —
+
 ${round.course}
 
 </h2>
+
 
 <div class="muted">
 
@@ -1040,7 +1295,9 @@ ${round.format}
 
 <div class="roundbuttons">
 
+
 <button
+
 onclick="
 currentRound=
 Math.max(
@@ -1057,6 +1314,7 @@ render();
 
 
 <button
+
 onclick="
 currentRound=
 Math.min(
@@ -1070,6 +1328,7 @@ render();
 →
 
 </button>
+
 
 </div>
 
@@ -1087,17 +1346,21 @@ Any Hacker can play any Shanker.
 
 
 ${matches.map(
+
 (match,index)=>
+
 matchupCard(
 round,
 match,
 index
 )
+
 ).join("")}
 
 
 <button
 class="primary"
+
 onclick="
 validateRound()
 ">
@@ -1123,11 +1386,13 @@ index
 
 const numberNeeded=
 
-round.type==="singles"
+round.type===
+"singles"
 
-? 1
-
-: 2;
+?
+1
+:
+2;
 
 
 while(
@@ -1152,15 +1417,18 @@ match.shankers.push("");
 }
 
 
-let hackerBoxes="";
+let hackerBoxes=
+"";
 
-let shankerBoxes="";
+
+let shankerBoxes=
+"";
 
 
 for(
-let i=0;
-i<numberNeeded;
-i++
+let slot=0;
+slot<numberNeeded;
+slot++
 ){
 
 hackerBoxes+=`
@@ -1171,14 +1439,14 @@ onchange="
 setMatchPlayer(
 ${index},
 'hackers',
-${i},
+${slot},
 this.value
 )
 ">
 
 ${playerOptions(
 "Hackers",
-match.hackers[i]
+match.hackers[slot]
 )}
 
 </select>
@@ -1194,14 +1462,14 @@ onchange="
 setMatchPlayer(
 ${index},
 'shankers',
-${i},
+${slot},
 this.value
 )
 ">
 
 ${playerOptions(
 "Shankers",
-match.shankers[i]
+match.shankers[slot]
 )}
 
 </select>
@@ -1219,9 +1487,13 @@ const selectedPlayers=[
 
 ]
 
-.map(getPlayer)
+.map(
+getPlayer
+)
 
-.filter(Boolean);
+.filter(
+Boolean
+);
 
 
 return`
@@ -1266,23 +1538,25 @@ ${shankerBoxes}
 
 <div>
 
-${selectedPlayers.map(p=>`
+${selectedPlayers.map(
+player=>`
 
 <span class="pill">
 
-${p.name}
+${player.name}
 
 •
 
-HCP ${p.handicap}
+HCP ${player.handicap}
 
 •
 
-Group ${p.group}
+Group ${player.group}
 
 </span>
 
-`).join("")}
+`
+).join("")}
 
 </div>
 
@@ -1302,7 +1576,8 @@ slot,
 playerId
 ){
 
-data.matchups[currentRound]
+data
+.matchups[currentRound]
 [matchIndex]
 [side]
 [slot]
@@ -1310,10 +1585,7 @@ data.matchups[currentRound]
 playerId;
 
 
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(data)
-);
+saveData();
 
 
 render();
@@ -1337,40 +1609,48 @@ new Set();
 
 
 for(
-let i=0;
-i<matches.length;
-i++
+let index=0;
+index<matches.length;
+index++
 ){
 
 const match=
-matches[i];
+matches[index];
 
 
 const required=
 
-round.type==="singles"
+round.type===
+"singles"
 
-? 1
-
-: 2;
+?
+1
+:
+2;
 
 
 if(
 
-match.hackers.filter(Boolean).length
-!== required
+match.hackers.filter(
+Boolean
+).length
+!==required
 
 ||
 
-match.shankers.filter(Boolean).length
-!== required
+match.shankers.filter(
+Boolean
+).length
+!==required
 
 ){
 
 alert(
+
 "Match "+
-(i+1)+
+(index+1)+
 " is incomplete."
+
 );
 
 return;
@@ -1427,14 +1707,14 @@ return;
 }
 
 
+saveData();
+
+
 alert(
 "Round "+
 currentRound+
 " matchups are ready!"
 );
-
-
-save();
 
 }
 
@@ -1475,7 +1755,24 @@ Array.from(
 }
 
 
-return data.scores[matchId];
+while(
+data.scores[matchId]
+.holes.length
+<
+18
+){
+
+data.scores[matchId]
+.holes.push(
+{}
+);
+
+}
+
+
+return data.scores[
+matchId
+];
 
 }
 
@@ -1504,9 +1801,11 @@ return`
 <h2>
 
 Round ${round.id}
+
 Scoring
 
 </h2>
+
 
 <div class="muted">
 
@@ -1518,12 +1817,15 @@ ${round.format}
 
 </div>
 
+
 </div>
 
 
 <div class="roundbuttons">
 
+
 <button
+
 onclick="
 currentRound=
 Math.max(
@@ -1540,6 +1842,7 @@ render();
 
 
 <button
+
 onclick="
 currentRound=
 Math.min(
@@ -1554,23 +1857,28 @@ render();
 
 </button>
 
-</div>
-
 
 </div>
 
 
-${round.type==="scramble"
+</div>
 
-? `
+
+${
+round.type===
+"scramble"
+
+?
+
+`
 
 <div class="notice">
 
-Round 3 is a 2-man scramble.
+Round 3 is a two-man scramble.
 
-Enter one team score for each side.
+Enter one team score for Hackers and one team score for Shankers on each hole.
 
-No skins this round.
+There are no skins in Round 3.
 
 </div>
 
@@ -1582,9 +1890,9 @@ No skins this round.
 
 <div class="notice">
 
-Enter each player's gross score on all 18 holes.
+Enter each player's gross score for all 18 holes.
 
-These scores can also be used for Group A/B skins.
+Scores save immediately and stay visible.
 
 </div>
 
@@ -1594,6 +1902,7 @@ These scores can also be used for Group A/B skins.
 
 
 ${matches.map(
+
 (match,index)=>
 
 scoreCard(
@@ -1620,7 +1929,9 @@ index
 ){
 
 const score=
-getScore(match.id);
+getScore(
+match.id
+);
 
 
 const players=[
@@ -1631,18 +1942,24 @@ const players=[
 
 ]
 
-.map(getPlayer)
+.map(
+getPlayer
+)
 
-.filter(Boolean);
+.filter(
+Boolean
+);
 
 
 const requiredPlayers=
 
-round.type==="singles"
+round.type===
+"singles"
 
-? 2
-
-: 4;
+?
+2
+:
+4;
 
 
 if(
@@ -1656,8 +1973,11 @@ return`
 <div class="match">
 
 <h3>
+
 Match ${index+1}
+
 </h3>
+
 
 <div class="notice">
 
@@ -1672,14 +1992,17 @@ Set this matchup first.
 }
 
 
-let header="";
+let header=
+"";
 
-let rows="";
 
+let rows=
+"";
 
 
 if(
-round.type==="scramble"
+round.type===
+"scramble"
 ){
 
 header=`
@@ -1710,6 +2033,7 @@ hole++
 ){
 
 const scores=
+
 score.holes[hole]
 ||
 {};
@@ -1719,23 +2043,27 @@ rows+=`
 
 <tr>
 
+
 <td>
+
 ${hole+1}
+
 </td>
 
 
 <td>
 
 <input
+
 type="number"
+
 min="1"
+
 max="20"
 
-value="
-${scores.H ?? ""}
-"
+value="${scores.H ?? ""}"
 
-onchange="
+oninput="
 enterScore(
 '${match.id}',
 ${hole},
@@ -1750,15 +2078,16 @@ this.value
 <td>
 
 <input
+
 type="number"
+
 min="1"
+
 max="20"
 
-value="
-${scores.S ?? ""}
-"
+value="${scores.S ?? ""}"
 
-onchange="
+oninput="
 enterScore(
 '${match.id}',
 ${hole},
@@ -1786,31 +2115,36 @@ header=`
 <tr>
 
 <th>
+
 Hole
+
 </th>
 
 
-${players.map(p=>`
+${players.map(
+player=>`
 
 <th>
 
-${p.name}
+${player.name}
 
 <br>
 
 <span class="muted">
 
-HCP ${p.handicap}
+HCP ${player.handicap}
 
 <br>
 
-Group ${p.group}
+Group ${player.group}
 
 </span>
 
 </th>
 
-`).join("")}
+`
+).join("")}
+
 
 </tr>
 
@@ -1824,6 +2158,7 @@ hole++
 ){
 
 const scores=
+
 score.holes[hole]
 ||
 {};
@@ -1833,12 +2168,16 @@ rows+=`
 
 <tr>
 
+
 <td>
+
 ${hole+1}
+
 </td>
 
 
-${players.map(p=>`
+${players.map(
+player=>`
 
 <td>
 
@@ -1850,22 +2189,21 @@ min="1"
 
 max="20"
 
-value="
-${scores[p.id] ?? ""}
-"
+value="${scores[player.id] ?? ""}"
 
-onchange="
+oninput="
 enterScore(
 '${match.id}',
 ${hole},
-'${p.id}',
+'${player.id}',
 this.value
 )
 ">
 
 </td>
 
-`).join("")}
+`
+).join("")}
 
 
 </tr>
@@ -1873,6 +2211,104 @@ this.value
 `;
 
 }
+
+}
+
+
+
+const savedResult=
+
+data.results[
+match.id
+]
+
+?
+data.results[
+match.id
+].winner
+
+:
+"";
+
+
+let resultBanner=
+"";
+
+
+if(
+savedResult===
+"Hackers"
+){
+
+resultBanner=`
+
+<div
+class="
+resultBanner
+resultHackers
+">
+
+HACKERS WIN
+
+—
+
+1 POINT
+
+</div>
+
+`;
+
+}
+
+
+else if(
+savedResult===
+"Shankers"
+){
+
+resultBanner=`
+
+<div
+class="
+resultBanner
+resultShankers
+">
+
+SHANKERS WIN
+
+—
+
+1 POINT
+
+</div>
+
+`;
+
+}
+
+
+else if(
+savedResult===
+"Halved"
+){
+
+resultBanner=`
+
+<div
+class="
+resultBanner
+resultHalved
+">
+
+MATCH HALVED
+
+—
+
+½ POINT EACH
+
+</div>
+
+`;
 
 }
 
@@ -1902,28 +2338,31 @@ score
 
 <div>
 
-${players.map(p=>`
+${players.map(
+player=>`
 
 <span class="pill">
 
-${p.name}
+${player.name}
 
 •
 
-HCP ${p.handicap}
+HCP ${player.handicap}
 
 •
 
-Group ${p.group}
+Group ${player.group}
 
 </span>
 
-`).join("")}
+`
+).join("")}
 
 </div>
 
 
 <div class="tablewrap">
+
 
 <table class="scoretable">
 
@@ -1933,6 +2372,105 @@ ${rows}
 
 </table>
 
+
+</div>
+
+
+<div
+style="
+margin-top:15px;
+"
+>
+
+<label>
+
+Official Match Result
+
+</label>
+
+
+<select
+
+id="
+result-${match.id}
+">
+
+<option value="">
+
+Select Result
+
+</option>
+
+
+<option
+
+value="Hackers"
+
+${
+savedResult===
+"Hackers"
+
+?
+"selected"
+
+:
+""
+}
+
+>
+
+Hackers
+
+</option>
+
+
+<option
+
+value="Shankers"
+
+${
+savedResult===
+"Shankers"
+
+?
+"selected"
+
+:
+""
+}
+
+>
+
+Shankers
+
+</option>
+
+
+<option
+
+value="Halved"
+
+${
+savedResult===
+"Halved"
+
+?
+"selected"
+
+:
+""
+}
+
+>
+
+Halved
+
+</option>
+
+
+</select>
+
+
 </div>
 
 
@@ -1940,15 +2478,22 @@ ${rows}
 
 class="good"
 
+style="
+margin-top:10px;
+"
+
 onclick="
-finalizeMatch(
+saveMatchResult(
 '${match.id}'
 )
 ">
 
-Finalize Match
+Save Match Result
 
 </button>
+
+
+${resultBanner}
 
 
 </div>
@@ -1967,22 +2512,26 @@ value
 ){
 
 const score=
-getScore(matchId);
+getScore(
+matchId
+);
 
 
-score.holes[hole][playerId]=
+score
+.holes[hole]
+[playerId]
+=
 
 value===""
 
-? ""
+?
+""
 
-: Number(value);
+:
+Number(value);
 
 
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(data)
-);
+saveData();
 
 }
 
@@ -1996,7 +2545,8 @@ scores
 
 
 if(
-round.type==="bestball"
+round.type===
+"bestball"
 ){
 
 const hackerScores=
@@ -2005,11 +2555,14 @@ match.hackers
 
 .map(
 id=>
-Number(scores[id])
+Number(
+scores[id]
+)
 )
 
 .filter(
-n=>n>0
+score=>
+score>0
 );
 
 
@@ -2019,11 +2572,14 @@ match.shankers
 
 .map(
 id=>
-Number(scores[id])
+Number(
+scores[id]
+)
 )
 
 .filter(
-n=>n>0
+score=>
+score>0
 );
 
 
@@ -2042,22 +2598,23 @@ return null;
 }
 
 
-const hackersLow=
+const hackerLow=
+
 Math.min(
 ...hackerScores
 );
 
 
-const shankersLow=
+const shankerLow=
+
 Math.min(
 ...shankerScores
 );
 
 
 if(
-hackersLow
-<
-shankersLow
+hackerLow<
+shankerLow
 ){
 
 return "Hackers";
@@ -2066,9 +2623,8 @@ return "Hackers";
 
 
 if(
-shankersLow
-<
-hackersLow
+shankerLow<
+hackerLow
 ){
 
 return "Shankers";
@@ -2083,7 +2639,8 @@ return "Tie";
 
 
 if(
-round.type==="singles"
+round.type===
+"singles"
 ){
 
 const hackerScore=
@@ -2116,8 +2673,7 @@ return null;
 
 
 if(
-hackerScore
-<
+hackerScore<
 shankerScore
 ){
 
@@ -2127,8 +2683,7 @@ return "Hackers";
 
 
 if(
-shankerScore
-<
+shankerScore<
 hackerScore
 ){
 
@@ -2144,11 +2699,17 @@ return "Tie";
 
 
 const hackerTeamScore=
-Number(scores.H);
+
+Number(
+scores.H
+);
 
 
 const shankerTeamScore=
-Number(scores.S);
+
+Number(
+scores.S
+);
 
 
 if(
@@ -2163,8 +2724,7 @@ return null;
 
 
 if(
-hackerTeamScore
-<
+hackerTeamScore<
 shankerTeamScore
 ){
 
@@ -2174,8 +2734,7 @@ return "Hackers";
 
 
 if(
-shankerTeamScore
-<
+shankerTeamScore<
 hackerTeamScore
 ){
 
@@ -2196,11 +2755,16 @@ match,
 score
 ){
 
-let hackers=0;
+let hackers=
+0;
 
-let shankers=0;
 
-let played=0;
+let shankers=
+0;
+
+
+let played=
+0;
 
 
 score.holes.forEach(
@@ -2217,15 +2781,19 @@ scores
 
 if(
 !winner
-)
+){
+
 return;
+
+}
 
 
 played++;
 
 
 if(
-winner==="Hackers"
+winner===
+"Hackers"
 ){
 
 hackers++;
@@ -2233,15 +2801,17 @@ hackers++;
 }
 
 
-if(
-winner==="Shankers"
+else if(
+winner===
+"Shankers"
 ){
 
 shankers++;
 
 }
 
-});
+}
+);
 
 
 if(
@@ -2254,7 +2824,9 @@ return "Not Started";
 
 
 const difference=
-hackers-shankers;
+
+hackers-
+shankers;
 
 
 if(
@@ -2265,16 +2837,21 @@ if(
 difference===0
 ){
 
-return "Halved";
+return "All Square after 18";
 
 }
 
 
-return difference>0
+if(
+difference>0
+){
 
-? "Hackers Win"
+return "Hackers ahead after 18";
 
-: "Shankers Win";
+}
+
+
+return "Shankers ahead after 18";
 
 }
 
@@ -2288,153 +2865,100 @@ return "AS through "+played;
 }
 
 
-return
+return(
 
-Math.abs(difference)
-
-+" UP "
-
-+(
-
-difference>0
-
-? "Hackers"
-
-: "Shankers"
-
+Math.abs(
+difference
 )
 
-+" through "
++
 
-+played;
+" UP "
+
++
+
+(
+difference>0
+?
+"Hackers"
+:
+"Shankers"
+)
+
++
+
+" through "
+
++
+
+played
+
+);
 
 }
 
 
 
-function finalizeMatch(
+function saveMatchResult(
 matchId
 ){
 
-const round=
-roundInfo();
+const resultBox=
 
-
-const match=
-
-data.matchups[currentRound]
-
-.find(
-m=>
-m.id===matchId
+document.getElementById(
+"result-"+matchId
 );
 
 
-const score=
-getScore(matchId);
-
-
-for(
-let hole=0;
-hole<18;
-hole++
-){
-
 if(
-
-!holeWinner(
-round,
-match,
-score.holes[hole]
-)
-
+!resultBox
 ){
 
 alert(
-"Complete all 18 holes first."
+"Could not find the match result selector."
 );
 
 return;
 
 }
 
-}
-
-
-let hackers=0;
-
-let shankers=0;
-
-
-score.holes.forEach(
-
-scores=>{
 
 const winner=
 
-holeWinner(
-round,
-match,
-scores
+resultBox.value;
+
+
+if(
+!winner
+){
+
+alert(
+"Pick Hackers, Shankers, or Halved."
 );
 
-
-if(
-winner==="Hackers"
-){
-
-hackers++;
+return;
 
 }
 
 
-if(
-winner==="Shankers"
-){
-
-shankers++;
-
-}
-
-});
-
-
-let winner=
-"Halved";
-
-
-if(
-hackers>shankers
-){
-
-winner=
-"Hackers";
-
-}
-
-
-if(
-shankers>hackers
-){
-
-winner=
-"Shankers";
-
-}
-
-
-data.results[matchId]={
+data.results[
+matchId
+]
+={
 
 winner
 
 };
 
 
-save();
+saveData();
+
+
+render();
 
 
 alert(
-"Match saved: "+
+"Match result saved: "+
 winner
 );
 
@@ -2447,23 +2971,33 @@ function render(){
 nav();
 
 
-document.getElementById("app").innerHTML=
+document
+.getElementById(
+"app"
+)
+.innerHTML=
 
-page==="dashboard"
+page===
+"dashboard"
 
-? dashboard()
+?
+dashboard()
 
 :
 
-page==="players"
+page===
+"players"
 
-? playersPage()
+?
+playersPage()
 
 :
 
-page==="matchups"
+page===
+"matchups"
 
-? matchupPage()
+?
+matchupPage()
 
 :
 
@@ -2478,4 +3012,5 @@ render();
 </script>
 
 </body>
+
 </html>
