@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hackers vs Shankers Cup</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
+    header{background:#111827;color:#fff;padding:20px;text-align:center}
+    main{max-width:900px;margin:auto;padding:16px}
+    .card{background:#fff;border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #0001}
+    .score{font-size:32px;font-weight:800}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#e5e7eb;margin:3px}
+    input,select,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #ccc;margin:4px}
+    button{background:#111827;color:#fff;font-weight:700}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<header>
+  <h1>🏆 Hackers vs Shankers Cup</h1>
+  <div>32 Players • 40 Ryder Cup Points • First to 20.5</div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="score" id="teamCount">Hackers 0 — Shankers 0</div>
+    <p>
+      <span class="pill">R1 Tobacco Road • 2v2 Best Ball • 8 pts • Skins</span>
+      <span class="pill">R2 Mid South • 2v2 Best Ball • 8 pts • Skins</span>
+      <span class="pill">R3 Talamore • 2-man Scramble • 8 pts • No Skins</span>
+      <span class="pill">R4 Legacy • 1v1 Match Play • 16 pts • Skins</span>
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Add Player</h2>
+    <div class="row">
+      <input id="name" placeholder="Player name" />
+      <input id="hcp" type="number" placeholder="Handicap" />
+      <select id="team">
+        <option value="Hackers">Hackers</option>
+        <option value="Shankers">Shankers</option>
+      </select>
+      <select id="group">
+        <option value="A">Group A</option>
+        <option value="B">Group B</option>
+      </select>
+      <button onclick="addPlayer()">Add Player</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Roster <span id="count">(0/32)</span></h2>
+    <div id="roster"></div>
+  </div>
+</main>
+
+<script>
+  const STORAGE_KEY = "delcoDuffers2026";
+  let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"players":[]}');
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    render();
+  }
+
+  function addPlayer(){
+    const name = document.getElementById("name").value.trim();
+    const hcp = document.getElementById("hcp").value || 0;
+    const team = document.getElementById("team").value;
+    const group = document.getElementById("group").value;
+
+    if(!name) return alert("Enter a player name.");
+    if(data.players.length >= 32) return alert("Roster is full.");
+
+    const teamGroupCount = data.players.filter(p => p.team === team && p.group === group).length;
+    if(teamGroupCount >= 8){
+      return alert(team + " Group " + group + " already has 8 players.");
+    }
+
+    data.players.push({
+      id: Date.now(),
+      name,
+      handicap: hcp,
+      team,
+      group
+    });
+
+    document.getElementById("name").value = "";
+    document.getElementById("hcp").value = "";
+    save();
+  }
+
+  function deletePlayer(id){
+    data.players = data.players.filter(p => p.id !== id);
+    save();
+  }
+
+  function render(){
+    const hackers = data.players.filter(p => p.team === "Hackers").length;
+    const shankers = data.players.filter(p => p.team === "Shankers").length;
+
+    document.getElementById("teamCount").textContent =
+      "Hackers " + hackers + " — Shankers " + shankers;
+
+    document.getElementById("count").textContent =
+      "(" + data.players.length + "/32)";
+
+    document.getElementById("roster").innerHTML =
+      data.players.length
+      ? data.players.map((p,i) =>
+          "<div style='padding:8px 0;border-bottom:1px solid #eee'>" +
+          "<b>" + (i+1) + ". " + p.name + "</b>" +
+          " — " + p.team +
+          " — Group " + p.group +
+          " — HCP " + p.handicap +
+          " <button onclick='deletePlayer(" + p.id + ")'>Delete</button>" +
+          "</div>"
+        ).join("")
+      : "<p>No players added yet.</p>";
+  }
+
+  render();
+</script>
+</body>
+</html>
