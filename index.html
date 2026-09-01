@@ -74,10 +74,16 @@
     if(!name) return alert("Enter a player name.");
     if(data.players.length >= 32) return alert("Roster is full.");
 
-    const teamGroupCount = data.players.filter(p => p.team === team && p.group === group).length;
-    if(teamGroupCount >= 8){
-      return alert(team + " Group " + group + " already has 8 players.");
-    }
+    const teamCount = data.players.filter(p => p.team === team).length;
+const groupCount = data.players.filter(p => p.group === group).length;
+
+if(teamCount >= 16){
+  return alert(team + " already has 16 players.");
+}
+
+if(groupCount >= 16){
+  return alert("Group " + group + " already has 16 players.");
+}
 
     data.players.push({
       id: Date.now(),
