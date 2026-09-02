@@ -365,6 +365,34 @@ border-radius:12px;
 margin-bottom:15px;
 }
 
+.playerTeamHeader{
+color:white;
+padding:14px;
+border-radius:12px;
+margin-bottom:12px;
+}
+
+.playerTeamHeader h2{
+margin:0;
+color:white;
+}
+
+.playerTeamHeader.hackerHeader{
+background:#dc2626;
+}
+
+.playerTeamHeader.shankerHeader{
+background:#2563eb;
+}
+
+.playerGroupCard.hackerGroup{
+border-top:8px solid #dc2626;
+}
+
+.playerGroupCard.shankerGroup{
+border-top:8px solid #2563eb;
+}
+
 @media(max-width:650px){
 
 .players{
@@ -1872,42 +1900,6 @@ const points=
 teamPoints();
 
 
-const hackers=
-
-data.players.filter(
-player=>
-player.team===
-"Hackers"
-).length;
-
-
-const shankers=
-
-data.players.filter(
-player=>
-player.team===
-"Shankers"
-).length;
-
-
-const groupA=
-
-data.players.filter(
-player=>
-player.group===
-"A"
-).length;
-
-
-const groupB=
-
-data.players.filter(
-player=>
-player.group===
-"B"
-).length;
-
-
 return`
 
 <div class="card">
@@ -2262,22 +2254,49 @@ Only the administrator can make changes.
 `;
 
 
+function teamGroupSection(team,group){
+
+const players=
+
+data.players.filter(
+player=>
+player.team===team &&
+player.group===group
+);
+
+
+const isHackers=
+team==="Hackers";
+
+
 return`
 
-${editSection}
+<div class="card playerGroupCard ${
+isHackers
+?
+"hackerGroup"
+:
+"shankerGroup"
+}">
 
-${addBox}
-
-
-<div class="card">
+<div class="playerTeamHeader ${
+isHackers
+?
+"hackerHeader"
+:
+"shankerHeader"
+}">
 
 <h2>
-
-Roster
-
-(${data.players.length}/32)
-
+${team} — Group ${group}
 </h2>
+
+<div style="margin-top:4px;font-weight:700;">
+${players.length} players
+</div>
+
+</div>
+
 
 <div class="tablewrap">
 
@@ -2287,14 +2306,6 @@ Roster
 
 <th>
 Name
-</th>
-
-<th>
-Team
-</th>
-
-<th>
-Skins
 </th>
 
 <th>
@@ -2312,7 +2323,7 @@ isAdmin
 </tr>
 
 
-${data.players.map(
+${players.map(
 player=>`
 
 <tr>
@@ -2323,14 +2334,6 @@ player=>`
 ${player.name}
 </b>
 
-</td>
-
-<td>
-${player.team}
-</td>
-
-<td>
-Group ${player.group}
 </td>
 
 <td>
@@ -2385,6 +2388,25 @@ Delete
 </div>
 
 </div>
+
+`;
+
+}
+
+
+return`
+
+${editSection}
+
+${addBox}
+
+${teamGroupSection("Hackers","A")}
+
+${teamGroupSection("Hackers","B")}
+
+${teamGroupSection("Shankers","A")}
+
+${teamGroupSection("Shankers","B")}
 
 `;
 
@@ -5056,10 +5078,6 @@ return`
 <h2>
 Skins
 </h2>
-
-
-
-</div>
 
 </div>
 
