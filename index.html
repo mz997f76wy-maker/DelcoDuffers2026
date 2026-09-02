@@ -66,6 +66,11 @@ background:#fee2e2;
 color:#991b1b;
 }
 
+.blue{
+background:#dbeafe;
+color:#1d4ed8;
+}
+
 .card{
 background:white;
 border-radius:16px;
@@ -101,6 +106,13 @@ border:1px solid #d1d5db;
 border-radius:9px;
 font-size:16px;
 background:white;
+}
+
+input:disabled,
+select:disabled{
+background:#f3f4f6;
+color:#374151;
+opacity:1;
 }
 
 .match{
@@ -164,6 +176,24 @@ margin:10px 0;
 }
 
 .shared{
+background:#ecfdf5;
+color:#065f46;
+border:1px solid #6ee7b7;
+padding:10px;
+border-radius:9px;
+margin-bottom:12px;
+}
+
+.viewer{
+background:#eff6ff;
+color:#1e40af;
+border:1px solid #93c5fd;
+padding:10px;
+border-radius:9px;
+margin-bottom:12px;
+}
+
+.admin{
 background:#ecfdf5;
 color:#065f46;
 border:1px solid #6ee7b7;
@@ -291,6 +321,11 @@ font-size:22px;
 font-weight:900;
 }
 
+.loginBox{
+max-width:500px;
+margin:auto;
+}
+
 .loading{
 text-align:center;
 padding:40px;
@@ -337,12 +372,13 @@ font-size:32px;
 <div id="app">
 
 <div class="loading">
-Loading shared tournament…
+Loading tournament…
 </div>
 
 </div>
 
 </main>
+
 
 <script>
 
@@ -355,8 +391,11 @@ const SUPABASE_KEY=
 const TOURNAMENT_ID=
 "delco-duffers-2026";
 
-const LOCAL_STORAGE_KEY=
-"delcoDuffers2026";
+const ADMIN_EMAIL=
+"roccopacejr@gmail.com";
+
+const SESSION_KEY=
+"delcoDuffersAdminSession";
 
 
 const ROUNDS=[
@@ -407,27 +446,714 @@ scores:{},
 results:{}
 };
 
+let session=null;
+
+let isAdmin=false;
+
+let connected=false;
+
 let page="dashboard";
 
 let currentRound=1;
 
-let connected=false;
-
 let saveTimers={};
 
 
-/* ==================================
-   SUPABASE
-================================== */
+/* =====================================
+   SESSION
+===================================== */
+
+function loadStoredSession(){
+
+try{
+
+session=
+JSON.parse(
+localStorage.getItem(SESSION_KEY)
+||
+"null"
+);
+
+}catch{
+
+session=null;
+
+}
+
+}
+
+
+function storeSession(newSession){
+
+session=newSession;
+
+if(session){
+
+localStorage.setItem(
+SESSION_KEY,
+JSON.stringify(session)
+);
+
+}else{
+
+localStorage.removeItem(
+SESSION_KEY
+);
+
+}
+
+}
+
+
+function authToken(){
+
+return session &&
+session.access_token
+?
+session.access_token
+:
+SUPABASE_KEY;
+
+}
+
+
+async function refreshSessionIfNeeded(){
+
+if(
+!session ||
+!session.refresh_token
+){
+
+return;
+
+}
+
+
+const expiresAt=
+Number(
+session.expires_at || 0
+);
+
+
+const now=
+Math.floor(
+Date.now()/1000
+);
+
+
+if(
+expiresAt &&
+expiresAt-now>120
+){
+
+return;
+
+}
+
+
+try{
+
+const response=
+await fetch(
+
+SUPABASE_URL+
+"/auth/v1/token?grant_type=refresh_token",
+
+{
+
+method:"POST",
+
+headers:{
+
+apikey:
+SUPABASE_KEY,
+
+"Content-Type":
+"application/json"
+
+},
+
+body:
+JSON.stringify({
+
+refresh_token:
+session.refresh_token
+
+})
+
+}
+
+);
+
+
+if(!response.ok){
+
+throw new Error(
+"Refresh failed"
+);
+
+}
+
+
+const result=
+await response.json();
+
+
+result.expires_at=
+
+Math.floor(
+Date.now()/1000
+)
++
+Number(
+result.expires_in || 3600
+);
+
+
+storeSession(
+result
+);
+
+
+await checkAdmin();
+
+}
+
+catch{
+
+storeSession(
+null
+);
+
+isAdmin=false;
+
+}
+
+}
+
+
+async function checkAdmin(){
+
+if(
+!session ||
+!session.access_token
+){
+
+isAdmin=false;
+
+return;
+
+}
+
+
+try{
+
+const response=
+await fetch(
+
+SUPABASE_URL+
+"/auth/v1/user",
+
+{
+
+headers:{
+
+apikey:
+SUPABASE_KEY,
+
+Authorization:
+"Bearer "+
+session.access_token
+
+}
+
+}
+
+);
+
+
+if(!response.ok){
+
+isAdmin=false;
+
+return;
+
+}
+
+
+const user=
+await response.json();
+
+
+isAdmin=
+
+String(
+user.email || ""
+)
+.toLowerCase()
+===
+ADMIN_EMAIL;
+
+}
+
+catch{
+
+isAdmin=false;
+
+}
+
+}
+
+
+/* =====================================
+   ADMIN LOGIN
+===================================== */
+
+function loginPage(){
+
+if(isAdmin){
+
+return`
+
+<div class="card loginBox">
+
+<h2>
+Admin
+</h2>
+
+<div class="admin">
+
+✅ Signed in as administrator
+
+<br>
+
+<b>
+${ADMIN_EMAIL}
+</b>
+
+</div>
+
+<button
+class="danger"
+onclick="adminLogout()">
+
+Sign Out
+
+</button>
+
+</div>
+
+`;
+
+}
+
+
+return`
+
+<div class="card loginBox">
+
+<h2>
+Admin Login
+</h2>
+
+<p>
+
+Everyone else can view the tournament.
+
+Only the administrator can make changes.
+
+</p>
+
+
+<div class="field">
+
+<label>
+Admin Email
+</label>
+
+<input
+id="adminEmail"
+type="email"
+value="${ADMIN_EMAIL}"
+disabled>
+
+</div>
+
+
+<div class="field"
+style="margin-top:10px">
+
+<label>
+Password
+</label>
+
+<input
+id="adminPassword"
+type="password"
+placeholder="Enter your admin password">
+
+</div>
+
+
+<button
+class="primary"
+style="margin-top:12px"
+onclick="adminLogin()">
+
+Admin Login
+
+</button>
+
+
+<button
+class="blue"
+style="margin-top:12px"
+onclick="createAdminAccount()">
+
+Create Admin Account
+
+</button>
+
+
+<p class="muted">
+
+Use Create Admin Account only the first time.
+
+Afterward, use Admin Login.
+
+</p>
+
+</div>
+
+`;
+
+}
+
+
+async function createAdminAccount(){
+
+const password=
+
+document
+.getElementById(
+"adminPassword"
+)
+.value;
+
+
+if(
+!password ||
+password.length<8
+){
+
+alert(
+"Choose a password with at least 8 characters."
+);
+
+return;
+
+}
+
+
+try{
+
+const response=
+await fetch(
+
+SUPABASE_URL+
+"/auth/v1/signup",
+
+{
+
+method:"POST",
+
+headers:{
+
+apikey:
+SUPABASE_KEY,
+
+"Content-Type":
+"application/json"
+
+},
+
+body:
+JSON.stringify({
+
+email:
+ADMIN_EMAIL,
+
+password:
+password
+
+})
+
+}
+
+);
+
+
+const result=
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+result.msg ||
+result.message ||
+"Could not create account."
+);
+
+}
+
+
+if(
+result.access_token
+){
+
+result.expires_at=
+
+Math.floor(
+Date.now()/1000
+)
++
+Number(
+result.expires_in || 3600
+);
+
+
+storeSession(
+result
+);
+
+
+await checkAdmin();
+
+render();
+
+alert(
+"Admin account created and signed in."
+);
+
+return;
+
+}
+
+
+alert(
+"Account created. Check your Gmail for the confirmation email. After confirming it, come back here and use Admin Login."
+);
+
+}
+
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+
+async function adminLogin(){
+
+const password=
+
+document
+.getElementById(
+"adminPassword"
+)
+.value;
+
+
+if(!password){
+
+alert(
+"Enter your password."
+);
+
+return;
+
+}
+
+
+try{
+
+const response=
+await fetch(
+
+SUPABASE_URL+
+"/auth/v1/token?grant_type=password",
+
+{
+
+method:"POST",
+
+headers:{
+
+apikey:
+SUPABASE_KEY,
+
+"Content-Type":
+"application/json"
+
+},
+
+body:
+JSON.stringify({
+
+email:
+ADMIN_EMAIL,
+
+password:
+password
+
+})
+
+}
+
+);
+
+
+const result=
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+result.error_description ||
+result.msg ||
+result.message ||
+"Login failed."
+);
+
+}
+
+
+result.expires_at=
+
+Math.floor(
+Date.now()/1000
+)
++
+Number(
+result.expires_in || 3600
+);
+
+
+storeSession(
+result
+);
+
+
+await checkAdmin();
+
+
+if(!isAdmin){
+
+storeSession(null);
+
+throw new Error(
+"This account is not authorized as administrator."
+);
+
+}
+
+
+page=
+"dashboard";
+
+
+await loadSharedData(
+false
+);
+
+
+render();
+
+}
+
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+
+async function adminLogout(){
+
+try{
+
+if(
+session &&
+session.access_token
+){
+
+await fetch(
+
+SUPABASE_URL+
+"/auth/v1/logout",
+
+{
+
+method:"POST",
+
+headers:{
+
+apikey:
+SUPABASE_KEY,
+
+Authorization:
+"Bearer "+
+session.access_token
+
+}
+
+}
+
+);
+
+}
+
+}catch{}
+
+
+storeSession(
+null
+);
+
+isAdmin=false;
+
+page=
+"dashboard";
+
+render();
+
+}
+
+
+/* =====================================
+   API
+===================================== */
 
 function headers(extra={}){
 
 return{
 
-apikey:SUPABASE_KEY,
+apikey:
+SUPABASE_KEY,
 
 Authorization:
-"Bearer "+SUPABASE_KEY,
+"Bearer "+
+authToken(),
 
 "Content-Type":
 "application/json",
@@ -441,21 +1167,32 @@ Authorization:
 
 async function apiGet(table){
 
+await refreshSessionIfNeeded();
+
+
 const url=
+
 SUPABASE_URL+
 "/rest/v1/"+
 table+
 "?tournament_id=eq."+
-encodeURIComponent(TOURNAMENT_ID)+
+encodeURIComponent(
+TOURNAMENT_ID
+)
++
 "&select=*";
 
 
 const response=
 await fetch(
+
 url,
+
 {
-headers:headers()
+headers:
+headers()
 }
+
 );
 
 
@@ -479,17 +1216,34 @@ row,
 conflict
 ){
 
+if(!isAdmin){
+
+throw new Error(
+"Admin login required."
+);
+
+}
+
+
+await refreshSessionIfNeeded();
+
+
 const url=
+
 SUPABASE_URL+
 "/rest/v1/"+
 table+
 "?on_conflict="+
-encodeURIComponent(conflict);
+encodeURIComponent(
+conflict
+);
 
 
 const response=
 await fetch(
+
 url,
+
 {
 
 method:"POST",
@@ -503,13 +1257,23 @@ Prefer:
 }),
 
 body:
-JSON.stringify(row)
+JSON.stringify(
+row
+)
 
 }
+
 );
 
 
 if(!response.ok){
+
+const message=
+await response.text();
+
+console.error(
+message
+);
 
 throw new Error(
 "Database save failed"
@@ -525,7 +1289,20 @@ table,
 filters
 ){
 
+if(!isAdmin){
+
+throw new Error(
+"Admin login required."
+);
+
+}
+
+
+await refreshSessionIfNeeded();
+
+
 let url=
+
 SUPABASE_URL+
 "/rest/v1/"+
 table+
@@ -535,7 +1312,9 @@ TOURNAMENT_ID
 );
 
 
-Object.entries(filters)
+Object.entries(
+filters
+)
 .forEach(
 ([key,value])=>{
 
@@ -543,7 +1322,9 @@ url+=
 "&"+
 key+
 "=eq."+
-encodeURIComponent(value);
+encodeURIComponent(
+value
+);
 
 }
 );
@@ -551,7 +1332,9 @@ encodeURIComponent(value);
 
 const response=
 await fetch(
+
 url,
+
 {
 
 method:"DELETE",
@@ -560,6 +1343,7 @@ headers:
 headers()
 
 }
+
 );
 
 
@@ -574,9 +1358,9 @@ throw new Error(
 }
 
 
-/* ==================================
+/* =====================================
    LOAD SHARED DATA
-================================== */
+===================================== */
 
 async function loadSharedData(
 rerender=true
@@ -613,12 +1397,15 @@ apiGet(
 
 
 data.players=
+
 players.map(
 row=>({
 
-id:row.id,
+id:
+row.id,
 
-name:row.name,
+name:
+row.name,
 
 handicap:
 row.handicap,
@@ -633,8 +1420,7 @@ row.group_name
 );
 
 
-data.matchups=
-{};
+data.matchups={};
 
 
 matchups.forEach(
@@ -681,8 +1467,7 @@ row.shankers || []
 );
 
 
-data.scores=
-{};
+data.scores={};
 
 
 scores.forEach(
@@ -732,8 +1517,7 @@ row.score;
 );
 
 
-data.results=
-{};
+data.results={};
 
 
 results.forEach(
@@ -762,6 +1546,7 @@ row.winner
 
 connected=true;
 
+
 drawConnectionStatus();
 
 
@@ -775,7 +1560,9 @@ render();
 
 catch(error){
 
-console.error(error);
+console.error(
+error
+);
 
 connected=false;
 
@@ -786,10 +1573,14 @@ drawConnectionStatus();
 }
 
 
+/* =====================================
+   STATUS
+===================================== */
 
 function drawConnectionStatus(){
 
 const box=
+
 document.getElementById(
 "connectionStatus"
 );
@@ -800,13 +1591,12 @@ return;
 }
 
 
-box.innerHTML=
+let html="";
 
-connected
 
-?
+if(connected){
 
-`
+html+=`
 
 <div class="shared">
 
@@ -814,11 +1604,11 @@ connected
 
 </div>
 
-`
+`;
 
-:
+}else{
 
-`
+html+=`
 
 <div class="offline">
 
@@ -831,366 +1621,42 @@ connected
 }
 
 
-/* ==================================
-   LOCAL PHONE MIGRATION
-================================== */
+if(isAdmin){
 
-function getOldPhoneData(){
+html+=`
 
-try{
+<div class="admin">
 
-return JSON.parse(
+🔐 ADMIN MODE — You can make changes
 
-localStorage.getItem(
-LOCAL_STORAGE_KEY
-)
-||
-"null"
+</div>
 
-);
+`;
 
-}
+}else{
 
-catch{
+html+=`
 
-return null;
+<div class="viewer">
 
-}
+👀 VIEWER MODE — Read only
+
+</div>
+
+`;
 
 }
 
 
-async function uploadPhoneData(){
-
-const local=
-getOldPhoneData();
-
-
-if(
-!local
-||
-!local.players
-||
-local.players.length===0
-){
-
-alert(
-"No saved tournament data was found on this phone."
-);
-
-return;
+box.innerHTML=
+html;
 
 }
 
 
-if(
-!confirm(
-"Upload the roster, matchups, scores and results saved on this phone to the shared tournament?"
-)
-){
-
-return;
-
-}
-
-
-try{
-
-
-for(
-const player of
-local.players
-){
-
-await upsert(
-
-"tournament_players",
-
-{
-
-tournament_id:
-TOURNAMENT_ID,
-
-id:
-String(player.id),
-
-name:
-player.name,
-
-handicap:
-String(
-player.handicap ?? 0
-),
-
-team:
-player.team,
-
-group_name:
-player.group
-
-},
-
-"tournament_id,id"
-
-);
-
-}
-
-
-if(local.matchups){
-
-for(
-const [
-roundNumber,
-matches
-]
-of
-Object.entries(
-local.matchups
-)
-){
-
-for(
-let index=0;
-index<matches.length;
-index++
-){
-
-const match=
-matches[index];
-
-
-if(!match){
-continue;
-}
-
-
-await upsert(
-
-"tournament_matchups",
-
-{
-
-tournament_id:
-TOURNAMENT_ID,
-
-round_no:
-Number(roundNumber),
-
-match_no:
-index+1,
-
-hackers:
-match.hackers || [],
-
-shankers:
-match.shankers || []
-
-},
-
-"tournament_id,round_no,match_no"
-
-);
-
-}
-
-}
-
-}
-
-
-if(local.scores){
-
-for(
-const [
-matchId,
-scoreData
-]
-of
-Object.entries(
-local.scores
-)
-){
-
-const parsed=
-parseMatchId(
-matchId
-);
-
-
-if(!parsed){
-continue;
-}
-
-
-const holes=
-scoreData.holes || [];
-
-
-for(
-let hole=0;
-hole<holes.length;
-hole++
-){
-
-for(
-const [
-scorer,
-score
-]
-of
-Object.entries(
-holes[hole] || {}
-)
-){
-
-if(
-score==="" ||
-score===null ||
-score===undefined
-){
-
-continue;
-
-}
-
-
-await saveScoreDirect(
-
-parsed.round,
-
-parsed.match,
-
-hole+1,
-
-scorer,
-
-Number(score)
-
-);
-
-}
-
-}
-
-}
-
-}
-
-
-if(local.results){
-
-for(
-const [
-matchId,
-result
-]
-of
-Object.entries(
-local.results
-)
-){
-
-const parsed=
-parseMatchId(
-matchId
-);
-
-
-if(
-!parsed ||
-!result ||
-!result.winner
-){
-
-continue;
-
-}
-
-
-await upsert(
-
-"tournament_results",
-
-{
-
-tournament_id:
-TOURNAMENT_ID,
-
-round_no:
-parsed.round,
-
-match_no:
-parsed.match,
-
-winner:
-result.winner
-
-},
-
-"tournament_id,round_no,match_no"
-
-);
-
-}
-
-}
-
-
-await loadSharedData();
-
-
-alert(
-"Your phone's tournament data is now shared."
-);
-
-}
-
-catch(error){
-
-console.error(error);
-
-alert(
-"Something went wrong while uploading the phone data."
-);
-
-}
-
-}
-
-
-/* ==================================
+/* =====================================
    HELPERS
-================================== */
-
-function parseMatchId(
-matchId
-){
-
-const match=
-String(matchId)
-.match(
-/R(\d+)M(\d+)/
-);
-
-
-if(!match){
-return null;
-}
-
-
-return{
-
-round:
-Number(match[1]),
-
-match:
-Number(match[2])
-
-};
-
-}
-
+===================================== */
 
 function getPlayer(id){
 
@@ -1214,9 +1680,45 @@ currentRound-1
 }
 
 
-/* ==================================
-   NAVIGATION
-================================== */
+function parseMatchId(
+matchId
+){
+
+const match=
+
+String(matchId)
+.match(
+/R(\d+)M(\d+)/
+);
+
+
+if(!match){
+
+return null;
+
+}
+
+
+return{
+
+round:
+Number(
+match[1]
+),
+
+match:
+Number(
+match[2]
+)
+
+};
+
+}
+
+
+/* =====================================
+   NAV
+===================================== */
 
 function drawNav(){
 
@@ -1230,19 +1732,24 @@ const tabs=[
 
 ["scoring","Scoring"],
 
-["skins","Skins"]
+["skins","Skins"],
+
+["login",isAdmin ? "Admin ✓" : "Admin Login"]
 
 ];
 
 
-document.getElementById(
+document
+.getElementById(
 "nav"
-).innerHTML=
+)
+.innerHTML=
 
 tabs.map(
 tab=>`
 
 <button
+
 class="${
 page===tab[0]
 ?
@@ -1266,9 +1773,9 @@ ${tab[1]}
 }
 
 
-/* ==================================
+/* =====================================
    RYDER CUP POINTS
-================================== */
+===================================== */
 
 function teamPoints(){
 
@@ -1344,9 +1851,9 @@ completed
 }
 
 
-/* ==================================
+/* =====================================
    DASHBOARD
-================================== */
+===================================== */
 
 function dashboard(){
 
@@ -1390,53 +1897,7 @@ player.group===
 ).length;
 
 
-const local=
-getOldPhoneData();
-
-
-const showUpload=
-
-local &&
-local.players &&
-local.players.length>0;
-
-
 return`
-
-${
-showUpload
-?
-`
-
-<div class="card">
-
-<h2>
-Move This Phone's Data Online
-</h2>
-
-<p>
-
-If this phone contains your original roster, matchups or scores, upload them once to the shared tournament.
-
-</p>
-
-<button
-class="primary"
-onclick="
-uploadPhoneData()
-">
-
-Upload My Current Phone Data
-
-</button>
-
-</div>
-
-`
-:
-""
-}
-
 
 <div class="card">
 
@@ -1484,9 +1945,7 @@ ${points.shankers}
 <p>
 
 <b>
-
 ${40-points.completed}
-
 </b>
 
 matches remaining
@@ -1502,52 +1961,37 @@ matches remaining
 Roster
 </h2>
 
-
 <p>
 
 Hackers:
-
 <b>
-
 ${hackers}/16
-
 </b>
 
 <br>
 
 Shankers:
-
 <b>
-
 ${shankers}/16
-
 </b>
 
 </p>
 
-
 <p>
 
 Group A:
-
 <b>
-
 ${groupA}/16
-
 </b>
 
 <br>
 
 Group B:
-
 <b>
-
 ${groupB}/16
-
 </b>
 
 </p>
-
 
 <p class="muted">
 
@@ -1617,13 +2061,19 @@ round.skins
 }
 
 
-/* ==================================
+/* =====================================
    PLAYERS
-================================== */
+===================================== */
 
 function playersPage(){
 
-return`
+const addBox=
+
+isAdmin
+
+?
+
+`
 
 <div class="card">
 
@@ -1631,9 +2081,7 @@ return`
 Add Player
 </h2>
 
-
 <div class="row">
-
 
 <div class="field">
 
@@ -1647,7 +2095,6 @@ placeholder="Player name">
 
 </div>
 
-
 <div class="field">
 
 <label>
@@ -1660,7 +2107,6 @@ type="number"
 step=".1">
 
 </div>
-
 
 <div class="field">
 
@@ -1682,7 +2128,6 @@ Shankers
 
 </div>
 
-
 <div class="field">
 
 <label>
@@ -1703,21 +2148,38 @@ Group B
 
 </div>
 
-
 </div>
-
 
 <button
 class="primary"
-onclick="
-addPlayer()
-">
+onclick="addPlayer()">
 
 Add Player
 
 </button>
 
 </div>
+
+`
+
+:
+
+`
+
+<div class="viewer">
+
+Roster is read-only.
+
+Only the administrator can make changes.
+
+</div>
+
+`;
+
+
+return`
+
+${addBox}
 
 
 <div class="card">
@@ -1730,23 +2192,35 @@ Roster
 
 </h2>
 
-
 <div class="tablewrap">
 
 <table>
 
-
 <tr>
 
-<th>Name</th>
+<th>
+Name
+</th>
 
-<th>Team</th>
+<th>
+Team
+</th>
 
-<th>Skins</th>
+<th>
+Skins
+</th>
 
-<th>HCP</th>
+<th>
+HCP
+</th>
 
-<th></th>
+${
+isAdmin
+?
+"<th></th>"
+:
+""
+}
 
 </tr>
 
@@ -1765,27 +2239,27 @@ ${player.name}
 </td>
 
 <td>
-
 ${player.team}
-
 </td>
 
 <td>
-
 Group ${player.group}
-
 </td>
 
 <td>
-
 ${player.handicap}
-
 </td>
+
+${
+isAdmin
+?
+`
 
 <td>
 
 <button
 class="danger"
+
 onclick="
 deletePlayer(
 '${player.id}'
@@ -1798,11 +2272,15 @@ Delete
 
 </td>
 
+`
+:
+""
+}
+
 </tr>
 
 `
 ).join("")}
-
 
 </table>
 
@@ -1817,10 +2295,23 @@ Delete
 
 async function addPlayer(){
 
+if(!isAdmin){
+
+alert(
+"Admin login required."
+);
+
+return;
+
+}
+
+
 const name=
 
 document
-.getElementById("name")
+.getElementById(
+"name"
+)
 .value
 .trim();
 
@@ -1828,7 +2319,9 @@ document
 const handicap=
 
 document
-.getElementById("hcp")
+.getElementById(
+"hcp"
+)
 .value
 ||
 0;
@@ -1837,14 +2330,18 @@ document
 const team=
 
 document
-.getElementById("team")
+.getElementById(
+"team"
+)
 .value;
 
 
 const group=
 
 document
-.getElementById("group")
+.getElementById(
+"group"
+)
 .value;
 
 
@@ -1923,21 +2420,15 @@ Math.random()
 name,
 
 handicap:
-String(handicap),
+String(
+handicap
+),
 
 team,
 
 group
 
 };
-
-
-data.players.push(
-player
-);
-
-
-render();
 
 
 try{
@@ -1972,12 +2463,20 @@ player.group
 
 );
 
+
+data.players.push(
+player
+);
+
+
+render();
+
 }
 
 catch(error){
 
 alert(
-"Player could not be saved online."
+"Player could not be saved. Make sure you are signed in as admin."
 );
 
 }
@@ -1986,6 +2485,11 @@ alert(
 
 
 async function deletePlayer(id){
+
+if(!isAdmin){
+return;
+}
+
 
 if(
 !confirm(
@@ -1996,21 +2500,6 @@ if(
 return;
 
 }
-
-
-data.players=
-
-data.players.filter(
-
-player=>
-
-String(player.id)!==
-String(id)
-
-);
-
-
-render();
 
 
 try{
@@ -2025,12 +2514,24 @@ id:id
 
 );
 
+
+data.players=
+
+data.players.filter(
+player=>
+String(player.id)!==
+String(id)
+);
+
+
+render();
+
 }
 
-catch(error){
+catch{
 
 alert(
-"Player could not be deleted online."
+"Player could not be deleted."
 );
 
 }
@@ -2038,9 +2539,9 @@ alert(
 }
 
 
-/* ==================================
+/* =====================================
    MATCHUPS
-================================== */
+===================================== */
 
 function setupMatches(){
 
@@ -2049,17 +2550,24 @@ roundInfo();
 
 
 if(
-!data.matchups[currentRound]
+!data.matchups[
+currentRound
+]
 ){
 
-data.matchups[currentRound]=[];
+data.matchups[
+currentRound
+]=[];
 
 }
 
 
 while(
 
-data.matchups[currentRound].length
+data.matchups[
+currentRound
+]
+.length
 <
 round.matches
 
@@ -2067,12 +2575,18 @@ round.matches
 
 const index=
 
-data.matchups[currentRound]
+data.matchups[
+currentRound
+]
 .length;
 
 
-data.matchups[currentRound]
-[index]={
+data.matchups[
+currentRound
+][
+index
+]
+={
 
 id:
 "R"+
@@ -2110,7 +2624,6 @@ return`
 Select Player
 </option>
 
-
 ${data.players
 
 .filter(
@@ -2122,6 +2635,7 @@ player.team===team
 player=>`
 
 <option
+
 value="${player.id}"
 
 ${
@@ -2162,7 +2676,6 @@ function matchupPage(){
 const round=
 roundInfo();
 
-
 const matches=
 setupMatches();
 
@@ -2171,9 +2684,7 @@ return`
 
 <div class="card">
 
-
 <div class="roundnav">
-
 
 <div>
 
@@ -2187,7 +2698,6 @@ ${round.course}
 
 </h2>
 
-
 <div class="muted">
 
 ${round.format}
@@ -2196,81 +2706,81 @@ ${round.format}
 
 </div>
 
-
 <div class="roundbuttons">
 
-
 <button
-
 onclick="
 currentRound=
 Math.max(
 1,
 currentRound-1
 );
-
 render();
 ">
-
 ←
-
 </button>
 
-
 <button
-
 onclick="
 currentRound=
 Math.min(
 4,
 currentRound+1
 );
-
 render();
 ">
-
 →
-
 </button>
 
+</div>
 
 </div>
 
 
+${
+!isAdmin
+?
+`
+
+<div class="viewer">
+
+Matchups are read-only.
+
 </div>
 
-
-<div class="notice">
-
-A/B groups do not restrict Ryder Cup matchups.
-
-Any Hacker can play any Shanker.
-
-</div>
+`
+:
+""
+}
 
 
 ${matches.map(
 (match,index)=>
-
 matchupCard(
 round,
 match,
 index
 )
-
 ).join("")}
 
 
+${
+isAdmin
+?
+`
+
 <button
 class="primary"
-onclick="
-validateRound()
-">
+onclick="validateRound()">
 
 Validate Matchups
 
 </button>
 
+`
+:
+""
+}
 
 </div>
 
@@ -2288,10 +2798,8 @@ index
 const numberNeeded=
 
 round.type==="singles"
-
 ?
 1
-
 :
 2;
 
@@ -2318,12 +2826,8 @@ match.shankers.push("");
 }
 
 
-let hackerBoxes=
-"";
-
-
-let shankerBoxes=
-"";
+let hackerBoxes="";
+let shankerBoxes="";
 
 
 for(
@@ -2331,6 +2835,8 @@ let slot=0;
 slot<numberNeeded;
 slot++
 ){
+
+if(isAdmin){
 
 hackerBoxes+=`
 
@@ -2375,40 +2881,70 @@ match.shankers[slot]
 
 `;
 
+}else{
+
+const hacker=
+getPlayer(
+match.hackers[slot]
+);
+
+const shanker=
+getPlayer(
+match.shankers[slot]
+);
+
+
+hackerBoxes+=`
+
+<div class="pill">
+
+${
+hacker
+?
+hacker.name+
+" • HCP "+
+hacker.handicap
+:
+"Not Set"
 }
 
+</div>
 
-const selected=[
+`;
 
-...match.hackers,
 
-...match.shankers
+shankerBoxes+=`
 
-]
+<div class="pill">
 
-.map(
-getPlayer
-)
+${
+shanker
+?
+shanker.name+
+" • HCP "+
+shanker.handicap
+:
+"Not Set"
+}
 
-.filter(
-Boolean
-);
+</div>
+
+`;
+
+}
+
+}
 
 
 return`
 
 <div class="match">
 
-
 <h3>
-
 Match ${index+1}
-
 </h3>
 
-
 <div class="players">
-
 
 <div>
 
@@ -2420,7 +2956,6 @@ ${hackerBoxes}
 
 </div>
 
-
 <div>
 
 <h3>
@@ -2431,36 +2966,7 @@ ${shankerBoxes}
 
 </div>
 
-
 </div>
-
-
-<div>
-
-
-${selected.map(
-player=>`
-
-<span class="pill">
-
-${player.name}
-
-•
-
-HCP ${player.handicap}
-
-•
-
-Group ${player.group}
-
-</span>
-
-`
-).join("")}
-
-
-</div>
-
 
 </div>
 
@@ -2475,6 +2981,11 @@ side,
 slot,
 playerId
 ){
+
+if(!isAdmin){
+return;
+}
+
 
 const match=
 
@@ -2528,10 +3039,10 @@ match.shankers
 
 }
 
-catch(error){
+catch{
 
 alert(
-"Matchup could not be saved online."
+"Matchup could not be saved."
 );
 
 }
@@ -2540,6 +3051,11 @@ alert(
 
 
 function validateRound(){
+
+if(!isAdmin){
+return;
+}
+
 
 const round=
 roundInfo();
@@ -2566,10 +3082,8 @@ matches[index];
 const required=
 
 round.type==="singles"
-
 ?
 1
-
 :
 2;
 
@@ -2655,9 +3169,9 @@ currentRound+
 }
 
 
-/* ==================================
+/* =====================================
    SCORES
-================================== */
+===================================== */
 
 function getScore(
 matchId
@@ -2710,147 +3224,6 @@ matchId
 }
 
 
-function scoringPage(){
-
-const round=
-roundInfo();
-
-
-const matches=
-setupMatches();
-
-
-return`
-
-<div class="card">
-
-
-<div class="roundnav">
-
-
-<div>
-
-<h2>
-
-Round ${round.id}
-
-Scoring
-
-</h2>
-
-
-<div class="muted">
-
-${round.course}
-
-•
-
-${round.format}
-
-</div>
-
-
-</div>
-
-
-<div class="roundbuttons">
-
-
-<button
-onclick="
-currentRound=
-Math.max(
-1,
-currentRound-1
-);
-
-render();
-">
-
-←
-
-</button>
-
-
-<button
-onclick="
-currentRound=
-Math.min(
-4,
-currentRound+1
-);
-
-render();
-">
-
-→
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-${
-round.type==="scramble"
-
-?
-
-`
-
-<div class="notice">
-
-Round 3 is a two-man scramble.
-
-Enter one team score for each side.
-
-No skins this round.
-
-</div>
-
-`
-
-:
-
-`
-
-<div class="notice">
-
-Enter gross hole scores.
-
-Scores are shared with everyone.
-
-The 18-hole total is calculated automatically and does NOT count toward skins.
-
-</div>
-
-`
-
-}
-
-
-${matches.map(
-(match,index)=>
-
-scoreCard(
-round,
-match,
-index
-)
-
-).join("")}
-
-
-</div>
-
-`;
-
-}
-
-
 function playerTotal(
 score,
 playerId
@@ -2890,12 +3263,128 @@ entered++;
 
 
 return entered===18
-
 ?
 total
-
 :
 "—";
+
+}
+
+
+function scoringPage(){
+
+const round=
+roundInfo();
+
+const matches=
+setupMatches();
+
+
+return`
+
+<div class="card">
+
+<div class="roundnav">
+
+<div>
+
+<h2>
+
+Round ${round.id}
+
+Scoring
+
+</h2>
+
+<div class="muted">
+
+${round.course}
+
+•
+
+${round.format}
+
+</div>
+
+</div>
+
+<div class="roundbuttons">
+
+<button
+onclick="
+currentRound=
+Math.max(
+1,
+currentRound-1
+);
+render();
+">
+←
+</button>
+
+<button
+onclick="
+currentRound=
+Math.min(
+4,
+currentRound+1
+);
+render();
+">
+→
+</button>
+
+</div>
+
+</div>
+
+
+${
+isAdmin
+
+?
+
+`
+
+<div class="notice">
+
+Admin scoring mode.
+
+Scores save to the shared tournament.
+
+</div>
+
+`
+
+:
+
+`
+
+<div class="viewer">
+
+Scores are read-only.
+
+Only the administrator can enter or change scores.
+
+</div>
+
+`
+
+}
+
+
+${matches.map(
+(match,index)=>
+scoreCard(
+round,
+match,
+index
+)
+).join("")}
+
+</div>
+
+`;
 
 }
 
@@ -2919,11 +3408,9 @@ const players=[
 ...match.shankers
 
 ]
-
 .map(
 getPlayer
 )
-
 .filter(
 Boolean
 );
@@ -2932,10 +3419,8 @@ Boolean
 const required=
 
 round.type==="singles"
-
 ?
 2
-
 :
 4;
 
@@ -2954,7 +3439,7 @@ Match ${index+1}
 
 <div class="notice">
 
-Set this matchup first.
+Matchup not set.
 
 </div>
 
@@ -3004,7 +3489,9 @@ hole++
 const scores=
 score.holes[
 hole
-] || {};
+]
+||
+{};
 
 
 rows+=`
@@ -3015,13 +3502,14 @@ rows+=`
 ${hole+1}
 </td>
 
-
 <td>
 
 <input
 type="number"
 min="1"
 max="20"
+
+${isAdmin ? "" : "disabled"}
 
 value="${
 scores.H ?? ""
@@ -3040,13 +3528,14 @@ this.value
 
 </td>
 
-
 <td>
 
 <input
 type="number"
 min="1"
 max="20"
+
+${isAdmin ? "" : "disabled"}
 
 value="${
 scores.S ?? ""
@@ -3065,7 +3554,6 @@ this.value
 
 </td>
 
-
 </tr>
 
 `;
@@ -3082,21 +3570,24 @@ totals=`
 </td>
 
 <td>
-${playerTotal(score,"H")}
+${playerTotal(
+score,
+"H"
+)}
 </td>
 
 <td>
-${playerTotal(score,"S")}
+${playerTotal(
+score,
+"S"
+)}
 </td>
 
 </tr>
 
 `;
 
-}
-
-
-else{
+}else{
 
 header=`
 
@@ -3105,7 +3596,6 @@ header=`
 <th>
 Hole
 </th>
-
 
 ${players.map(
 player=>`
@@ -3131,7 +3621,6 @@ Group ${player.group}
 `
 ).join("")}
 
-
 </tr>
 
 `;
@@ -3146,7 +3635,9 @@ hole++
 const scores=
 score.holes[
 hole
-] || {};
+]
+||
+{};
 
 
 rows+=`
@@ -3156,7 +3647,6 @@ rows+=`
 <td>
 ${hole+1}
 </td>
-
 
 ${players.map(
 player=>`
@@ -3168,10 +3658,14 @@ type="number"
 min="1"
 max="20"
 
+${isAdmin ? "" : "disabled"}
+
 value="${
 scores[
 player.id
-] ?? ""
+]
+??
+""
 }"
 
 oninput="
@@ -3190,7 +3684,6 @@ this.value
 `
 ).join("")}
 
-
 </tr>
 
 `;
@@ -3206,7 +3699,6 @@ totals=`
 18-Hole Total
 </td>
 
-
 ${players.map(
 player=>`
 
@@ -3221,7 +3713,6 @@ player.id
 
 `
 ).join("")}
-
 
 </tr>
 
@@ -3239,7 +3730,6 @@ match.id
 data.results[
 match.id
 ].winner
-
 :
 "";
 
@@ -3307,20 +3797,98 @@ MATCH HALVED — ½ POINT EACH
 }
 
 
+const resultControls=
+
+isAdmin
+
+?
+
+`
+
+<div style="margin-top:15px">
+
+<label>
+Official Match Result
+</label>
+
+<select
+id="result-${match.id}">
+
+<option value="">
+Select Result
+</option>
+
+<option
+value="Hackers"
+${
+savedResult==="Hackers"
+?
+"selected"
+:
+""
+}>
+Hackers
+</option>
+
+<option
+value="Shankers"
+${
+savedResult==="Shankers"
+?
+"selected"
+:
+""
+}>
+Shankers
+</option>
+
+<option
+value="Halved"
+${
+savedResult==="Halved"
+?
+"selected"
+:
+""
+}>
+Halved
+</option>
+
+</select>
+
+</div>
+
+<button
+class="good"
+style="margin-top:10px"
+
+onclick="
+saveMatchResult(
+${currentRound},
+${index+1},
+'${match.id}'
+)
+">
+
+Save Match Result
+
+</button>
+
+`
+
+:
+"";
+
+
 return`
 
 <div class="match">
 
-
 <h3>
-
 Match ${index+1}
-
 </h3>
 
-
 <div>
-
 
 ${players.map(
 player=>`
@@ -3342,9 +3910,7 @@ Group ${player.group}
 `
 ).join("")}
 
-
 </div>
-
 
 <div class="tablewrap">
 
@@ -3360,106 +3926,9 @@ ${totals}
 
 </div>
 
-
-<div style="margin-top:15px">
-
-<label>
-Official Match Result
-</label>
-
-
-<select
-id="result-${match.id}">
-
-<option value="">
-Select Result
-</option>
-
-
-<option
-value="Hackers"
-
-${
-savedResult==="Hackers"
-
-?
-"selected"
-
-:
-""
-}
-
->
-
-Hackers
-
-</option>
-
-
-<option
-value="Shankers"
-
-${
-savedResult==="Shankers"
-
-?
-"selected"
-
-:
-""
-}
-
->
-
-Shankers
-
-</option>
-
-
-<option
-value="Halved"
-
-${
-savedResult==="Halved"
-
-?
-"selected"
-
-:
-""
-}
-
->
-
-Halved
-
-</option>
-
-
-</select>
-
-</div>
-
-
-<button
-class="good"
-style="margin-top:10px"
-
-onclick="
-saveMatchResult(
-${currentRound},
-${index+1},
-'${match.id}'
-)
-">
-
-Save Match Result
-
-</button>
-
+${resultControls}
 
 ${banner}
-
 
 </div>
 
@@ -3468,9 +3937,9 @@ ${banner}
 }
 
 
-/* ==================================
+/* =====================================
    SAVE SCORES
-================================== */
+===================================== */
 
 function queueScore(
 round,
@@ -3480,6 +3949,11 @@ holeIndex,
 scorer,
 value
 ){
+
+if(!isAdmin){
+return;
+}
+
 
 const score=
 getScore(
@@ -3495,12 +3969,12 @@ scorer
 =
 
 value===""
-
 ?
 ""
-
 :
-Number(value);
+Number(
+value
+);
 
 
 const timerKey=
@@ -3540,7 +4014,7 @@ value
 
 },
 
-400
+350
 
 );
 
@@ -3574,10 +4048,14 @@ hole:
 hole,
 
 scorer_key:
-String(scorer),
+String(
+scorer
+),
 
 score:
-Number(value)
+Number(
+value
+)
 
 },
 
@@ -3596,11 +4074,14 @@ scorer,
 value
 ){
 
+if(!isAdmin){
+return;
+}
+
+
 try{
 
-if(
-value===""
-){
+if(value===""){
 
 await deleteRows(
 
@@ -3624,9 +4105,7 @@ scorer
 
 );
 
-}
-
-else{
+}else{
 
 await saveScoreDirect(
 
@@ -3634,7 +4113,9 @@ round,
 matchNo,
 hole,
 scorer,
-Number(value)
+Number(
+value
+)
 
 );
 
@@ -3644,22 +4125,35 @@ Number(value)
 
 catch(error){
 
-console.error(error);
+console.error(
+error
+);
 
 }
 
 }
 
 
-/* ==================================
-   SAVE MATCH RESULT
-================================== */
+/* =====================================
+   MATCH RESULT
+===================================== */
 
 async function saveMatchResult(
 round,
 matchNo,
 matchId
 ){
+
+if(!isAdmin){
+
+alert(
+"Admin login required."
+);
+
+return;
+
+}
+
 
 const box=
 
@@ -3684,18 +4178,6 @@ return;
 
 const winner=
 box.value;
-
-
-data.results[
-matchId
-]={
-
-winner
-
-};
-
-
-render();
 
 
 try{
@@ -3724,12 +4206,25 @@ winner
 
 );
 
+
+data.results[
+matchId
+]={
+
+winner:
+winner
+
+};
+
+
+render();
+
 }
 
-catch(error){
+catch{
 
 alert(
-"Match result could not be saved online."
+"Match result could not be saved."
 );
 
 }
@@ -3737,9 +4232,9 @@ alert(
 }
 
 
-/* ==================================
+/* =====================================
    SKINS
-================================== */
+===================================== */
 
 function getSkinResults(
 roundId,
@@ -3768,7 +4263,9 @@ const matches=
 
 data.matchups[
 roundId
-] || [];
+]
+||
+[];
 
 
 const results=[];
@@ -3780,8 +4277,7 @@ hole<18;
 hole++
 ){
 
-const entered=
-[];
+const entered=[];
 
 
 matches.forEach(
@@ -3808,7 +4304,9 @@ const scores=
 
 scoreData.holes[
 hole
-] || {};
+]
+||
+{};
 
 
 const playerIds=[
@@ -3931,9 +4429,7 @@ entered.length
 
 });
 
-}
-
-else{
+}else{
 
 results.push({
 
@@ -3995,10 +4491,14 @@ result.winner.id
 
 
 if(
-!counts[id]
+!counts[
+id
+]
 ){
 
-counts[id]={
+counts[
+id
+]={
 
 name:
 result.winner.name,
@@ -4011,7 +4511,9 @@ count:
 }
 
 
-counts[id].count++;
+counts[
+id
+].count++;
 
 }
 );
@@ -4061,13 +4563,9 @@ return`
 
 <div class="card">
 
-
 <h2>
-
 Group ${group}
-
 </h2>
-
 
 <div class="skinCount">
 
@@ -4085,7 +4583,6 @@ summary.length
 <h3>
 Skin Leaders
 </h3>
-
 
 ${summary.map(
 item=>`
@@ -4218,7 +4715,6 @@ Hole ${result.hole}
 }
 ).join("")}
 
-
 </div>
 
 `;
@@ -4244,14 +4740,13 @@ return`
 Skins
 </h2>
 
-
 <div class="notice">
 
 Gross hole scores only.
 
 Group A and Group B are separate.
 
-There is no minimum number of players required.
+No minimum number of entered players is required.
 
 Lowest entered gross score wins.
 
@@ -4259,7 +4754,7 @@ A tie for low means no skin.
 
 No carryovers.
 
-18-hole totals never count toward skins.
+18-hole totals do not qualify for skins.
 
 Round 3 has no skins.
 
@@ -4311,13 +4806,15 @@ round,
 }
 
 
-/* ==================================
+/* =====================================
    RENDER
-================================== */
+===================================== */
 
 function render(){
 
 drawNav();
+
+drawConnectionStatus();
 
 
 document
@@ -4327,55 +4824,43 @@ document
 .innerHTML=
 
 page==="dashboard"
-
 ?
 dashboard()
 
 :
 
 page==="players"
-
 ?
 playersPage()
 
 :
 
 page==="matchups"
-
 ?
 matchupPage()
 
 :
 
 page==="scoring"
-
 ?
 scoringPage()
 
 :
 
-skinsPage();
+page==="skins"
+?
+skinsPage()
+
+:
+
+loginPage();
 
 }
 
 
-/* ==================================
-   START APP
-================================== */
-
-async function start(){
-
-drawConnectionStatus();
-
-await loadSharedData();
-
-}
-
-
-/*
-Refresh shared data every 10 seconds
-when nobody is actively typing.
-*/
+/* =====================================
+   REFRESH
+===================================== */
 
 setInterval(
 
@@ -4409,6 +4894,27 @@ true
 10000
 
 );
+
+
+/* =====================================
+   START
+===================================== */
+
+async function start(){
+
+loadStoredSession();
+
+await refreshSessionIfNeeded();
+
+await checkAdmin();
+
+await loadSharedData(
+false
+);
+
+render();
+
+}
 
 
 start();
