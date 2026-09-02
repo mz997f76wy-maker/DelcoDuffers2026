@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
 
-<title>Delco Duffers 2026</title>
+<title>Hackers vs Shankers Cup</title>
 
 <style>
 *{box-sizing:border-box}
@@ -333,6 +333,14 @@ font-size:18px;
 font-weight:bold;
 }
 
+.editBox{
+background:#f9fafb;
+border:1px solid #d1d5db;
+padding:14px;
+border-radius:12px;
+margin-bottom:15px;
+}
+
 @media(max-width:650px){
 
 .players{
@@ -378,7 +386,6 @@ Loading tournament…
 </div>
 
 </main>
-
 
 <script>
 
@@ -457,6 +464,8 @@ let page="dashboard";
 let currentRound=1;
 
 let saveTimers={};
+
+let editingPlayerId=null;
 
 
 /* =====================================
@@ -1132,6 +1141,8 @@ null
 
 isAdmin=false;
 
+editingPlayerId=null;
+
 page=
 "dashboard";
 
@@ -1359,7 +1370,7 @@ throw new Error(
 
 
 /* =====================================
-   LOAD SHARED DATA
+   LOAD DATA
 ===================================== */
 
 async function loadSharedData(
@@ -1680,42 +1691,6 @@ currentRound-1
 }
 
 
-function parseMatchId(
-matchId
-){
-
-const match=
-
-String(matchId)
-.match(
-/R(\d+)M(\d+)/
-);
-
-
-if(!match){
-
-return null;
-
-}
-
-
-return{
-
-round:
-Number(
-match[1]
-),
-
-match:
-Number(
-match[2]
-)
-
-};
-
-}
-
-
 /* =====================================
    NAV
 ===================================== */
@@ -1774,7 +1749,7 @@ ${tab[1]}
 
 
 /* =====================================
-   RYDER CUP POINTS
+   POINTS
 ===================================== */
 
 function teamPoints(){
@@ -2067,6 +2042,132 @@ round.skins
 
 function playersPage(){
 
+let editSection="";
+
+
+if(
+isAdmin &&
+editingPlayerId
+){
+
+const player=
+getPlayer(
+editingPlayerId
+);
+
+
+if(player){
+
+editSection=`
+
+<div class="card editBox">
+
+<h2>
+Edit Player
+</h2>
+
+<div class="row">
+
+<div class="field">
+
+<label>
+Player Name
+</label>
+
+<input
+id="editName"
+value="${player.name}">
+
+</div>
+
+<div class="field">
+
+<label>
+Handicap
+</label>
+
+<input
+id="editHcp"
+type="number"
+step=".1"
+inputmode="decimal"
+value="${player.handicap}">
+
+</div>
+
+<div class="field">
+
+<label>
+Team
+</label>
+
+<select id="editTeam">
+
+<option
+value="Hackers"
+${player.team==="Hackers" ? "selected" : ""}>
+Hackers
+</option>
+
+<option
+value="Shankers"
+${player.team==="Shankers" ? "selected" : ""}>
+Shankers
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+Skins Group
+</label>
+
+<select id="editGroup">
+
+<option
+value="A"
+${player.group==="A" ? "selected" : ""}>
+Group A
+</option>
+
+<option
+value="B"
+${player.group==="B" ? "selected" : ""}>
+Group B
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+<button
+class="good"
+onclick="savePlayerEdit()">
+Save Player
+</button>
+
+<button
+onclick="
+editingPlayerId=null;
+render();
+">
+Cancel
+</button>
+
+</div>
+
+`;
+
+}
+
+}
+
+
 const addBox=
 
 isAdmin
@@ -2104,7 +2205,8 @@ Handicap
 <input
 id="hcp"
 type="number"
-step=".1">
+step=".1"
+inputmode="decimal">
 
 </div>
 
@@ -2178,6 +2280,8 @@ Only the administrator can make changes.
 
 
 return`
+
+${editSection}
 
 ${addBox}
 
@@ -2258,8 +2362,19 @@ isAdmin
 <td>
 
 <button
-class="danger"
+class="blue"
+onclick="
+startPlayerEdit(
+'${player.id}'
+)
+">
 
+Edit
+
+</button>
+
+<button
+class="danger"
 onclick="
 deletePlayer(
 '${player.id}'
@@ -2289,6 +2404,219 @@ Delete
 </div>
 
 `;
+
+}
+
+
+function startPlayerEdit(id){
+
+if(!isAdmin){
+return;
+}
+
+
+editingPlayerId=
+id;
+
+
+render();
+
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+
+async function savePlayerEdit(){
+
+if(
+!isAdmin ||
+!editingPlayerId
+){
+
+return;
+
+}
+
+
+const player=
+getPlayer(
+editingPlayerId
+);
+
+
+if(!player){
+return;
+}
+
+
+const name=
+document
+.getElementById(
+"editName"
+)
+.value
+.trim();
+
+
+const handicap=
+document
+.getElementById(
+"editHcp"
+)
+.value
+||
+0;
+
+
+const team=
+document
+.getElementById(
+"editTeam"
+)
+.value;
+
+
+const group=
+document
+.getElementById(
+"editGroup"
+)
+.value;
+
+
+if(!name){
+
+alert(
+"Enter a player name."
+);
+
+return;
+
+}
+
+
+if(
+team!==player.team
+){
+
+const teamCount=
+
+data.players.filter(
+p=>
+p.team===team &&
+String(p.id)!==
+String(player.id)
+).length;
+
+
+if(teamCount>=16){
+
+alert(
+team+
+" already has 16 players."
+);
+
+return;
+
+}
+
+}
+
+
+if(
+group!==player.group
+){
+
+const groupCount=
+
+data.players.filter(
+p=>
+p.group===group &&
+String(p.id)!==
+String(player.id)
+).length;
+
+
+if(groupCount>=16){
+
+alert(
+"Group "+
+group+
+" already has 16 players."
+);
+
+return;
+
+}
+
+}
+
+
+try{
+
+await upsert(
+
+"tournament_players",
+
+{
+
+tournament_id:
+TOURNAMENT_ID,
+
+id:
+player.id,
+
+name:
+name,
+
+handicap:
+String(handicap),
+
+team:
+team,
+
+group_name:
+group
+
+},
+
+"tournament_id,id"
+
+);
+
+
+player.name=
+name;
+
+player.handicap=
+String(handicap);
+
+player.team=
+team;
+
+player.group=
+group;
+
+
+editingPlayerId=
+null;
+
+
+render();
+
+}
+
+catch(error){
+
+alert(
+"Player changes could not be saved."
+);
+
+}
 
 }
 
@@ -2476,7 +2804,7 @@ render();
 catch(error){
 
 alert(
-"Player could not be saved. Make sure you are signed in as admin."
+"Player could not be saved."
 );
 
 }
@@ -3506,6 +3834,8 @@ ${hole+1}
 
 <input
 type="number"
+inputmode="numeric"
+pattern="[0-9]*"
 min="1"
 max="20"
 
@@ -3532,6 +3862,8 @@ this.value
 
 <input
 type="number"
+inputmode="numeric"
+pattern="[0-9]*"
 min="1"
 max="20"
 
@@ -3655,6 +3987,8 @@ player=>`
 
 <input
 type="number"
+inputmode="numeric"
+pattern="[0-9]*"
 min="1"
 max="20"
 
@@ -4754,7 +5088,7 @@ A tie for low means no skin.
 
 No carryovers.
 
-18-hole totals do not qualify for skins.
+18-hole totals do not count toward skins.
 
 Round 3 has no skins.
 
@@ -4859,7 +5193,7 @@ loginPage();
 
 
 /* =====================================
-   REFRESH
+   AUTO REFRESH
 ===================================== */
 
 setInterval(
