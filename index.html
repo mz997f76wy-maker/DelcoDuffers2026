@@ -169,12 +169,10 @@ border-radius:14px;
 padding:16px;
 }
 
-/* HACKERS = RED */
 .hackers{
 background:#dc2626;
 }
 
-/* SHANKERS = BLUE */
 .shankers{
 background:#2563eb;
 }
@@ -298,13 +296,11 @@ font-weight:900;
 text-align:center;
 }
 
-/* HACKERS RESULT = RED */
 .resultHackers{
 background:#fee2e2;
 color:#b91c1c;
 }
 
-/* SHANKERS RESULT = BLUE */
 .resultShankers{
 background:#dbeafe;
 color:#1d4ed8;
@@ -518,17 +514,11 @@ results:{}
 };
 
 let session=null;
-
 let isAdmin=false;
-
 let connected=false;
-
 let page="dashboard";
-
 let currentRound=1;
-
 let saveTimers={};
-
 let editingPlayerId=null;
 
 
@@ -4209,7 +4199,7 @@ ${index+1},
 )
 ">
 
-Save Match Result
+Save / Reset Match Result
 
 </button>
 
@@ -4501,14 +4491,7 @@ document.getElementById(
 );
 
 
-if(
-!box ||
-!box.value
-){
-
-alert(
-"Pick Hackers, Shankers, or Halved."
-);
+if(!box){
 
 return;
 
@@ -4520,6 +4503,43 @@ box.value;
 
 
 try{
+
+
+/* RESET RESULT */
+
+if(winner===""){
+
+await deleteRows(
+
+"tournament_results",
+
+{
+
+round_no:
+round,
+
+match_no:
+matchNo
+
+}
+
+);
+
+
+delete data.results[
+matchId
+];
+
+
+render();
+
+
+return;
+
+}
+
+
+/* SAVE RESULT */
 
 await upsert(
 
@@ -4560,10 +4580,14 @@ render();
 
 }
 
-catch{
+catch(error){
+
+console.error(
+error
+);
 
 alert(
-"Match result could not be saved."
+"Match result could not be saved or reset."
 );
 
 }
@@ -5241,4 +5265,4 @@ start();
 </script>
 
 </body>
-</html>
+</html> 
