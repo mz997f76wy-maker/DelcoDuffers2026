@@ -4,473 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
-
 <title>Delco Duffers 2026</title>
-
 <style>
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
+header{background:#111827;color:white;text-align:center;padding:12px 12px 16px}
+header h1{margin:0 0 5px;font-size:28px}
+.logoBox{width:280px;height:90px;margin:0 auto 8px;overflow:hidden;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center}
+.logo{width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.25)}
+.headerMeta{font-size:18px}
+.captains{font-size:14px;margin-top:5px;opacity:.9}
+main{max-width:1100px;margin:auto;padding:12px}
+.nav{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:15px;cursor:pointer}
+.primary{background:#111827;color:white}
+.good{background:#d1fae5;color:#065f46}
+.danger{background:#fee2e2;color:#991b1b}
+.blue{background:#dbeafe;color:#1d4ed8}
+.card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px #00000010}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.field{flex:1;min-width:130px}
+label{display:block;font-size:12px;font-weight:bold;color:#6b7280;margin-bottom:4px}
+input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:16px;background:white}
+input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
+.match{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
+.players{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pill{display:inline-block;background:#f3f4f6;padding:5px 8px;border-radius:99px;font-size:12px;margin:2px}
+.scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.team{color:white;border-radius:14px;padding:16px}
+.hackers{background:#dc2626}
+.shankers{background:#2563eb}
+.big{font-size:38px;font-weight:900}
+.muted{color:#6b7280}
+.notice{background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:11px;border-radius:9px;margin:10px 0}
+.shared{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin-bottom:12px}
+.viewer{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;padding:10px;border-radius:9px;margin-bottom:12px}
+.admin{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin-bottom:12px}
+.offline{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:10px;border-radius:9px;margin-bottom:12px}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 
-body{
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-margin:0;
-background:#f3f4f6;
-color:#111827;
-}
-
-header{
-background:#111827;
-color:white;
+.scoretable{min-width:1280px}
+.scoretable th,.scoretable td{
 text-align:center;
-padding:12px 12px 16px;
-}
-
-header h1{
-margin:0 0 5px;
-font-size:28px;
-}
-
-.logoBox{
-width:280px;
-height:90px;
-margin:0 auto 8px;
-overflow:hidden;
-border-radius:10px;
-background:white;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-.logo{
-width:100%;
-height:100%;
-object-fit:cover;
-object-position:center;
-transform:scale(1.25);
-}
-
-main{
-max-width:1100px;
-margin:auto;
-padding:12px;
-}
-
-.nav{
-display:flex;
-gap:7px;
-overflow-x:auto;
-margin-bottom:12px;
-}
-
-button{
-border:0;
-border-radius:10px;
-padding:11px 14px;
-font-weight:800;
-font-size:15px;
-cursor:pointer;
-}
-
-.primary{
-background:#111827;
-color:white;
-}
-
-.good{
-background:#d1fae5;
-color:#065f46;
-}
-
-.danger{
-background:#fee2e2;
-color:#991b1b;
-}
-
-.blue{
-background:#dbeafe;
-color:#1d4ed8;
-}
-
-.card{
-background:white;
-border-radius:16px;
-padding:16px;
-margin-bottom:12px;
-box-shadow:0 2px 10px #00000010;
-}
-
-.row{
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-align-items:center;
-}
-
-.field{
-flex:1;
-min-width:130px;
-}
-
-label{
-display:block;
-font-size:12px;
-font-weight:bold;
-color:#6b7280;
-margin-bottom:4px;
-}
-
-input,
-select{
-width:100%;
-padding:11px;
 border:1px solid #d1d5db;
-border-radius:9px;
-font-size:16px;
-background:white;
-}
-
-input:disabled,
-select:disabled{
-background:#f3f4f6;
-color:#374151;
-opacity:1;
-}
-
-.match{
-border:1px solid #e5e7eb;
-border-radius:14px;
-padding:14px;
-margin:12px 0;
-}
-
-.players{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
-}
-
-.pill{
-display:inline-block;
-background:#f3f4f6;
-padding:5px 8px;
-border-radius:99px;
-font-size:12px;
-margin:2px;
-}
-
-.scoreboard{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-}
-
-.team{
-color:white;
-border-radius:14px;
-padding:16px;
-}
-
-.hackers{
-background:#dc2626;
-}
-
-.shankers{
-background:#2563eb;
-}
-
-.captain{
-font-size:13px;
-font-weight:700;
-margin-top:3px;
-opacity:.9;
-}
-
-.big{
-font-size:38px;
-font-weight:900;
-}
-
-.muted{
-color:#6b7280;
-}
-
-.notice{
-background:#fffbeb;
-color:#92400e;
-border:1px solid #fde68a;
-padding:11px;
-border-radius:9px;
-margin:10px 0;
-}
-
-.shared{
-background:#ecfdf5;
-color:#065f46;
-border:1px solid #6ee7b7;
-padding:10px;
-border-radius:9px;
-margin-bottom:12px;
-}
-
-.viewer{
-background:#eff6ff;
-color:#1e40af;
-border:1px solid #93c5fd;
-padding:10px;
-border-radius:9px;
-margin-bottom:12px;
-}
-
-.admin{
-background:#ecfdf5;
-color:#065f46;
-border:1px solid #6ee7b7;
-padding:10px;
-border-radius:9px;
-margin-bottom:12px;
-}
-
-.offline{
-background:#fee2e2;
-color:#991b1b;
-border:1px solid #fca5a5;
-padding:10px;
-border-radius:9px;
-margin-bottom:12px;
-}
-
-.tablewrap{
-overflow-x:auto;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,
-td{
-padding:8px;
-border-bottom:1px solid #e5e7eb;
-}
-
-.scoretable{
-min-width:900px;
-}
-
-.scoretable th,
-.scoretable td{
-text-align:center;
-border:1px solid #e5e7eb;
 padding:5px;
+white-space:nowrap
 }
-
-.scoretable th:first-child,
-.scoretable td:first-child{
+.scoretable th:first-child,.scoretable td:first-child{
 position:sticky;
 left:0;
 background:white;
-z-index:2;
+z-index:3;
+min-width:155px;
+text-align:left
 }
-
 .scoretable input{
-width:55px;
+width:46px;
 text-align:center;
-padding:8px;
+padding:8px 3px;
+border-radius:6px
 }
+.coursePar td{font-weight:900;background:#7f1d1d;color:white}
+.coursePar td:first-child{background:#7f1d1d}
+.courseHcp td{font-weight:800;background:#f3f4f6}
+.courseHcp td:first-child{background:#f3f4f6}
+.hackerScoreRow td:first-child{background:#fee2e2;color:#991b1b;font-weight:900}
+.shankerScoreRow td:first-child{background:#dbeafe;color:#1d4ed8;font-weight:900}
+.summaryCell{font-weight:900;background:#f3f4f6}
+.scoreHint{font-size:12px;color:#6b7280;margin:6px 0 10px}
+.resultOnly{max-width:650px;margin:14px auto}
 
-.totalRow{
-font-weight:900;
-background:#f9fafb;
-}
-
-.roundnav{
-display:flex;
-justify-content:space-between;
-gap:10px;
-align-items:center;
-}
-
-.roundbuttons{
-display:flex;
-gap:6px;
-}
-
-.resultBanner{
-margin-top:12px;
-padding:14px;
-border-radius:10px;
-font-size:20px;
-font-weight:900;
-text-align:center;
-}
-
-.resultHackers{
-background:#fee2e2;
-color:#b91c1c;
-}
-
-.resultShankers{
-background:#dbeafe;
-color:#1d4ed8;
-}
-
-.resultHalved{
-background:#e5e7eb;
-color:#374151;
-}
-
-.skinWinner{
-background:#ecfdf5;
-border:1px solid #6ee7b7;
-padding:10px;
-border-radius:9px;
-margin:6px 0;
-}
-
-.skinTie{
-background:#fff7ed;
-border:1px solid #fdba74;
-padding:10px;
-border-radius:9px;
-margin:6px 0;
-}
-
-.skinNone{
-background:#f9fafb;
-border:1px solid #e5e7eb;
-padding:10px;
-border-radius:9px;
-margin:6px 0;
-color:#6b7280;
-}
-
-.skinCount{
-font-size:22px;
-font-weight:900;
-}
-
-.loginBox{
-max-width:500px;
-margin:auto;
-}
-
-.loading{
-text-align:center;
-padding:40px;
-font-size:18px;
-font-weight:bold;
-}
-
-.editBox{
-background:#f9fafb;
-border:1px solid #d1d5db;
-padding:14px;
-border-radius:12px;
-margin-bottom:15px;
-}
-
-.playerTeamHeader{
-color:white;
-padding:14px;
-border-radius:12px;
-margin-bottom:12px;
-}
-
-.playerTeamHeader h2{
-margin:0;
-color:white;
-}
-
-.playerTeamHeader.hackerHeader{
-background:#dc2626;
-}
-
-.playerTeamHeader.shankerHeader{
-background:#2563eb;
-}
-
-.playerGroupCard.hackerGroup{
-border-top:8px solid #dc2626;
-}
-
-.playerGroupCard.shankerGroup{
-border-top:8px solid #2563eb;
-}
-
-.foursomeCard{
-background:#f9fafb;
-border:2px solid #d1d5db;
-border-radius:14px;
-padding:14px;
-margin:16px 0;
-}
-
-.foursomeCard h2{
-margin:0 0 4px;
-}
-
-.foursomeMatch{
-background:white;
-border:1px solid #e5e7eb;
-border-radius:12px;
-padding:12px;
-margin:10px 0;
-}
-
-.foursomeMatch h3{
-margin:0 0 10px;
-}
-
-.singlesMatch{
-background:white;
-border:1px solid #e5e7eb;
-border-radius:12px;
-padding:12px;
-margin:10px 0;
-}
-
-.singlesMatch h3{
-margin:0 0 10px;
-}
-
-.hackerLabel{
-font-weight:900;
-color:#dc2626;
-margin-bottom:6px;
-}
-
-.shankerLabel{
-font-weight:900;
-color:#2563eb;
-margin-bottom:6px;
-}
-
-.matchupSelect{
-margin-bottom:8px;
-}
+.roundnav{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.roundbuttons{display:flex;gap:6px}
+.resultBanner{margin-top:12px;padding:14px;border-radius:10px;font-size:20px;font-weight:900;text-align:center}
+.resultHackers{background:#fee2e2;color:#b91c1c}
+.resultShankers{background:#dbeafe;color:#1d4ed8}
+.resultHalved{background:#e5e7eb;color:#374151}
+.skinWinner{background:#ecfdf5;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin:6px 0}
+.skinTie{background:#fff7ed;border:1px solid #fdba74;padding:10px;border-radius:9px;margin:6px 0}
+.skinNone{background:#f9fafb;border:1px solid #e5e7eb;padding:10px;border-radius:9px;margin:6px 0;color:#6b7280}
+.skinCount{font-size:22px;font-weight:900}
+.loginBox{max-width:500px;margin:auto}
+.loading{text-align:center;padding:40px;font-size:18px;font-weight:bold}
+.editBox{background:#f9fafb;border:1px solid #d1d5db;padding:14px;border-radius:12px;margin-bottom:15px}
+.playerTeamHeader{color:white;padding:14px;border-radius:12px;margin-bottom:12px}
+.playerTeamHeader h2{margin:0;color:white}
+.playerTeamHeader.hackerHeader{background:#dc2626}
+.playerTeamHeader.shankerHeader{background:#2563eb}
+.playerGroupCard.hackerGroup{border-top:8px solid #dc2626}
+.playerGroupCard.shankerGroup{border-top:8px solid #2563eb}
+.foursomeCard{background:#f9fafb;border:2px solid #d1d5db;border-radius:14px;padding:14px;margin:16px 0}
+.foursomeCard h2{margin:0 0 4px}
+.innerMatch{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0}
+.innerMatch h3{margin:0 0 10px}
+.hackerLabel{font-weight:900;color:#dc2626;margin-bottom:6px}
+.shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
+.teamSelects select{margin-bottom:8px}
 
 @media(max-width:650px){
-
-.players{
-grid-template-columns:1fr;
-}
-
-.logoBox{
-width:240px;
-height:78px;
-}
-
-header h1{
-font-size:25px;
-}
-
-.big{
-font-size:32px;
-}
-
+.players{grid-template-columns:1fr}
+.logoBox{width:240px;height:78px}
+header h1{font-size:25px}
+.headerMeta{font-size:16px}
+.captains{font-size:13px}
+.big{font-size:32px}
 }
 </style>
 </head>
@@ -478,443 +117,185 @@ font-size:32px;
 <body>
 
 <header>
-
 <div class="logoBox">
-
-<img
-src="IMG_5029.jpeg"
-alt="Delco Duffers"
-class="logo">
-
+<img src="IMG_5029.jpeg" alt="Delco Duffers" class="logo">
 </div>
-
-<h1>
-Delco Duffers 2026
-</h1>
-
-<div>
-32 Players • 40 Points • First to 20.5
+<h1>Delco Duffers 2026</h1>
+<div class="headerMeta">32 Players • 40 Points • First to 20.5</div>
+<div class="captains">
+Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers
 </div>
-
 </header>
 
 <main>
-
 <div id="connectionStatus"></div>
-
-<div
-class="nav"
-id="nav">
-</div>
-
-<div id="app">
-
-<div class="loading">
-Loading tournament…
-</div>
-
-</div>
-
+<div class="nav" id="nav"></div>
+<div id="app"><div class="loading">Loading tournament…</div></div>
 </main>
 
 <script>
 
-const SUPABASE_URL=
-"https://eyymbevpuxqiddyzelfh.supabase.co";
-
-const SUPABASE_KEY=
-"sb_publishable_la4el5LZaa83Dto90xcPnA_ouqq05dz";
-
-const TOURNAMENT_ID=
-"delco-duffers-2026";
-
-const ADMIN_EMAIL=
-"roccopacejr@gmail.com";
-
-const SESSION_KEY=
-"delcoDuffersAdminSession";
-
+const SUPABASE_URL="https://eyymbevpuxqiddyzelfh.supabase.co";
+const SUPABASE_KEY="sb_publishable_la4el5LZaa83Dto90xcPnA_ouqq05dz";
+const TOURNAMENT_ID="delco-duffers-2026";
+const ADMIN_EMAIL="roccopacejr@gmail.com";
+const SESSION_KEY="delcoDuffersAdminSession";
 
 const ROUNDS=[
-
-{
-id:1,
-course:"Tobacco Road",
-format:"2v2 Best Ball",
-matches:8,
-type:"bestball",
-skins:true
-},
-
-{
-id:2,
-course:"Mid South",
-format:"2v2 Best Ball",
-matches:8,
-type:"bestball",
-skins:true
-},
-
-{
-id:3,
-course:"Talamore",
-format:"2-Man Scramble",
-matches:8,
-type:"scramble",
-skins:false
-},
-
-{
-id:4,
-course:"Legacy",
-format:"1v1 Match Play",
-matches:16,
-type:"singles",
-skins:true
-}
-
+{id:1,course:"Tobacco Road",format:"2v2 Best Ball",matches:8,type:"bestball",skins:true},
+{id:2,course:"Mid South",format:"2v2 Best Ball",matches:8,type:"bestball",skins:true},
+{id:3,course:"Talamore",format:"2-Man Scramble",matches:8,type:"scramble",skins:false},
+{id:4,course:"Legacy",format:"1v1 Match Play",matches:16,type:"singles",skins:true}
 ];
 
-
-let data={
-
-players:[],
-
-matchups:{},
-
-scores:{},
-
-results:{}
-
+const COURSE_CARDS={
+1:{
+par:[5,4,3,5,4,3,4,3,4,4,5,4,5,3,4,4,3,4],
+hcp:[3,11,17,9,15,13,7,5,1,6,10,14,2,8,12,16,18,4]
+},
+2:{
+par:[4,5,4,4,3,5,4,4,3,4,3,4,5,4,4,5,3,4],
+hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
+},
+4:{
+par:[4,5,4,3,4,4,3,4,4,4,3,4,5,4,4,3,4,5],
+hcp:[7,1,5,15,9,3,17,11,13,4,16,8,2,10,6,18,12,14]
+}
 };
 
-
+let data={players:[],matchups:{},scores:{},results:{}};
 let session=null;
-
 let isAdmin=false;
-
 let connected=false;
-
 let page="dashboard";
-
 let currentRound=1;
-
 let saveTimers={};
-
 let editingPlayerId=null;
 
-
-/* =====================================
-   SESSION
-===================================== */
-
 function loadStoredSession(){
-
 try{
-
-session=
-JSON.parse(
-localStorage.getItem(
-SESSION_KEY
-)
-||
-"null"
-);
-
-}
-catch{
-
+session=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");
+}catch{
 session=null;
-
+}
 }
 
-}
-
-
-function storeSession(
-newSession
-){
-
-session=
-newSession;
-
-
+function storeSession(newSession){
+session=newSession;
 if(session){
-
-localStorage.setItem(
-
-SESSION_KEY,
-
-JSON.stringify(
-session
-)
-
-);
-
+localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+}else{
+localStorage.removeItem(SESSION_KEY);
 }
-else{
-
-localStorage.removeItem(
-SESSION_KEY
-);
-
 }
-
-}
-
 
 function authToken(){
-
-return session &&
-session.access_token
-?
-session.access_token
-:
-SUPABASE_KEY;
-
+return session&&session.access_token?session.access_token:SUPABASE_KEY;
 }
-
 
 async function refreshSessionIfNeeded(){
+if(!session||!session.refresh_token)return;
 
-if(
-!session ||
-!session.refresh_token
-){
+const expiresAt=Number(session.expires_at||0);
+const now=Math.floor(Date.now()/1000);
 
-return;
-
-}
-
-
-const expiresAt=
-Number(
-session.expires_at || 0
-);
-
-
-const now=
-Math.floor(
-Date.now()/1000
-);
-
-
-if(
-expiresAt &&
-expiresAt-now>120
-){
-
-return;
-
-}
-
+if(expiresAt&&expiresAt-now>120)return;
 
 try{
-
-const response=
-await fetch(
-
-SUPABASE_URL+
-"/auth/v1/token?grant_type=refresh_token",
-
+const r=await fetch(
+SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",
 {
-
 method:"POST",
-
 headers:{
-
-apikey:
-SUPABASE_KEY,
-
-"Content-Type":
-"application/json"
-
+apikey:SUPABASE_KEY,
+"Content-Type":"application/json"
 },
-
-body:
-JSON.stringify({
-
-refresh_token:
-session.refresh_token
-
+body:JSON.stringify({
+refresh_token:session.refresh_token
 })
-
 }
-
 );
 
+if(!r.ok)throw new Error("Refresh failed");
 
-if(
-!response.ok
-){
+const x=await r.json();
 
-throw new Error(
-"Refresh failed"
-);
+x.expires_at=
+Math.floor(Date.now()/1000)+
+Number(x.expires_in||3600);
 
-}
-
-
-const result=
-await response.json();
-
-
-result.expires_at=
-
-Math.floor(
-Date.now()/1000
-)
-+
-Number(
-result.expires_in || 3600
-);
-
-
-storeSession(
-result
-);
-
-
+storeSession(x);
 await checkAdmin();
 
-}
-catch{
-
-storeSession(
-null
-);
-
+}catch{
+storeSession(null);
 isAdmin=false;
-
 }
-
 }
-
 
 async function checkAdmin(){
 
-if(
-!session ||
-!session.access_token
-){
-
+if(!session||!session.access_token){
 isAdmin=false;
-
 return;
-
 }
-
 
 try{
 
-const response=
-await fetch(
-
-SUPABASE_URL+
-"/auth/v1/user",
-
+const r=await fetch(
+SUPABASE_URL+"/auth/v1/user",
 {
-
 headers:{
-
-apikey:
-SUPABASE_KEY,
-
-Authorization:
-"Bearer "+
-session.access_token
-
+apikey:SUPABASE_KEY,
+Authorization:"Bearer "+session.access_token
 }
-
 }
-
 );
 
-
-if(
-!response.ok
-){
-
+if(!r.ok){
 isAdmin=false;
-
 return;
-
 }
 
-
-const user=
-await response.json();
-
+const u=await r.json();
 
 isAdmin=
-
-String(
-user.email || ""
-)
-.toLowerCase()
-===
+String(u.email||"").toLowerCase()===
 ADMIN_EMAIL;
 
-}
-catch{
-
+}catch{
 isAdmin=false;
-
 }
 
 }
-
-
-/* =====================================
-   ADMIN LOGIN
-===================================== */
 
 function loginPage(){
 
 if(isAdmin){
 
 return`
-
 <div class="card loginBox">
-
-<h2>
-Admin
-</h2>
+<h2>Admin</h2>
 
 <div class="admin">
-
-✅ Signed in as administrator
-
-<br>
-
-<b>
-${ADMIN_EMAIL}
-</b>
-
+✅ Signed in as administrator<br>
+<b>${ADMIN_EMAIL}</b>
 </div>
 
-<button
-class="danger"
+<button class="danger"
 onclick="adminLogout()">
-
 Sign Out
-
 </button>
 
 </div>
-
 `;
 
 }
 
-
 return`
-
 <div class="card loginBox">
 
-<h2>
-Admin Login
-</h2>
+<h2>Admin Login</h2>
 
 <p>
 Everyone else can view the tournament.
@@ -922,26 +303,18 @@ Only the administrator can make changes.
 </p>
 
 <div class="field">
-
-<label>
-Admin Email
-</label>
-
+<label>Admin Email</label>
 <input
 id="adminEmail"
 type="email"
 value="${ADMIN_EMAIL}"
 disabled>
-
 </div>
 
-<div
-class="field"
+<div class="field"
 style="margin-top:10px">
 
-<label>
-Password
-</label>
+<label>Password</label>
 
 <input
 id="adminPassword"
@@ -954,18 +327,14 @@ placeholder="Enter your admin password">
 class="primary"
 style="margin-top:12px"
 onclick="adminLogin()">
-
 Admin Login
-
 </button>
 
 <button
 class="blue"
 style="margin-top:12px"
 onclick="createAdminAccount()">
-
 Create Admin Account
-
 </button>
 
 <p class="muted">
@@ -974,491 +343,236 @@ Afterward, use Admin Login.
 </p>
 
 </div>
-
 `;
 
 }
 
-
 async function createAdminAccount(){
 
 const password=
+document.getElementById("adminPassword").value;
 
-document
-.getElementById(
-"adminPassword"
-)
-.value;
-
-
-if(
-!password ||
-password.length<8
-){
-
-alert(
-"Choose a password with at least 8 characters."
-);
-
+if(!password||password.length<8){
+alert("Choose a password with at least 8 characters.");
 return;
-
 }
-
 
 try{
 
-const response=
-await fetch(
-
-SUPABASE_URL+
-"/auth/v1/signup",
-
+const r=await fetch(
+SUPABASE_URL+"/auth/v1/signup",
 {
-
 method:"POST",
-
 headers:{
-
-apikey:
-SUPABASE_KEY,
-
-"Content-Type":
-"application/json"
-
+apikey:SUPABASE_KEY,
+"Content-Type":"application/json"
 },
-
-body:
-JSON.stringify({
-
-email:
-ADMIN_EMAIL,
-
-password:
+body:JSON.stringify({
+email:ADMIN_EMAIL,
 password
-
 })
-
 }
-
 );
 
+const x=await r.json();
 
-const result=
-await response.json();
-
-
-if(
-!response.ok
-){
-
+if(!r.ok){
 throw new Error(
-
-result.msg ||
-
-result.message ||
-
+x.msg||
+x.message||
 "Could not create account."
-
 );
-
 }
 
+if(x.access_token){
 
-if(
-result.access_token
-){
+x.expires_at=
+Math.floor(Date.now()/1000)+
+Number(x.expires_in||3600);
 
-result.expires_at=
-
-Math.floor(
-Date.now()/1000
-)
-+
-Number(
-result.expires_in || 3600
-);
-
-
-storeSession(
-result
-);
-
+storeSession(x);
 
 await checkAdmin();
 
-
 render();
 
-
-alert(
-"Admin account created and signed in."
-);
-
+alert("Admin account created and signed in.");
 
 return;
 
 }
-
 
 alert(
 "Account created. Check your Gmail for the confirmation email. After confirming it, come back here and use Admin Login."
 );
 
-}
-catch(error){
-
-alert(
-error.message
-);
-
+}catch(e){
+alert(e.message);
 }
 
 }
-
 
 async function adminLogin(){
 
 const password=
-
-document
-.getElementById(
-"adminPassword"
-)
-.value;
-
+document.getElementById("adminPassword").value;
 
 if(!password){
-
-alert(
-"Enter your password."
-);
-
+alert("Enter your password.");
 return;
-
 }
-
 
 try{
 
-const response=
-await fetch(
-
+const r=await fetch(
 SUPABASE_URL+
 "/auth/v1/token?grant_type=password",
-
 {
-
 method:"POST",
-
 headers:{
-
-apikey:
-SUPABASE_KEY,
-
-"Content-Type":
-"application/json"
-
+apikey:SUPABASE_KEY,
+"Content-Type":"application/json"
 },
-
-body:
-JSON.stringify({
-
-email:
-ADMIN_EMAIL,
-
-password:
+body:JSON.stringify({
+email:ADMIN_EMAIL,
 password
-
 })
-
 }
-
 );
 
+const x=await r.json();
 
-const result=
-await response.json();
-
-
-if(
-!response.ok
-){
-
+if(!r.ok){
 throw new Error(
-
-result.error_description ||
-
-result.msg ||
-
-result.message ||
-
+x.error_description||
+x.msg||
+x.message||
 "Login failed."
-
 );
-
 }
 
+x.expires_at=
+Math.floor(Date.now()/1000)+
+Number(x.expires_in||3600);
 
-result.expires_at=
-
-Math.floor(
-Date.now()/1000
-)
-+
-Number(
-result.expires_in || 3600
-);
-
-
-storeSession(
-result
-);
-
+storeSession(x);
 
 await checkAdmin();
 
-
 if(!isAdmin){
-
-storeSession(
-null
-);
-
+storeSession(null);
 throw new Error(
 "This account is not authorized as administrator."
 );
-
 }
 
+page="dashboard";
 
-page=
-"dashboard";
-
-
-await loadSharedData(
-false
-);
-
+await loadSharedData(false);
 
 render();
 
-}
-catch(error){
-
-alert(
-error.message
-);
-
+}catch(e){
+alert(e.message);
 }
 
 }
-
 
 async function adminLogout(){
 
 try{
 
-if(
-session &&
-session.access_token
-){
+if(session&&session.access_token){
 
 await fetch(
-
-SUPABASE_URL+
-"/auth/v1/logout",
-
+SUPABASE_URL+"/auth/v1/logout",
 {
-
 method:"POST",
-
 headers:{
-
-apikey:
-SUPABASE_KEY,
-
+apikey:SUPABASE_KEY,
 Authorization:
-"Bearer "+
-session.access_token
-
+"Bearer "+session.access_token
 }
-
 }
-
 );
 
 }
 
-}
-catch{}
+}catch{}
 
-
-storeSession(
-null
-);
-
+storeSession(null);
 
 isAdmin=false;
-
-
 editingPlayerId=null;
-
-
-page=
-"dashboard";
-
+page="dashboard";
 
 render();
 
 }
 
-
-/* =====================================
-   API
-===================================== */
-
-function headers(
-extra={}
-){
-
+function headers(extra={}){
 return{
-
-apikey:
-SUPABASE_KEY,
-
-Authorization:
-"Bearer "+
-authToken(),
-
-"Content-Type":
-"application/json",
-
+apikey:SUPABASE_KEY,
+Authorization:"Bearer "+authToken(),
+"Content-Type":"application/json",
 ...extra
-
 };
-
 }
 
-
-async function apiGet(
-table
-){
+async function apiGet(table){
 
 await refreshSessionIfNeeded();
 
-
 const url=
-
 SUPABASE_URL+
 "/rest/v1/"+
 table+
 "?tournament_id=eq."+
-encodeURIComponent(
-TOURNAMENT_ID
-)
-+
+encodeURIComponent(TOURNAMENT_ID)+
 "&select=*";
 
+const r=await fetch(url,{
+headers:headers()
+});
 
-const response=
-await fetch(
+if(!r.ok){
+throw new Error("Database read failed");
+}
 
-url,
-
-{
-
-headers:
-headers()
+return await r.json();
 
 }
 
-);
-
-
-if(
-!response.ok
-){
-
-throw new Error(
-"Database read failed"
-);
-
-}
-
-
-return await response.json();
-
-}
-
-
-async function upsert(
-table,
-row,
-conflict
-){
+async function upsert(table,row,conflict){
 
 if(!isAdmin){
-
-throw new Error(
-"Admin login required."
-);
-
+throw new Error("Admin login required.");
 }
-
 
 await refreshSessionIfNeeded();
 
-
 const url=
-
 SUPABASE_URL+
 "/rest/v1/"+
 table+
 "?on_conflict="+
-encodeURIComponent(
-conflict
-);
+encodeURIComponent(conflict);
 
-
-const response=
-await fetch(
-
+const r=await fetch(
 url,
-
 {
-
 method:"POST",
-
-headers:
-headers({
-
+headers:headers({
 Prefer:
 "resolution=merge-duplicates,return=minimal"
-
 }),
-
-body:
-JSON.stringify(
-row
-)
-
+body:JSON.stringify(row)
 }
-
 );
 
+if(!r.ok){
 
-if(
-!response.ok
-){
-
-const message=
-await response.text();
-
-
-console.error(
-message
-);
-
+console.error(await r.text());
 
 throw new Error(
 "Database save failed"
@@ -1468,92 +582,49 @@ throw new Error(
 
 }
 
-
-async function deleteRows(
-table,
-filters
-){
+async function deleteRows(table,filters){
 
 if(!isAdmin){
-
 throw new Error(
 "Admin login required."
 );
-
 }
-
 
 await refreshSessionIfNeeded();
 
-
 let url=
-
 SUPABASE_URL+
 "/rest/v1/"+
 table+
 "?tournament_id=eq."+
-encodeURIComponent(
-TOURNAMENT_ID
-);
+encodeURIComponent(TOURNAMENT_ID);
 
-
-Object.entries(
-filters
-)
-.forEach(
-
-([key,value])=>{
-
-url+=
-"&"+
-key+
+Object.entries(filters).forEach(
+([k,v])=>{
+url+="&"+
+k+
 "=eq."+
-encodeURIComponent(
-value
-);
-
+encodeURIComponent(v);
 }
-
 );
 
-
-const response=
-await fetch(
-
+const r=await fetch(
 url,
-
 {
-
 method:"DELETE",
-
-headers:
-headers()
-
+headers:headers()
 }
-
 );
 
-
-if(
-!response.ok
-){
-
+if(!r.ok){
 throw new Error(
 "Database delete failed"
 );
-
 }
 
 }
 
-
-/* =====================================
-   LOAD DATA
-===================================== */
-
-async function loadSharedData(
-rerender=true
-){
+async function loadSharedData(rerender=true){
 
 try{
 
@@ -1562,757 +633,348 @@ players,
 matchups,
 scores,
 results
-]=
-
-await Promise.all([
-
-apiGet(
-"tournament_players"
-),
-
-apiGet(
-"tournament_matchups"
-),
-
-apiGet(
-"tournament_scores"
-),
-
-apiGet(
-"tournament_results"
-)
-
+]=await Promise.all([
+apiGet("tournament_players"),
+apiGet("tournament_matchups"),
+apiGet("tournament_scores"),
+apiGet("tournament_results")
 ]);
 
-
 data.players=
-
-players.map(
-
-row=>({
-
-id:
-row.id,
-
-name:
-row.name,
-
-handicap:
-row.handicap,
-
-team:
-row.team,
-
-group:
-row.group_name
-
-})
-
-);
-
+players.map(r=>({
+id:r.id,
+name:r.name,
+handicap:r.handicap,
+team:r.team,
+group:r.group_name
+}));
 
 data.matchups={};
 
+matchups.forEach(r=>{
 
-matchups.forEach(
-
-row=>{
-
-if(
-!data.matchups[
-row.round_no
-]
-){
-
-data.matchups[
-row.round_no
-]=[];
-
+if(!data.matchups[r.round_no]){
+data.matchups[r.round_no]=[];
 }
 
-
-data.matchups[
-row.round_no
-][
-row.match_no-1
-]
-={
-
-id:
-"R"+
-row.round_no+
-"M"+
-row.match_no,
-
-matchNo:
-row.match_no,
-
-hackers:
-row.hackers || [],
-
-shankers:
-row.shankers || []
-
+data.matchups[r.round_no][r.match_no-1]={
+id:"R"+r.round_no+"M"+r.match_no,
+matchNo:r.match_no,
+hackers:r.hackers||[],
+shankers:r.shankers||[]
 };
 
-}
-
-);
-
+});
 
 data.scores={};
 
+scores.forEach(r=>{
 
-scores.forEach(
+const id=
+"R"+r.round_no+"M"+r.match_no;
 
-row=>{
+if(!data.scores[id]){
 
-const matchId=
-
-"R"+
-row.round_no+
-"M"+
-row.match_no;
-
-
-if(
-!data.scores[
-matchId
-]
-){
-
-data.scores[
-matchId
-]={
-
-holes:
-Array.from(
+data.scores[id]={
+holes:Array.from(
 {length:18},
 ()=>({})
 )
-
 };
 
 }
 
+data.scores[id]
+.holes[r.hole-1]
+[r.scorer_key]=r.score;
 
-data.scores[
-matchId
-]
-.holes[
-row.hole-1
-][
-row.scorer_key
-]
-=
-row.score;
-
-}
-
-);
-
+});
 
 data.results={};
 
-
-results.forEach(
-
-row=>{
-
-const matchId=
-
-"R"+
-row.round_no+
-"M"+
-row.match_no;
-
+results.forEach(r=>{
 
 data.results[
-matchId
+"R"+r.round_no+"M"+r.match_no
 ]={
-
-winner:
-row.winner
-
+winner:r.winner
 };
 
-}
-
-);
-
+});
 
 connected=true;
 
-
 drawConnectionStatus();
 
-
 if(rerender){
-
 render();
-
 }
 
-}
-catch(error){
+}catch(e){
 
-console.error(
-error
-);
-
+console.error(e);
 
 connected=false;
 
-
 drawConnectionStatus();
 
 }
 
 }
-
-
-/* =====================================
-   STATUS
-===================================== */
 
 function drawConnectionStatus(){
 
 const box=
-
 document.getElementById(
 "connectionStatus"
 );
 
-
-if(!box){
-
-return;
-
-}
-
-
-let html="";
-
-
-if(connected){
-
-html+=`
-
-<div class="shared">
-
-☁️ Shared tournament connected
-
-</div>
-
-`;
-
-}
-else{
-
-html+=`
-
-<div class="offline">
-
-⚠️ Unable to reach shared tournament database
-
-</div>
-
-`;
-
-}
-
-
-if(isAdmin){
-
-html+=`
-
-<div class="admin">
-
-🔐 ADMIN MODE — You can make changes
-
-</div>
-
-`;
-
-}
-else{
-
-html+=`
-
-<div class="viewer">
-
-👀 VIEWER MODE — Read only
-
-</div>
-
-`;
-
-}
-
+if(!box)return;
 
 box.innerHTML=
-html;
 
-}
-
-
-/* =====================================
-   HELPERS
-===================================== */
-
-function getPlayer(
-id
-){
-
-return data.players.find(
-
-player=>
-String(
-player.id
-)
-===
-String(
-id
+(
+connected
+?
+`<div class="shared">
+☁️ Shared tournament connected
+</div>`
+:
+`<div class="offline">
+⚠️ Unable to reach shared tournament database
+</div>`
 )
 
++
+
+(
+isAdmin
+?
+`<div class="admin">
+🔐 ADMIN MODE — You can make changes
+</div>`
+:
+`<div class="viewer">
+👀 VIEWER MODE — Read only
+</div>`
 );
 
 }
 
-
-function roundInfo(){
-
-return ROUNDS[
-currentRound-1
-];
-
+function getPlayer(id){
+return data.players.find(
+p=>String(p.id)===String(id)
+);
 }
 
-
-/* =====================================
-   NAV
-===================================== */
+function roundInfo(){
+return ROUNDS[currentRound-1];
+}
 
 function drawNav(){
 
 const tabs=[
-
-[
-"dashboard",
-"Dashboard"
-],
-
-[
-"players",
-"Players"
-],
-
-[
-"matchups",
-"Matchups"
-],
-
-[
-"scoring",
-"Scoring"
-],
-
-[
-"skins",
-"Skins"
-],
-
-[
-"login",
-isAdmin
-?
-"Admin ✓"
-:
-"Admin Login"
-]
-
+["dashboard","Dashboard"],
+["players","Players"],
+["matchups","Matchups"],
+["scoring","Scoring"],
+["skins","Skins"],
+["login",isAdmin?"Admin ✓":"Admin Login"]
 ];
 
-
-document
-.getElementById(
-"nav"
-)
-.innerHTML=
-
-tabs.map(
-
-tab=>`
-
+document.getElementById("nav").innerHTML=
+tabs.map(t=>`
 <button
-
-class="${
-page===tab[0]
-?
-"primary"
-:
-""
-}"
-
-onclick="
-page='${tab[0]}';
-render();
-">
-
-${tab[1]}
-
+class="${page===t[0]?"primary":""}"
+onclick="page='${t[0]}';render();">
+${t[1]}
 </button>
-
-`
-
-).join("");
+`).join("");
 
 }
-
-
-/* =====================================
-   POINTS
-===================================== */
 
 function teamPoints(){
 
 let hackers=0;
-
 let shankers=0;
-
 let completed=0;
 
+Object.values(data.results).forEach(r=>{
 
-Object.values(
-data.results
-)
-.forEach(
+if(!r)return;
 
-result=>{
-
-if(!result){
-
-return;
-
+if(r.winner==="Hackers"){
+hackers++;
+completed++;
 }
 
-
-if(
-result.winner===
-"Hackers"
-){
-
-hackers+=1;
-
-completed+=1;
-
+else if(r.winner==="Shankers"){
+shankers++;
+completed++;
 }
 
-else if(
-result.winner===
-"Shankers"
-){
-
-shankers+=1;
-
-completed+=1;
-
+else if(r.winner==="Halved"){
+hackers+=.5;
+shankers+=.5;
+completed++;
 }
 
-else if(
-result.winner===
-"Halved"
-){
-
-hackers+=0.5;
-
-shankers+=0.5;
-
-completed+=1;
-
-}
-
-}
-
-);
-
+});
 
 return{
-
 hackers,
-
 shankers,
-
 completed
-
 };
 
 }
 
-
-/* =====================================
-   DASHBOARD
-===================================== */
-
 function dashboard(){
 
-const points=
-teamPoints();
-
+const p=teamPoints();
 
 return`
-
 <div class="card">
 
 <div class="scoreboard">
 
 <div class="team hackers">
 
-<b>
-HACKERS
-</b>
+<b>HACKERS</b>
 
-<div class="captain">
+<div class="big">
+${p.hackers}
+</div>
+
+<div style="font-size:13px;margin-top:4px">
 Captain Howells
 </div>
 
-<div class="big">
-
-${points.hackers}
-
 </div>
-
-</div>
-
 
 <div class="team shankers">
 
-<b>
-SHANKERS
-</b>
+<b>SHANKERS</b>
 
-<div class="captain">
+<div class="big">
+${p.shankers}
+</div>
+
+<div style="font-size:13px;margin-top:4px">
 Captain Parsons
 </div>
 
-<div class="big">
-
-${points.shankers}
-
 </div>
 
 </div>
-
-</div>
-
 
 <p>
-
-<b>
-${40-points.completed}
-</b>
-
+<b>${40-p.completed}</b>
 matches remaining
-
 </p>
 
 </div>
 
-
 <div class="card">
 
-<h2>
-Tournament Schedule
-</h2>
+<h2>Tournament Schedule</h2>
 
-
-${ROUNDS.map(
-
-round=>`
+${ROUNDS.map(r=>`
 
 <div class="match">
 
 <b>
-
-Round ${round.id}
-
-—
-
-${round.course}
-
+Round ${r.id} — ${r.course}
 </b>
 
 <br>
 
 <span class="muted">
-
-${round.format}
-
+${r.format}
 •
-
-${round.matches} points
-
+${r.matches} points
 •
-
-${
-round.skins
-?
-"Skins"
-:
-"No Skins"
-}
-
+${r.skins?"Skins":"No Skins"}
 </span>
 
 </div>
 
-`
-
-).join("")}
+`).join("")}
 
 </div>
-
 `;
 
 }
 
-
-/* =====================================
-   PLAYERS
-===================================== */
-
 function playersPage(){
 
-let editSection="";
+let edit="";
 
+if(isAdmin&&editingPlayerId){
 
-if(
-isAdmin &&
-editingPlayerId
-){
+const p=getPlayer(editingPlayerId);
 
-const player=
-getPlayer(
-editingPlayerId
-);
+if(p){
 
-
-if(player){
-
-editSection=`
-
+edit=`
 <div class="card editBox">
 
-<h2>
-Edit Player
-</h2>
+<h2>Edit Player</h2>
 
 <div class="row">
 
 <div class="field">
-
-<label>
-Player Name
-</label>
-
-<input
-id="editName"
-value="${player.name}">
-
+<label>Player Name</label>
+<input id="editName" value="${p.name}">
 </div>
 
-
 <div class="field">
-
-<label>
-Handicap
-</label>
-
+<label>Handicap</label>
 <input
 id="editHcp"
 type="number"
 step=".1"
 inputmode="decimal"
-value="${player.handicap}">
-
+value="${p.handicap}">
 </div>
 
-
 <div class="field">
-
-<label>
-Team
-</label>
+<label>Team</label>
 
 <select id="editTeam">
 
 <option
 value="Hackers"
-${
-player.team==="Hackers"
-?
-"selected"
-:
-""
-}>
-
+${p.team==="Hackers"?"selected":""}>
 Hackers
-
 </option>
 
 <option
 value="Shankers"
-${
-player.team==="Shankers"
-?
-"selected"
-:
-""
-}>
-
+${p.team==="Shankers"?"selected":""}>
 Shankers
-
 </option>
 
 </select>
 
 </div>
 
-
 <div class="field">
 
-<label>
-Skins Group
-</label>
+<label>Skins Group</label>
 
 <select id="editGroup">
 
 <option
 value="A"
-${
-player.group==="A"
-?
-"selected"
-:
-""
-}>
-
+${p.group==="A"?"selected":""}>
 Group A
-
 </option>
 
 <option
 value="B"
-${
-player.group==="B"
-?
-"selected"
-:
-""
-}>
-
+${p.group==="B"?"selected":""}>
 Group B
-
 </option>
 
 </select>
@@ -2321,297 +983,158 @@ Group B
 
 </div>
 
-
 <button
 class="good"
 onclick="savePlayerEdit()">
-
 Save Player
-
 </button>
 
-
 <button
-onclick="
-editingPlayerId=null;
-render();
-">
-
+onclick="editingPlayerId=null;render();">
 Cancel
-
 </button>
 
 </div>
-
 `;
 
 }
 
 }
 
-
-const addBox=
-
+const add=
 isAdmin
-
 ?
-
 `
-
 <div class="card">
 
-<h2>
-Add Player
-</h2>
+<h2>Add Player</h2>
 
 <div class="row">
 
-
 <div class="field">
-
-<label>
-Player Name
-</label>
-
-<input
-id="name"
-placeholder="Player name">
-
+<label>Player Name</label>
+<input id="name" placeholder="Player name">
 </div>
 
-
 <div class="field">
-
-<label>
-Handicap
-</label>
-
+<label>Handicap</label>
 <input
 id="hcp"
 type="number"
 step=".1"
 inputmode="decimal">
-
 </div>
 
-
 <div class="field">
-
-<label>
-Team
-</label>
+<label>Team</label>
 
 <select id="team">
-
-<option>
-Hackers
-</option>
-
-<option>
-Shankers
-</option>
-
+<option>Hackers</option>
+<option>Shankers</option>
 </select>
 
 </div>
-
 
 <div class="field">
-
-<label>
-Skins Group
-</label>
+<label>Skins Group</label>
 
 <select id="group">
-
-<option value="A">
-Group A
-</option>
-
-<option value="B">
-Group B
-</option>
-
+<option value="A">Group A</option>
+<option value="B">Group B</option>
 </select>
 
 </div>
 
 </div>
-
 
 <button
 class="primary"
 onclick="addPlayer()">
-
 Add Player
-
 </button>
 
 </div>
-
 `
-
 :
-
 `
-
 <div class="viewer">
-
 Roster is read-only.
-
 Only the administrator can make changes.
-
 </div>
-
 `;
 
+function section(team,group){
 
-function teamGroupSection(
-team,
-group
-){
-
-const players=
-
+const list=
 data.players.filter(
-
-player=>
-player.team===team &&
-player.group===group
-
+p=>
+p.team===team&&
+p.group===group
 );
 
-
-const isHackers=
+const h=
 team==="Hackers";
 
-
 return`
+<div
+class="card playerGroupCard
+${h?"hackerGroup":"shankerGroup"}">
 
-<div class="
-card
-playerGroupCard
-${
-isHackers
-?
-"hackerGroup"
-:
-"shankerGroup"
-}
-">
-
-<div class="
-playerTeamHeader
-${
-isHackers
-?
-"hackerHeader"
-:
-"shankerHeader"
-}
-">
+<div
+class="playerTeamHeader
+${h?"hackerHeader":"shankerHeader"}">
 
 <h2>
-
-${team}
-
-—
-
-Group ${group}
-
+${team} — Group ${group}
 </h2>
 
 <div
-style="
-margin-top:4px;
-font-weight:700;
-">
-
-${players.length}
-players
-
+style="margin-top:4px;font-weight:700;">
+${list.length} players
 </div>
 
 </div>
-
 
 <div class="tablewrap">
 
 <table>
 
 <tr>
-
-<th>
-Name
-</th>
-
-<th>
-HCP
-</th>
-
-${
-isAdmin
-?
-"<th></th>"
-:
-""
-}
-
+<th>Name</th>
+<th>HCP</th>
+${isAdmin?"<th></th>":""}
 </tr>
 
-
-${players.map(
-
-player=>`
+${list.map(p=>`
 
 <tr>
 
 <td>
-
-<b>
-${player.name}
-</b>
-
+<b>${p.name}</b>
 </td>
 
 <td>
-${player.handicap}
+${p.handicap}
 </td>
 
-${
-isAdmin
+${isAdmin
 ?
 `
-
 <td>
 
 <button
 class="blue"
-onclick="
-startPlayerEdit(
-'${player.id}'
-)
-">
-
+onclick="startPlayerEdit('${p.id}')">
 Edit
-
 </button>
-
 
 <button
 class="danger"
-onclick="
-deletePlayer(
-'${player.id}'
-)
-">
-
+onclick="deletePlayer('${p.id}')">
 Delete
-
 </button>
 
 </td>
-
 `
 :
 ""
@@ -2619,290 +1142,130 @@ Delete
 
 </tr>
 
-`
-
-).join("")}
+`).join("")}
 
 </table>
 
 </div>
 
 </div>
-
 `;
 
 }
 
-
-return`
-
-${editSection}
-
-${addBox}
-
-${teamGroupSection(
-"Hackers",
-"A"
-)}
-
-${teamGroupSection(
-"Hackers",
-"B"
-)}
-
-${teamGroupSection(
-"Shankers",
-"A"
-)}
-
-${teamGroupSection(
-"Shankers",
-"B"
-)}
-
-`;
+return
+edit+
+add+
+section("Hackers","A")+
+section("Hackers","B")+
+section("Shankers","A")+
+section("Shankers","B");
 
 }
 
+function startPlayerEdit(id){
 
-function startPlayerEdit(
-id
-){
+if(!isAdmin)return;
 
-if(!isAdmin){
-
-return;
-
-}
-
-
-editingPlayerId=
-id;
-
+editingPlayerId=id;
 
 render();
 
-
 window.scrollTo({
-
 top:0,
-
 behavior:"smooth"
-
 });
 
 }
 
-
 async function savePlayerEdit(){
 
-if(
-!isAdmin ||
-!editingPlayerId
-){
+if(!isAdmin||!editingPlayerId)return;
 
-return;
+const p=getPlayer(editingPlayerId);
 
-}
-
-
-const player=
-getPlayer(
-editingPlayerId
-);
-
-
-if(!player){
-
-return;
-
-}
-
+if(!p)return;
 
 const name=
-
-document
-.getElementById(
-"editName"
-)
-.value
-.trim();
-
+document.getElementById("editName").value.trim();
 
 const handicap=
-
-document
-.getElementById(
-"editHcp"
-)
-.value
-||
-0;
-
+document.getElementById("editHcp").value||0;
 
 const team=
-
-document
-.getElementById(
-"editTeam"
-)
-.value;
-
+document.getElementById("editTeam").value;
 
 const group=
-
-document
-.getElementById(
-"editGroup"
-)
-.value;
-
+document.getElementById("editGroup").value;
 
 if(!name){
 
-alert(
-"Enter a player name."
-);
+alert("Enter a player name.");
 
 return;
 
 }
 
-
 if(
-team!==player.team
-){
-
-const teamCount=
-
+team!==p.team&&
 data.players.filter(
-
-p=>
-p.team===team &&
-String(
-p.id
-)!==
-String(
-player.id
-)
-
-).length;
-
-
-if(
-teamCount>=16
+x=>
+x.team===team&&
+String(x.id)!==String(p.id)
+).length>=16
 ){
 
-alert(
-team+
-" already has 16 players."
-);
+alert(team+" already has 16 players.");
 
 return;
 
 }
 
-}
-
-
 if(
-group!==player.group
-){
-
-const groupCount=
-
+group!==p.group&&
 data.players.filter(
-
-p=>
-p.group===group &&
-String(
-p.id
-)!==
-String(
-player.id
-)
-
-).length;
-
-
-if(
-groupCount>=16
+x=>
+x.group===group&&
+String(x.id)!==String(p.id)
+).length>=16
 ){
 
-alert(
-"Group "+
-group+
-" already has 16 players."
-);
+alert("Group "+group+" already has 16 players.");
 
 return;
 
 }
-
-}
-
 
 try{
 
 await upsert(
-
 "tournament_players",
-
 {
-
-tournament_id:
-TOURNAMENT_ID,
-
-id:
-player.id,
-
-name:
+tournament_id:TOURNAMENT_ID,
+id:p.id,
 name,
-
-handicap:
-String(
-handicap
-),
-
-team:
+handicap:String(handicap),
 team,
-
-group_name:
-group
-
+group_name:group
 },
-
 "tournament_id,id"
-
 );
 
-
-player.name=
-name;
-
-
-player.handicap=
-String(
-handicap
+Object.assign(
+p,
+{
+name,
+handicap:String(handicap),
+team,
+group
+}
 );
 
-
-player.team=
-team;
-
-
-player.group=
-group;
-
-
-editingPlayerId=
-null;
-
+editingPlayerId=null;
 
 render();
 
-}
-catch(error){
+}catch{
 
 alert(
 "Player changes could not be saved."
@@ -2912,427 +1275,200 @@ alert(
 
 }
 
-
 async function addPlayer(){
 
 if(!isAdmin){
 
-alert(
-"Admin login required."
-);
+alert("Admin login required.");
 
 return;
 
 }
 
-
 const name=
-
-document
-.getElementById(
-"name"
-)
-.value
-.trim();
-
+document.getElementById("name").value.trim();
 
 const handicap=
-
-document
-.getElementById(
-"hcp"
-)
-.value
-||
-0;
-
+document.getElementById("hcp").value||0;
 
 const team=
-
-document
-.getElementById(
-"team"
-)
-.value;
-
+document.getElementById("team").value;
 
 const group=
-
-document
-.getElementById(
-"group"
-)
-.value;
-
+document.getElementById("group").value;
 
 if(!name){
 
-alert(
-"Enter a player name."
-);
+alert("Enter a player name.");
 
 return;
 
 }
 
+if(data.players.length>=32){
 
-if(
-data.players.length>=32
-){
-
-alert(
-"Roster is full."
-);
+alert("Roster is full.");
 
 return;
 
 }
 
-
 if(
-
 data.players.filter(
-
-player=>
-player.team===team
-
+p=>p.team===team
 ).length>=16
-
 ){
 
-alert(
-team+
-" already has 16 players."
-);
+alert(team+" already has 16 players.");
 
 return;
 
 }
-
 
 if(
-
 data.players.filter(
-
-player=>
-player.group===group
-
+p=>p.group===group
 ).length>=16
-
 ){
 
-alert(
-"Group "+
-group+
-" already has 16 players."
-);
+alert("Group "+group+" already has 16 players.");
 
 return;
 
 }
 
-
-const player={
-
+const p={
 id:
 "p"+
 Date.now()+
-Math.random()
-.toString(36)
-.slice(2),
-
-name:
+Math.random().toString(36).slice(2),
 name,
-
-handicap:
-String(
-handicap
-),
-
-team:
+handicap:String(handicap),
 team,
-
-group:
 group
-
 };
-
 
 try{
 
 await upsert(
-
 "tournament_players",
-
 {
-
-tournament_id:
-TOURNAMENT_ID,
-
-id:
-player.id,
-
-name:
-player.name,
-
-handicap:
-player.handicap,
-
-team:
-player.team,
-
-group_name:
-player.group
-
+tournament_id:TOURNAMENT_ID,
+id:p.id,
+name:p.name,
+handicap:p.handicap,
+team:p.team,
+group_name:p.group
 },
-
 "tournament_id,id"
-
 );
 
-
-data.players.push(
-player
-);
-
+data.players.push(p);
 
 render();
 
-}
-catch(error){
+}catch{
 
-alert(
-"Player could not be saved."
-);
+alert("Player could not be saved.");
 
 }
 
 }
 
-
-async function deletePlayer(
-id
-){
-
-if(!isAdmin){
-
-return;
-
-}
-
+async function deletePlayer(id){
 
 if(
-!confirm(
-"Delete this player?"
-)
-){
-
-return;
-
-}
-
+!isAdmin||
+!confirm("Delete this player?")
+)return;
 
 try{
 
 await deleteRows(
-
 "tournament_players",
-
-{
-
-id:
-id
-
-}
-
+{id}
 );
-
 
 data.players=
-
 data.players.filter(
-
-player=>
-String(
-player.id
-)
-!==
-String(
-id
-)
-
+p=>String(p.id)!==String(id)
 );
-
 
 render();
 
-}
-catch{
+}catch{
 
-alert(
-"Player could not be deleted."
-);
+alert("Player could not be deleted.");
 
 }
 
 }
-
-
-/* =====================================
-   MATCHUPS
-===================================== */
 
 function setupMatches(){
 
-const round=
-roundInfo();
+const r=roundInfo();
 
-
-if(
-!data.matchups[
-currentRound
-]
-){
-
-data.matchups[
-currentRound
-]=[];
-
+if(!data.matchups[currentRound]){
+data.matchups[currentRound]=[];
 }
 
-
 while(
-
-data.matchups[
-currentRound
-]
-.length
-<
-round.matches
-
+data.matchups[currentRound].length<
+r.matches
 ){
 
-const index=
+const i=
+data.matchups[currentRound].length;
 
-data.matchups[
-currentRound
-]
-.length;
-
-
-data.matchups[
-currentRound
-][
-index
-]
-={
-
+data.matchups[currentRound][i]={
 id:
 "R"+
 currentRound+
 "M"+
-(index+1),
-
-matchNo:
-index+1,
-
+(i+1),
+matchNo:i+1,
 hackers:[],
-
 shankers:[]
-
 };
 
 }
 
-
-return data.matchups[
-currentRound
-];
+return data.matchups[currentRound];
 
 }
 
-
-function playerOptions(
-team,
-currentPlayer
-){
+function playerOptions(team,current){
 
 return`
-
 <option value="">
 Select Player
 </option>
 
 ${data.players
-
-.filter(
-
-player=>
-player.team===team
-
-)
-
-.map(
-
-player=>`
+.filter(p=>p.team===team)
+.map(p=>`
 
 <option
+value="${p.id}"
+${String(p.id)===String(current)?"selected":""}>
 
-value="${player.id}"
-
-${
-String(
-player.id
-)
-===
-String(
-currentPlayer
-)
-?
-"selected"
-:
-""
-}
-
->
-
-${player.name}
-
-—
-
-HCP ${player.handicap}
-
-—
-
-Group ${player.group}
+${p.name}
+— HCP ${p.handicap}
+— Group ${p.group}
 
 </option>
 
-`
-
-).join("")}
-
+`).join("")}
 `;
 
 }
 
-
-/* =====================================
-   MATCHUP PAGE
-===================================== */
-
 function matchupPage(){
 
-const round=
-roundInfo();
-
-
-const matches=
-setupMatches();
-
+const r=roundInfo();
+const m=setupMatches();
 
 return`
-
 <div class="card">
 
 <div class="roundnav">
@@ -3340,798 +1476,401 @@ return`
 <div>
 
 <h2>
-
-Round ${round.id}
-
-—
-
-${round.course}
-
+Round ${r.id} — ${r.course}
 </h2>
 
 <div class="muted">
-
-${round.format}
-
-•
-
-${round.matches} Points
-
-•
-
-8 Foursomes
-
+${r.id===4
+?
+"1v1 Match Play • 16 Individual Points • 8 Foursomes"
+:
+`${r.format} • 8 Points • 8 Foursomes`
+}
 </div>
 
 </div>
-
 
 <div class="roundbuttons">
 
 <button
-onclick="
-currentRound=
-Math.max(
-1,
-currentRound-1
-);
-render();
-">
-
+onclick="currentRound=Math.max(1,currentRound-1);render();">
 ←
-
 </button>
-
 
 <button
-onclick="
-currentRound=
-Math.min(
-4,
-currentRound+1
-);
-render();
-">
-
+onclick="currentRound=Math.min(4,currentRound+1);render();">
 →
-
 </button>
 
 </div>
 
 </div>
 
-
-${
-!isAdmin
+${!isAdmin
 ?
-`
-
-<div class="viewer">
-
+`<div class="viewer">
 Matchups are read-only.
-
-</div>
-
-`
+</div>`
 :
 ""
 }
 
-
-${
-currentRound===4
+${currentRound===4
 ?
-round4Foursomes(
-matches
-)
+Array.from({length:8},(_,f)=>{
+
+const a=f*2;
+const b=a+1;
+
+return`
+<div class="foursomeCard">
+
+<h2>
+Foursome ${f+1}
+</h2>
+
+<div class="muted">
+Matches ${a+1} & ${b+1}
+</div>
+
+${round4SinglesMatch(m[a],a)}
+${round4SinglesMatch(m[b],b)}
+
+</div>
+`;
+
+}).join("")
 :
-teamFoursomes(
-round,
-matches
+m.map(
+(match,i)=>
+standardFoursomeCard(
+r,
+match,
+i
 )
+).join("")
 }
 
-
-${
-isAdmin
+${isAdmin
 ?
 `
-
 <button
 class="primary"
 onclick="validateRound()">
-
 Validate Matchups
-
 </button>
-
 `
 :
 ""
 }
 
 </div>
-
 `;
 
 }
 
+function standardFoursomeCard(r,match,i){
 
-/* =====================================
-   ROUNDS 1–3 FOURSOMES
-===================================== */
-
-function teamFoursomes(
-round,
-matches
-){
-
-return matches.map(
-
-(match,index)=>{
-
-return`
-
-<div class="foursomeCard">
-
-<h2>
-
-Foursome ${index+1}
-
-</h2>
-
-<div class="muted">
-
-Match ${index+1}
-
-•
-
-${round.format}
-
-</div>
-
-
-${teamFoursomeMatch(
-match,
-index
-)}
-
-</div>
-
-`;
-
-}
-
-).join("");
-
-}
-
-
-function teamFoursomeMatch(
-match,
-index
-){
-
-while(
-match.hackers.length<2
-){
-
+while(match.hackers.length<2){
 match.hackers.push("");
-
 }
 
-
-while(
-match.shankers.length<2
-){
-
+while(match.shankers.length<2){
 match.shankers.push("");
-
 }
-
 
 if(isAdmin){
 
 return`
-
-<div class="foursomeMatch">
-
-<h3>
-
-Match ${index+1}
-
-</h3>
-
-
-<div class="players">
-
-
-<div>
-
-<div class="hackerLabel">
-
-HACKERS
-
-</div>
-
-
-<select
-class="matchupSelect"
-onchange="
-setMatchPlayer(
-${index},
-'hackers',
-0,
-this.value
-)
-">
-
-${playerOptions(
-"Hackers",
-match.hackers[0]
-)}
-
-</select>
-
-
-<select
-class="matchupSelect"
-onchange="
-setMatchPlayer(
-${index},
-'hackers',
-1,
-this.value
-)
-">
-
-${playerOptions(
-"Hackers",
-match.hackers[1]
-)}
-
-</select>
-
-</div>
-
-
-<div>
-
-<div class="shankerLabel">
-
-SHANKERS
-
-</div>
-
-
-<select
-class="matchupSelect"
-onchange="
-setMatchPlayer(
-${index},
-'shankers',
-0,
-this.value
-)
-">
-
-${playerOptions(
-"Shankers",
-match.shankers[0]
-)}
-
-</select>
-
-
-<select
-class="matchupSelect"
-onchange="
-setMatchPlayer(
-${index},
-'shankers',
-1,
-this.value
-)
-">
-
-${playerOptions(
-"Shankers",
-match.shankers[1]
-)}
-
-</select>
-
-</div>
-
-
-</div>
-
-</div>
-
-`;
-
-}
-
-
-const hacker1=
-getPlayer(
-match.hackers[0]
-);
-
-
-const hacker2=
-getPlayer(
-match.hackers[1]
-);
-
-
-const shanker1=
-getPlayer(
-match.shankers[0]
-);
-
-
-const shanker2=
-getPlayer(
-match.shankers[1]
-);
-
-
-return`
-
-<div class="foursomeMatch">
-
-<h3>
-
-Match ${index+1}
-
-</h3>
-
-
-<div class="players">
-
-
-<div>
-
-<div class="hackerLabel">
-
-HACKERS
-
-</div>
-
-
-<div class="pill">
-
-${
-hacker1
-?
-hacker1.name+
-" • HCP "+
-hacker1.handicap
-:
-"Not Set"
-}
-
-</div>
-
-
-<br>
-
-
-<div class="pill">
-
-${
-hacker2
-?
-hacker2.name+
-" • HCP "+
-hacker2.handicap
-:
-"Not Set"
-}
-
-</div>
-
-</div>
-
-
-<div>
-
-<div class="shankerLabel">
-
-SHANKERS
-
-</div>
-
-
-<div class="pill">
-
-${
-shanker1
-?
-shanker1.name+
-" • HCP "+
-shanker1.handicap
-:
-"Not Set"
-}
-
-</div>
-
-
-<br>
-
-
-<div class="pill">
-
-${
-shanker2
-?
-shanker2.name+
-" • HCP "+
-shanker2.handicap
-:
-"Not Set"
-}
-
-</div>
-
-</div>
-
-
-</div>
-
-</div>
-
-`;
-
-}
-
-
-/* =====================================
-   ROUND 4 — 8 FOURSOMES
-===================================== */
-
-function round4Foursomes(
-matches
-){
-
-return Array.from(
-
-{length:8},
-
-(_,foursomeIndex)=>{
-
-const match1Index=
-foursomeIndex*2;
-
-
-const match2Index=
-match1Index+1;
-
-
-return`
-
 <div class="foursomeCard">
 
 <h2>
-
-Foursome ${foursomeIndex+1}
-
+Foursome ${i+1}
 </h2>
 
 <div class="muted">
+Match ${i+1}
+</div>
 
-Matches ${match1Index+1}
+<div class="innerMatch">
 
-&
+<h3>
+Match ${i+1}
+</h3>
 
-${match2Index+1}
+<div class="players">
+
+<div class="teamSelects">
+
+<div class="hackerLabel">
+HACKERS
+</div>
+
+<select
+onchange="setMatchPlayer(${i},'hackers',0,this.value)">
+${playerOptions(
+"Hackers",
+match.hackers[0]
+)}
+</select>
+
+<select
+onchange="setMatchPlayer(${i},'hackers',1,this.value)">
+${playerOptions(
+"Hackers",
+match.hackers[1]
+)}
+</select>
 
 </div>
 
+<div class="teamSelects">
 
-${round4SinglesMatch(
-matches[
-match1Index
-],
-match1Index
+<div class="shankerLabel">
+SHANKERS
+</div>
+
+<select
+onchange="setMatchPlayer(${i},'shankers',0,this.value)">
+${playerOptions(
+"Shankers",
+match.shankers[0]
 )}
+</select>
 
-
-${round4SinglesMatch(
-matches[
-match2Index
-],
-match2Index
+<select
+onchange="setMatchPlayer(${i},'shankers',1,this.value)">
+${playerOptions(
+"Shankers",
+match.shankers[1]
 )}
+</select>
 
 </div>
 
+</div>
+
+</div>
+
+</div>
 `;
 
 }
 
-).join("");
+const hs=
+match.hackers.map(getPlayer);
+
+const ss=
+match.shankers.map(getPlayer);
+
+return`
+<div class="foursomeCard">
+
+<h2>
+Foursome ${i+1}
+</h2>
+
+<div class="muted">
+Match ${i+1}
+</div>
+
+<div class="innerMatch">
+
+<h3>
+Match ${i+1}
+</h3>
+
+<div class="players">
+
+<div>
+
+<div class="hackerLabel">
+HACKERS
+</div>
+
+${hs.map(p=>`
+<div class="pill">
+${p
+?
+p.name+" • HCP "+p.handicap
+:
+"Not Set"}
+</div>
+`).join("<br>")}
+
+</div>
+
+<div>
+
+<div class="shankerLabel">
+SHANKERS
+</div>
+
+${ss.map(p=>`
+<div class="pill">
+${p
+?
+p.name+" • HCP "+p.handicap
+:
+"Not Set"}
+</div>
+`).join("<br>")}
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+`;
 
 }
 
+function round4SinglesMatch(match,i){
 
-/* =====================================
-   ROUND 4 SINGLES MATCH
-===================================== */
+if(!match)return"";
 
-function round4SinglesMatch(
-match,
-index
-){
-
-if(!match){
-
-return"";
-
-}
-
-
-while(
-match.hackers.length<1
-){
-
+while(match.hackers.length<1){
 match.hackers.push("");
-
 }
 
-
-while(
-match.shankers.length<1
-){
-
+while(match.shankers.length<1){
 match.shankers.push("");
-
 }
-
 
 if(isAdmin){
 
 return`
-
-<div class="singlesMatch">
+<div class="innerMatch">
 
 <h3>
-
-Match ${index+1}
-
+Match ${i+1}
 </h3>
 
-
 <div class="players">
-
 
 <div>
 
 <div class="hackerLabel">
-
 HACKER
-
 </div>
 
-
 <select
-onchange="
-setMatchPlayer(
-${index},
-'hackers',
-0,
-this.value
-)
-">
-
+onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions(
 "Hackers",
 match.hackers[0]
 )}
-
 </select>
 
 </div>
 
-
 <div>
 
 <div class="shankerLabel">
-
 SHANKER
-
 </div>
 
-
 <select
-onchange="
-setMatchPlayer(
-${index},
-'shankers',
-0,
-this.value
-)
-">
-
+onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions(
 "Shankers",
 match.shankers[0]
 )}
-
 </select>
 
 </div>
 
-
 </div>
 
 </div>
-
 `;
 
 }
 
-
-const hacker=
-getPlayer(
-match.hackers[0]
-);
-
-
-const shanker=
-getPlayer(
-match.shankers[0]
-);
-
+const h=getPlayer(match.hackers[0]);
+const s=getPlayer(match.shankers[0]);
 
 return`
-
-<div class="singlesMatch">
+<div class="innerMatch">
 
 <h3>
-
-Match ${index+1}
-
+Match ${i+1}
 </h3>
 
-
 <div class="players">
-
 
 <div>
 
 <div class="hackerLabel">
-
 HACKER
-
 </div>
-
 
 <div class="pill">
-
-${
-hacker
+${h
 ?
-hacker.name+
-" • HCP "+
-hacker.handicap
+h.name+" • HCP "+h.handicap
 :
-"Not Set"
-}
-
+"Not Set"}
 </div>
 
 </div>
-
 
 <div>
 
 <div class="shankerLabel">
-
 SHANKER
-
 </div>
-
 
 <div class="pill">
-
-${
-shanker
+${s
 ?
-shanker.name+
-" • HCP "+
-shanker.handicap
+s.name+" • HCP "+s.handicap
 :
-"Not Set"
-}
-
+"Not Set"}
 </div>
-
-</div>
-
 
 </div>
 
 </div>
 
+</div>
 `;
 
 }
-
-
-/* =====================================
-   SAVE MATCHUP
-===================================== */
 
 async function setMatchPlayer(
-matchIndex,
+i,
 side,
 slot,
 playerId
 ){
 
-if(!isAdmin){
-
-return;
-
-}
-
+if(!isAdmin)return;
 
 const match=
+data.matchups[currentRound][i];
 
-data.matchups[
-currentRound
-][
-matchIndex
-];
-
-
-match[
-side
-][
-slot
-]
-=
-playerId;
-
+match[side][slot]=playerId;
 
 render();
-
 
 try{
 
 await upsert(
-
 "tournament_matchups",
-
 {
-
-tournament_id:
-TOURNAMENT_ID,
-
-round_no:
-currentRound,
-
-match_no:
-matchIndex+1,
-
-hackers:
-match.hackers,
-
-shankers:
-match.shankers
-
+tournament_id:TOURNAMENT_ID,
+round_no:currentRound,
+match_no:i+1,
+hackers:match.hackers,
+shankers:match.shankers
 },
-
 "tournament_id,round_no,match_no"
-
 );
 
-}
-catch{
+}catch{
 
 alert(
 "Matchup could not be saved."
@@ -4141,93 +1880,42 @@ alert(
 
 }
 
-
-/* =====================================
-   VALIDATE MATCHUPS
-===================================== */
-
 function validateRound(){
 
-if(!isAdmin){
+if(!isAdmin)return;
 
-return;
+const r=roundInfo();
+const m=setupMatches();
+const used=new Set();
 
-}
+for(let i=0;i<m.length;i++){
 
-
-const round=
-roundInfo();
-
-
-const matches=
-setupMatches();
-
-
-const used=
-new Set();
-
-
-for(
-let index=0;
-index<matches.length;
-index++
-){
-
-const match=
-matches[index];
-
+const match=m[i];
 
 const required=
-
-round.type==="singles"
-?
-1
-:
-2;
-
+r.type==="singles"?1:2;
 
 if(
-
-match.hackers.filter(
-Boolean
-).length!==required
-
-||
-
-match.shankers.filter(
-Boolean
-).length!==required
-
+match.hackers.filter(Boolean).length!==required||
+match.shankers.filter(Boolean).length!==required
 ){
 
 alert(
-"Match "+
-(index+1)+
-" is incomplete."
+"Match "+(i+1)+" is incomplete."
 );
 
 return;
 
 }
 
-
 for(
-const playerId of [
-
+const id of [
 ...match.hackers,
-
 ...match.shankers
-
 ]
 ){
 
-if(
-used.has(
-String(
-playerId
-)
-)
-){
+if(used.has(String(id))){
 
 alert(
 "A player is used more than once in this round."
@@ -4237,21 +1925,13 @@ return;
 
 }
 
-
-used.add(
-String(
-playerId
-)
-);
+used.add(String(id));
 
 }
 
 }
 
-
-if(
-used.size!==32
-){
+if(used.size!==32){
 
 alert(
 "All 32 players must appear exactly once."
@@ -4261,7 +1941,6 @@ return;
 
 }
 
-
 alert(
 "Round "+
 currentRound+
@@ -4270,131 +1949,416 @@ currentRound+
 
 }
 
+function getScore(id){
 
-/* =====================================
-   SCORES
-===================================== */
+if(!data.scores[id]){
 
-function getScore(
-matchId
-){
-
-if(
-!data.scores[
-matchId
-]
-){
-
-data.scores[
-matchId
-]={
-
+data.scores[id]={
 holes:
 Array.from(
-
 {length:18},
-
 ()=>({})
-
 )
-
 };
 
 }
 
-
 while(
-data.scores[
-matchId
-]
-.holes.length
-<
-18
+data.scores[id].holes.length<18
 ){
 
-data.scores[
-matchId
-]
-.holes.push(
-{}
-);
+data.scores[id].holes.push({});
 
 }
 
-
-return data.scores[
-matchId
-];
+return data.scores[id];
 
 }
 
-
-function playerTotal(
-score,
-playerId
-){
+function enteredNine(score,id,start){
 
 let total=0;
 
-let entered=0;
-
-
 for(
-let hole=0;
-hole<18;hole++
+let h=start;
+h<start+9;
+h++
 ){
 
-const value=
-
+const v=
 Number(
-
-score.holes[
-hole
-][
-playerId
-]
-
+(score.holes[h]||{})[id]
 );
 
+if(!(v>0)){
+return "—";
+}
+
+total+=v;
+
+}
+
+return total;
+
+}
+
+function enteredTotal(score,id){
+
+const out=
+enteredNine(score,id,0);
+
+const inn=
+enteredNine(score,id,9);
 
 if(
-value>0
+out==="—"||
+inn==="—"
+){
+return "—";
+}
+
+return out+inn;
+
+}
+
+function nineTotal(values,start){
+
+return values
+.slice(start,start+9)
+.reduce(
+(a,b)=>a+Number(b||0),
+0
+);
+
+}
+
+function scoreHeader(){
+
+return`
+<tr>
+
+<th>PLAYER</th>
+
+${Array.from(
+{length:9},
+(_,i)=>`<th>${i+1}</th>`
+).join("")}
+
+<th>OUT</th>
+
+${Array.from(
+{length:9},
+(_,i)=>`<th>${i+10}</th>`
+).join("")}
+
+<th>IN</th>
+
+<th>TOTAL</th>
+
+</tr>
+`;
+
+}
+
+function scoreReferenceRow(
+values,
+label,
+showTotals=false
 ){
 
-total+=value;
-
-entered++;
-
-}
-
-}
-
-
-return entered===18
+return`
+<tr
+class="${
+label==="PAR"
 ?
-total
+"coursePar"
 :
-"—";
+"courseHcp"
+}">
+
+<td>${label}</td>
+
+${values
+.slice(0,9)
+.map(v=>`<td>${v}</td>`)
+.join("")}
+
+<td class="summaryCell">
+${showTotals
+?
+nineTotal(values,0)
+:
+""
+}
+</td>
+
+${values
+.slice(9)
+.map(v=>`<td>${v}</td>`)
+.join("")}
+
+<td class="summaryCell">
+${showTotals
+?
+nineTotal(values,9)
+:
+""
+}
+</td>
+
+<td class="summaryCell">
+${showTotals
+?
+values.reduce((a,b)=>a+b,0)
+:
+""
+}
+</td>
+
+</tr>
+`;
 
 }
 
+function playerScoreRow(
+p,
+score,
+round,
+matchNo,
+matchId
+){
 
-/* =====================================
-   SCORING PAGE
-===================================== */
+const cls=
+p.team==="Hackers"
+?
+"hackerScoreRow"
+:
+"shankerScoreRow";
+
+let cells="";
+
+for(let h=0;h<9;h++){
+
+const value=
+(score.holes[h]||{})[p.id]??"";
+
+cells+=`
+<td>
+
+<input
+type="number"
+inputmode="numeric"
+pattern="[0-9]*"
+min="1"
+max="20"
+${isAdmin?"":"disabled"}
+value="${value}"
+oninput="
+queueScore(
+${round},
+${matchNo},
+'${matchId}',
+${h},
+'${p.id}',
+this.value
+)
+">
+
+</td>
+`;
+
+}
+
+cells+=`
+<td class="summaryCell">
+${enteredNine(
+score,
+p.id,
+0
+)}
+</td>
+`;
+
+for(let h=9;h<18;h++){
+
+const value=
+(score.holes[h]||{})[p.id]??"";
+
+cells+=`
+<td>
+
+<input
+type="number"
+inputmode="numeric"
+pattern="[0-9]*"
+min="1"
+max="20"
+${isAdmin?"":"disabled"}
+value="${value}"
+oninput="
+queueScore(
+${round},
+${matchNo},
+'${matchId}',
+${h},
+'${p.id}',
+this.value
+)
+">
+
+</td>
+`;
+
+}
+
+cells+=`
+<td class="summaryCell">
+${enteredNine(
+score,
+p.id,
+9
+)}
+</td>
+
+<td class="summaryCell">
+${enteredTotal(
+score,
+p.id
+)}
+</td>
+`;
+
+return`
+<tr class="${cls}">
+
+<td>
+
+${p.name}
+
+<br>
+
+<span class="muted">
+HCP ${p.handicap}
+•
+Group ${p.group}
+</span>
+
+</td>
+
+${cells}
+
+</tr>
+`;
+
+}
+
+function resultControls(match,i){
+
+const saved=
+data.results[match.id]
+?
+data.results[match.id].winner
+:
+"";
+
+let banner="";
+
+if(saved==="Hackers"){
+
+banner=`
+<div
+class="resultBanner resultHackers">
+HACKERS WIN — 1 POINT
+</div>
+`;
+
+}
+
+else if(saved==="Shankers"){
+
+banner=`
+<div
+class="resultBanner resultShankers">
+SHANKERS WIN — 1 POINT
+</div>
+`;
+
+}
+
+else if(saved==="Halved"){
+
+banner=`
+<div
+class="resultBanner resultHalved">
+MATCH HALVED — ½ POINT EACH
+</div>
+`;
+
+}
+
+const controls=
+isAdmin
+?
+`
+<div style="margin-top:15px">
+
+<label>
+Official Match Result
+</label>
+
+<select id="result-${match.id}">
+
+<option value="">
+Select Result
+</option>
+
+<option
+value="Hackers"
+${saved==="Hackers"?"selected":""}>
+Hackers
+</option>
+
+<option
+value="Shankers"
+${saved==="Shankers"?"selected":""}>
+Shankers
+</option>
+
+<option
+value="Halved"
+${saved==="Halved"?"selected":""}>
+Halved
+</option>
+
+</select>
+
+</div>
+
+<button
+class="good"
+style="margin-top:10px"
+onclick="
+saveMatchResult(
+${currentRound},
+${i+1},
+'${match.id}'
+)">
+Save / Reset Match Result
+</button>
+`
+:
+"";
+
+return controls+banner;
+
+}
 
 function scoringPage(){
 
-const round=
-roundInfo();
-
-
-const matches=
-setupMatches();
-
+const r=roundInfo();
+const m=setupMatches();
 
 return`
-
 <div class="card">
 
 <div class="roundnav">
@@ -4402,25 +2366,16 @@ return`
 <div>
 
 <h2>
-
-Round ${round.id}
-
-Scoring
-
+Round ${r.id} Scoring
 </h2>
 
 <div class="muted">
-
-${round.course}
-
+${r.course}
 •
-
-${round.format}
-
+${r.format}
 </div>
 
 </div>
-
 
 <div class="roundbuttons">
 
@@ -4433,11 +2388,8 @@ currentRound-1
 );
 render();
 ">
-
 ←
-
 </button>
-
 
 <button
 onclick="
@@ -4448,680 +2400,217 @@ currentRound+1
 );
 render();
 ">
-
 →
-
 </button>
 
 </div>
 
 </div>
 
-
-${
-isAdmin
+${isAdmin
 ?
 `
-
 <div class="notice">
-
 Admin scoring mode.
-
 Scores save to the shared tournament.
-
 </div>
-
 `
 :
 `
-
 <div class="viewer">
-
 Scores are read-only.
-
 Only the administrator can enter or change scores.
-
 </div>
-
 `
 }
 
+${r.id===3
+?
+`
+<div class="notice">
+Talamore is result-only.
+Select Hackers, Shankers or Halved for each match.
+</div>
+`
+:
+`
+<div class="scoreHint">
+Enter scores left-to-right like a real golf scorecard.
+Swipe sideways on your phone to see all 18 holes.
+</div>
+`
+}
 
-${matches.map(
-
-(match,index)=>
-
+${m.map(
+(match,i)=>
 scoreCard(
-round,
+r,
 match,
-index
+i
 )
-
 ).join("")}
 
 </div>
-
 `;
 
 }
 
-
-/* =====================================
-   SCORE CARD
-===================================== */
-
-function scoreCard(
-round,
-match,
-index
-){
-
-const score=
-getScore(
-match.id
-);
-
+function scoreCard(r,match,i){
 
 const players=[
-
 ...match.hackers,
-
 ...match.shankers
-
 ]
-.map(
-getPlayer
-)
-.filter(
-Boolean
-);
-
+.map(getPlayer)
+.filter(Boolean);
 
 const required=
-
-round.type==="singles"
+r.type==="singles"
 ?
 2
 :
 4;
 
-
-if(
-players.length<required
-){
+if(players.length<required){
 
 return`
-
 <div class="match">
 
 <h3>
-
-Match ${index+1}
-
+Match ${i+1}
 </h3>
 
 <div class="notice">
-
 Matchup not set.
-
 </div>
 
 </div>
-
 `;
 
 }
 
+/* ROUND 3 — RESULT ONLY */
 
-let header="";
-
-let rows="";
-
-let totals="";
-
-
-if(
-round.type==="scramble"
-){
-
-header=`
-
-<tr>
-
-<th>
-Hole
-</th>
-
-<th>
-Hackers Team
-</th>
-
-<th>
-Shankers Team
-</th>
-
-</tr>
-
-`;
-
-
-for(
-let hole=0;
-hole<18;
-hole++
-){
-
-const scores=
-score.holes[
-hole
-]
-||
-{};
-
-
-rows+=`
-
-<tr>
-
-<td>
-
-${hole+1}
-
-</td>
-
-
-<td>
-
-<input
-type="number"
-inputmode="numeric"
-pattern="[0-9]*"
-min="1"
-max="20"
-
-${isAdmin ? "" : "disabled"}
-
-value="${
-scores.H ?? ""
-}"
-
-oninput="
-queueScore(
-${currentRound},
-${index+1},
-'${match.id}',
-${hole},
-'H',
-this.value
-)
-">
-
-</td>
-
-
-<td>
-
-<input
-type="number"
-inputmode="numeric"
-pattern="[0-9]*"
-min="1"
-max="20"
-
-${isAdmin ? "" : "disabled"}
-
-value="${
-scores.S ?? ""
-}"
-
-oninput="
-queueScore(
-${currentRound},
-${index+1},
-'${match.id}',
-${hole},
-'S',
-this.value
-)
-">
-
-</td>
-
-</tr>
-
-`;
-
-}
-
-
-totals=`
-
-<tr class="totalRow">
-
-<td>
-
-18-Hole Total
-
-</td>
-
-<td>
-
-${playerTotal(
-score,
-"H"
-)}
-
-</td>
-
-<td>
-
-${playerTotal(
-score,
-"S"
-)}
-
-</td>
-
-</tr>
-
-`;
-
-}
-else{
-
-header=`
-
-<tr>
-
-<th>
-
-Hole
-
-</th>
-
-
-${players.map(
-
-player=>`
-
-<th>
-
-${player.name}
-
-<br>
-
-<span class="muted">
-
-HCP ${player.handicap}
-
-<br>
-
-Group ${player.group}
-
-</span>
-
-</th>
-
-`
-
-).join("")}
-
-</tr>
-
-`;
-
-
-for(
-let hole=0;
-hole<18;
-hole++
-){
-
-const scores=
-score.holes[
-hole
-]
-||
-{};
-
-
-rows+=`
-
-<tr>
-
-<td>
-
-${hole+1}
-
-</td>
-
-
-${players.map(
-
-player=>`
-
-<td>
-
-<input
-type="number"
-inputmode="numeric"
-pattern="[0-9]*"
-min="1"
-max="20"
-
-${isAdmin ? "" : "disabled"}
-
-value="${
-scores[
-player.id
-]
-??
-""
-}"
-
-oninput="
-queueScore(
-${currentRound},
-${index+1},
-'${match.id}',
-${hole},
-'${player.id}',
-this.value
-)
-">
-
-</td>
-
-`
-
-).join("")}
-
-</tr>
-
-`;
-
-}
-
-
-totals=`
-
-<tr class="totalRow">
-
-<td>
-
-18-Hole Total
-
-</td>
-
-
-${players.map(
-
-player=>`
-
-<td>
-
-${playerTotal(
-score,
-player.id
-)}
-
-</td>
-
-`
-
-).join("")}
-
-</tr>
-
-`;
-
-}
-
-
-const savedResult=
-
-data.results[
-match.id
-]
-?
-data.results[
-match.id
-].winner
-:
-"";
-
-
-let banner="";
-
-
-if(
-savedResult==="Hackers"
-){
-
-banner=`
-
-<div class="
-resultBanner
-resultHackers
-">
-
-HACKERS WIN — 1 POINT
-
-</div>
-
-`;
-
-}
-
-else if(
-savedResult==="Shankers"
-){
-
-banner=`
-
-<div class="
-resultBanner
-resultShankers
-">
-
-SHANKERS WIN — 1 POINT
-
-</div>
-
-`;
-
-}
-
-else if(
-savedResult==="Halved"
-){
-
-banner=`
-
-<div class="
-resultBanner
-resultHalved
-">
-
-MATCH HALVED — ½ POINT EACH
-
-</div>
-
-`;
-
-}
-
-
-const resultControls=
-
-isAdmin
-
-?
-
-`
-
-<div
-style="
-margin-top:15px
-">
-
-<label>
-
-Official Match Result
-
-</label>
-
-
-<select
-id="result-${match.id}">
-
-<option value="">
-
-Select Result
-
-</option>
-
-
-<option
-value="Hackers"
-${
-savedResult==="Hackers"
-?
-"selected"
-:
-""
-}>
-
-Hackers
-
-</option>
-
-
-<option
-value="Shankers"
-${
-savedResult==="Shankers"
-?
-"selected"
-:
-""
-}>
-
-Shankers
-
-</option>
-
-
-<option
-value="Halved"
-${
-savedResult==="Halved"
-?
-"selected"
-:
-""
-}>
-
-Halved
-
-</option>
-
-</select>
-
-</div>
-
-
-<button
-class="good"
-style="
-margin-top:10px
-"
-
-onclick="
-saveMatchResult(
-${currentRound},
-${index+1},
-'${match.id}'
-)
-">
-
-Save / Reset Match Result
-
-</button>
-
-`
-
-:
-"";
-
+if(r.id===3){
 
 return`
-
-<div class="match">
+<div class="match resultOnly">
 
 <h3>
-
-Match ${index+1}
-
+Match ${i+1}
 </h3>
 
+<div class="players">
 
 <div>
 
-${players.map(
+<div class="hackerLabel">
+HACKERS
+</div>
 
-player=>`
+${match.hackers
+.map(id=>getPlayer(id))
+.filter(Boolean)
+.map(p=>`
 
-<span class="pill">
-
-${player.name}
-
+<div class="pill">
+${p.name}
 •
+HCP ${p.handicap}
+</div>
 
-HCP ${player.handicap}
-
-•
-
-Group ${player.group}
-
-</span>
-
-`
-
-).join("")}
+`).join("<br>")}
 
 </div>
 
+<div>
+
+<div class="shankerLabel">
+SHANKERS
+</div>
+
+${match.shankers
+.map(id=>getPlayer(id))
+.filter(Boolean)
+.map(p=>`
+
+<div class="pill">
+${p.name}
+•
+HCP ${p.handicap}
+</div>
+
+`).join("<br>")}
+
+</div>
+
+</div>
+
+${resultControls(
+match,
+i
+)}
+
+</div>
+`;
+
+}
+
+const score=
+getScore(match.id);
+
+const course=
+COURSE_CARDS[r.id];
+
+return`
+<div class="match">
+
+<h3>
+Match ${i+1}
+</h3>
 
 <div class="tablewrap">
 
 <table class="scoretable">
 
-${header}
+${scoreHeader()}
 
-${rows}
+${scoreReferenceRow(
+course.hcp,
+"MEN'S HCP",
+false
+)}
 
-${totals}
+${scoreReferenceRow(
+course.par,
+"PAR",
+true
+)}
+
+${players.map(
+p=>
+playerScoreRow(
+p,
+score,
+currentRound,
+i+1,
+match.id
+)
+).join("")}
 
 </table>
 
 </div>
 
-
-${resultControls}
-
-${banner}
+${resultControls(
+match,
+i
+)}
 
 </div>
-
 `;
 
 }
-
-
-/* =====================================
-   SAVE SCORES
-===================================== */
 
 function queueScore(
 round,
@@ -5132,37 +2621,19 @@ scorer,
 value
 ){
 
-if(!isAdmin){
-
-return;
-
-}
-
+if(!isAdmin)return;
 
 const score=
-getScore(
-matchId
-);
+getScore(matchId);
 
-
-score.holes[
-holeIndex
-][
-scorer
-]
-=
-
+score.holes[holeIndex][scorer]=
 value===""
 ?
 ""
 :
-Number(
-value
-);
+Number(value);
 
-
-const timerKey=
-
+const key=
 round+
 "-"+
 matchNo+
@@ -5171,44 +2642,24 @@ holeIndex+
 "-"+
 scorer;
 
-
 clearTimeout(
-saveTimers[
-timerKey
-]
+saveTimers[key]
 );
 
-
-saveTimers[
-timerKey
-]
-=
+saveTimers[key]=
 setTimeout(
-
-()=>{
-
+()=>
 saveScoreOnline(
-
 round,
-
 matchNo,
-
 holeIndex+1,
-
 scorer,
-
 value
-
-);
-
-},
-
+),
 350
-
 );
 
 }
-
 
 async function saveScoreDirect(
 round,
@@ -5219,41 +2670,19 @@ value
 ){
 
 await upsert(
-
 "tournament_scores",
-
 {
-
-tournament_id:
-TOURNAMENT_ID,
-
-round_no:
-round,
-
-match_no:
-matchNo,
-
-hole:
+tournament_id:TOURNAMENT_ID,
+round_no:round,
+match_no:matchNo,
 hole,
-
-scorer_key:
-String(
-scorer
-),
-
-score:
-Number(
-value
-)
-
+scorer_key:String(scorer),
+score:Number(value)
 },
-
 "tournament_id,round_no,match_no,hole,scorer_key"
-
 );
 
 }
-
 
 async function saveScoreOnline(
 round,
@@ -5263,77 +2692,41 @@ scorer,
 value
 ){
 
-if(!isAdmin){
-
-return;
-
-}
-
+if(!isAdmin)return;
 
 try{
 
-if(
-value===""
-){
+if(value===""){
 
 await deleteRows(
-
 "tournament_scores",
-
 {
-
-round_no:
-round,
-
-match_no:
-matchNo,
-
-hole:
+round_no:round,
+match_no:matchNo,
 hole,
-
-scorer_key:
-scorer
-
+scorer_key:scorer
 }
-
 );
 
-}
-else{
+}else{
 
 await saveScoreDirect(
-
 round,
-
 matchNo,
-
 hole,
-
 scorer,
-
-Number(
-value
-)
-
+Number(value)
 );
 
 }
 
-}
-catch(error){
+}catch(e){
 
-console.error(
-error
-);
+console.error(e);
 
 }
 
 }
-
-
-/* =====================================
-   MATCH RESULT
-===================================== */
 
 async function saveMatchResult(
 round,
@@ -5351,110 +2744,56 @@ return;
 
 }
 
-
 const box=
-
 document.getElementById(
 "result-"+matchId
 );
 
-
-if(!box){
-
-return;
-
-}
-
+if(!box)return;
 
 const winner=
 box.value;
 
-
 try{
 
-
-/* RESET RESULT */
-
-if(
-winner===""
-){
+if(winner===""){
 
 await deleteRows(
-
 "tournament_results",
-
 {
-
-round_no:
-round,
-
-match_no:
-matchNo
-
+round_no:round,
+match_no:matchNo
 }
-
 );
 
-
-delete data.results[
-matchId
-];
-
+delete data.results[matchId];
 
 render();
-
 
 return;
 
 }
 
-
-/* SAVE RESULT */
-
 await upsert(
-
 "tournament_results",
-
 {
-
-tournament_id:
-TOURNAMENT_ID,
-
-round_no:
-round,
-
-match_no:
-matchNo,
-
-winner:
+tournament_id:TOURNAMENT_ID,
+round_no:round,
+match_no:matchNo,
 winner
-
 },
-
 "tournament_id,round_no,match_no"
-
 );
 
-
-data.results[
-matchId
-]={
-
-winner:
+data.results[matchId]={
 winner
-
 };
-
 
 render();
 
-}
-catch(error){
+}catch(e){
 
-console.error(
-error
-);
-
+console.error(e);
 
 alert(
 "Match result could not be saved or reset."
@@ -5464,261 +2803,117 @@ alert(
 
 }
 
-
-/* =====================================
-   SKINS
-===================================== */
-
 function getSkinResults(
 roundId,
 group
 ){
 
-const round=
-
+const r=
 ROUNDS.find(
-
-round=>
-round.id===roundId
-
+x=>x.id===roundId
 );
 
-
-if(
-!round ||
-!round.skins
-){
-
-return [];
-
+if(!r||!r.skins){
+return[];
 }
 
-
 const matches=
-
-data.matchups[
-roundId
-]
-||
-[];
-
+data.matchups[roundId]||[];
 
 const results=[];
 
-
-for(
-let hole=0;
-hole<18;
-hole++
-){
+for(let h=0;h<18;h++){
 
 const entered=[];
 
+matches.forEach(match=>{
 
-matches.forEach(
+if(!match)return;
 
-match=>{
+const sd=
+data.scores[match.id];
 
-if(!match){
+if(!sd)return;
 
+const s=
+sd.holes[h]||{};
+
+[
+...(match.hackers||[]),
+...(match.shankers||[])
+].forEach(id=>{
+
+const p=getPlayer(id);
+
+if(!p||p.group!==group){
 return;
-
 }
 
+const v=
+Number(s[p.id]);
 
-const scoreData=
-
-data.scores[
-match.id
-];
-
-
-if(!scoreData){
-
-return;
-
-}
-
-
-const scores=
-
-scoreData.holes[
-hole
-]
-||
-{};
-
-
-const playerIds=[
-
-...(match.hackers || []),
-
-...(match.shankers || [])
-
-];
-
-
-playerIds.forEach(
-
-playerId=>{
-
-const player=
-getPlayer(
-playerId
-);
-
-
-if(
-!player ||
-player.group!==group
-){
-
-return;
-
-}
-
-
-const value=
-
-Number(
-
-scores[
-player.id
-]
-
-);
-
-
-if(
-value>0
-){
+if(v>0){
 
 entered.push({
-
-id:
-player.id,
-
-name:
-player.name,
-
-score:
-value
-
+id:p.id,
+name:p.name,
+score:v
 });
 
 }
 
-}
+});
 
-);
+});
 
-}
-
-);
-
-
-if(
-entered.length===0
-){
+if(!entered.length){
 
 results.push({
-
-hole:
-hole+1,
-
-status:
-"none"
-
+hole:h+1,
+status:"none"
 });
-
 
 continue;
 
 }
 
-
 const low=
-
 Math.min(
-
 ...entered.map(
-
-entry=>
-entry.score
-
+x=>x.score
 )
-
 );
-
 
 const winners=
-
 entered.filter(
-
-entry=>
-entry.score===low
-
+x=>x.score===low
 );
 
-
-if(
+results.push(
 winners.length===1
-){
-
-results.push({
-
-hole:
-hole+1,
-
-status:
-"skin",
-
-winner:
-winners[0],
-
-score:
-low,
-
-entered:
-entered.length
-
-});
-
+?
+{
+hole:h+1,
+status:"skin",
+winner:winners[0],
+score:low,
+entered:entered.length
 }
-else{
-
-results.push({
-
-hole:
-hole+1,
-
-status:
-"tie",
-
-score:
-low,
-
-winners:
+:
+{
+hole:h+1,
+status:"tie",
+score:low,
 winners,
-
-entered:
-entered.length
-
-});
+entered:entered.length
+}
+);
 
 }
-
-}
-
 
 return results;
 
 }
-
-
-/* =====================================
-   SKIN SUMMARY
-===================================== */
 
 function skinSummary(
 roundId,
@@ -5727,76 +2922,38 @@ group
 
 const counts={};
 
-
 getSkinResults(
 roundId,
 group
-)
-.forEach(
+).forEach(r=>{
 
-result=>{
-
-if(
-result.status!=="skin"
-){
-
+if(r.status!=="skin"){
 return;
-
 }
 
-
 const id=
-String(
-result.winner.id
-);
+String(r.winner.id);
 
+if(!counts[id]){
 
-if(
-!counts[
-id
-]
-){
-
-counts[
-id
-]={
-
-name:
-result.winner.name,
-
-count:
-0
-
+counts[id]={
+name:r.winner.name,
+count:0
 };
 
 }
 
+counts[id].count++;
 
-counts[
-id
-].count++;
+});
 
-}
-
-);
-
-
-return Object.values(
-counts
-)
+return Object
+.values(counts)
 .sort(
-
-(a,b)=>
-b.count-a.count
-
+(a,b)=>b.count-a.count
 );
 
 }
-
-
-/* =====================================
-   SKINS GROUP CARD
-===================================== */
 
 function skinGroupCard(
 round,
@@ -5804,413 +2961,262 @@ group
 ){
 
 const results=
-
 getSkinResults(
 round.id,
 group
 );
 
-
 const summary=
-
 skinSummary(
 round.id,
 group
 );
 
-
-const skinsWon=
-
+const won=
 results.filter(
-
-result=>
-result.status==="skin"
-
+r=>r.status==="skin"
 ).length;
 
-
 return`
-
 <div class="card">
 
 <h2>
-
 Group ${group}
-
 </h2>
 
-
 <div class="skinCount">
-
-${skinsWon}
-
-skins won
-
+${won} skins won
 </div>
 
-
-${
-summary.length
+${summary.length
 ?
 `
-
 <h3>
-
 Skin Leaders
-
 </h3>
 
-
-${summary.map(
-
-item=>`
+${summary.map(x=>`
 
 <span class="pill">
 
 <b>
-
-${item.name}
-
+${x.name}
 </b>
 
 —
+${x.count}
 
-${item.count}
-
-${
-item.count===1
+${x.count===1
 ?
-" skin"
+"skin"
 :
-" skins"
+"skins"
 }
 
 </span>
 
-`
-
-).join("")}
-
+`).join("")}
 `
 :
 ""
 }
 
-
 <h3>
-
 Hole-by-Hole
-
 </h3>
 
+${results.map(r=>
 
-${results.map(
+r.status==="skin"
 
-result=>{
+?
 
-if(
-result.status==="skin"
-){
-
-return`
-
+`
 <div class="skinWinner">
 
 <b>
-
-Hole ${result.hole}
-
-— SKIN
-
+Hole ${r.hole} — SKIN
 </b>
 
 <br>
 
-${result.winner.name}
-
-— ${result.score}
+${r.winner.name}
+—
+${r.score}
 
 <br>
 
 <span class="muted">
-
-${result.entered}
-
-entered score${
-result.entered===1
-?
-""
-:
-"s"
-}
-
+${r.entered}
+entered score${r.entered===1?"":"s"}
 </span>
 
 </div>
+`
 
-`;
+:
 
-}
+r.status==="tie"
 
+?
 
-if(
-result.status==="tie"
-){
-
-return`
-
+`
 <div class="skinTie">
 
 <b>
-
-Hole ${result.hole}
-
-— NO SKIN
-
+Hole ${r.hole} — NO SKIN
 </b>
 
 <br>
 
-Tie at
-
-${result.score}
+Tie at ${r.score}
 
 <br>
 
-${result.winners
-
-.map(
-
-player=>
-player.name
-
-)
-
+${r.winners
+.map(p=>p.name)
 .join(", ")}
 
 </div>
+`
 
-`;
+:
 
-}
-
-
-return`
-
+`
 <div class="skinNone">
 
 <b>
-
-Hole ${result.hole}
-
+Hole ${r.hole}
 </b>
 
 — No scores entered
 
 </div>
-
-`;
-
-}
-
-).join("")}
-
-</div>
-
-`;
-
-}
-
-
-/* =====================================
-   SKINS PAGE
-===================================== */
-
-function skinsPage(){
-
-const skinRounds=
-
-ROUNDS.filter(
-
-round=>
-round.skins
-
-);
-
-
-return`
-
-<div class="card">
-
-<h2>
-
-Skins
-
-</h2>
-
-</div>
-
-
-${skinRounds.map(
-
-round=>`
-
-<div class="card">
-
-<h2>
-
-Round ${round.id}
-
-—
-
-${round.course}
-
-</h2>
-
-<div class="muted">
-
-${round.format}
-
-</div>
-
-</div>
-
-
-${skinGroupCard(
-round,
-"A"
-)}
-
-
-${skinGroupCard(
-round,
-"B"
-)}
-
 `
 
 ).join("")}
 
+</div>
 `;
 
 }
 
+function skinsPage(){
 
-/* =====================================
-   RENDER
-===================================== */
+const rounds=
+ROUNDS.filter(
+r=>r.skins
+);
+
+return`
+<div class="card">
+
+<h2>
+Skins
+</h2>
+
+<div class="muted">
+Gross scores • lowest unique score wins • ties = no skin • no carryovers
+</div>
+
+</div>
+
+${rounds.map(r=>`
+
+<div class="card">
+
+<h2>
+Round ${r.id} — ${r.course}
+</h2>
+
+<div class="muted">
+${r.format}
+</div>
+
+</div>
+
+${skinGroupCard(r,"A")}
+
+${skinGroupCard(r,"B")}
+
+`).join("")}
+`;
+
+}
 
 function render(){
 
 drawNav();
 
-
 drawConnectionStatus();
 
-
-document
-.getElementById(
-"app"
-)
-.innerHTML=
+document.getElementById("app").innerHTML=
 
 page==="dashboard"
 ?
 dashboard()
 
 :
-
 page==="players"
 ?
 playersPage()
 
 :
-
 page==="matchups"
 ?
 matchupPage()
 
 :
-
 page==="scoring"
 ?
 scoringPage()
 
 :
-
 page==="skins"
 ?
 skinsPage()
 
 :
-
 loginPage();
 
 }
 
-
-/* =====================================
-   AUTO REFRESH
-===================================== */
-
 setInterval(
+async()=>{
 
-async ()=>{
-
-const active=
-
+const a=
 document.activeElement;
 
-
 const editing=
-
-active &&
+a&&
 (
-active.tagName==="INPUT"
-||
-active.tagName==="SELECT"
+a.tagName==="INPUT"||
+a.tagName==="SELECT"
 );
-
 
 if(!editing){
 
-await loadSharedData(
-true
-);
+await loadSharedData(true);
 
 }
 
 },
-
 10000
-
 );
-
-
-/* =====================================
-   START
-===================================== */
 
 async function start(){
 
 loadStoredSession();
 
-
 await refreshSessionIfNeeded();
-
 
 await checkAdmin();
 
-
-await loadSharedData(
-false
-);
-
+await loadSharedData(false);
 
 render();
 
 }
-
 
 start();
 
