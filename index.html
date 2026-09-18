@@ -1615,9 +1615,9 @@ return`
 
 </div>
 
-${canScore()
-?`<div class="notice"><b>Fast Entry:</b> Tap the first score box and start entering scores. Scores 2–9 advance automatically in <b>0.2 seconds</b>. A score starting with 1 waits slightly longer for a possible 10+.</div>`
-:`<div class="viewer">Scores are read-only.</div>`
+${!canScore()
+?`<div class="viewer">Scores are read-only.</div>`
+:""
 }
 
 ${r.id===3
@@ -1627,11 +1627,7 @@ Talamore is result-only.
 Select Hackers, Shankers or Halved for each match.
 </div>
 `
-:`
-<div class="scoreHint">
-The number pad stays open as scores move left-to-right. After Hole 18, entry moves to Hole 1 for the next golfer.
-</div>
-`
+:""
 }
 
 ${m.map((match,i)=>scoreCard(r,match,i)).join("")}
