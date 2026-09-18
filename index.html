@@ -73,6 +73,11 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .scatTie{background:#fff7ed;border:1px solid #fdba74;padding:10px;border-radius:9px;margin:6px 0}
 .scatNone{background:#f9fafb;border:1px solid #e5e7eb;padding:10px;border-radius:9px;margin:6px 0;color:#6b7280}
 .scatCount{font-size:22px;font-weight:900}
+.allScatPlayer{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:13px;margin:10px 0}
+.allScatPlayerName{font-size:19px;font-weight:900}
+.allScatTotal{font-size:14px;font-weight:900;color:#065f46;margin-top:2px}
+.allScatWin{padding:8px 0;border-top:1px solid #e5e7eb;margin-top:8px}
+.allScatWin:first-of-type{margin-top:10px}
 
 .loginBox{max-width:500px;margin:auto}
 .loading{text-align:center;padding:40px;font-size:18px;font-weight:bold}
@@ -1301,10 +1306,6 @@ Advance after 0.2 seconds.
 
 1:
 Wait 0.45 seconds in case the score is 10 or higher.
-
-The next field receives focus while the current number
-field is still active. This is designed to keep the
-iPhone numeric keyboard open.
 */
 
 let scoreAdvanceTimer=null;
@@ -1331,9 +1332,7 @@ return;
 }
 
 event.preventDefault();
-
 clearTimeout(scoreAdvanceTimer);
-
 advanceScoreInput(el);
 }
 
@@ -1366,18 +1365,10 @@ const n=Number(raw);
 
 if(!Number.isFinite(n)||n<1||n>20)return;
 
-/*
-A first digit of 1 gets a little extra time
-for 10, 11, 12, etc.
-*/
 const delay=raw==="1"?450:200;
 
 scoreAdvanceTimer=setTimeout(()=>{
 
-/*
-If the scorer manually moved somewhere else,
-do not pull focus away from them.
-*/
 if(document.activeElement!==el)return;
 
 advanceScoreInput(el);
@@ -1389,13 +1380,10 @@ function advanceScoreInput(el){
 if(!el)return;
 
 const table=el.closest(".scoretable");
-
 if(!table)return;
 
 const inputs=Array.from(
-table.querySelectorAll(
-"input.scoreInput:not(:disabled)"
-)
+table.querySelectorAll("input.scoreInput:not(:disabled)")
 );
 
 const currentIndex=inputs.indexOf(el);
@@ -1409,15 +1397,8 @@ el.blur();
 return;
 }
 
-/*
-Move directly from one numeric input to the next.
-Do not blur first. This gives iPhone the best chance
-of leaving the number pad open.
-*/
 try{
-next.focus({
-preventScroll:true
-});
+next.focus({preventScroll:true});
 }catch(e){
 next.focus();
 }
@@ -1430,26 +1411,17 @@ const wrapper=next.closest(".tablewrap");
 const cell=next.closest("td");
 
 if(wrapper&&cell){
-
 const wrapperRect=wrapper.getBoundingClientRect();
 const cellRect=cell.getBoundingClientRect();
 
 const stickyWidth=155;
-
-const leftLimit=
-wrapperRect.left+
-stickyWidth+
-8;
-
-const rightLimit=
-wrapperRect.right-
-8;
+const leftLimit=wrapperRect.left+stickyWidth+8;
+const rightLimit=wrapperRect.right-8;
 
 if(
 cellRect.left<leftLimit||
 cellRect.right>rightLimit
 ){
-
 const desiredLeft=
 wrapper.scrollLeft+
 (cellRect.left-wrapperRect.left)-
@@ -1460,9 +1432,7 @@ wrapper.scrollTo({
 left:Math.max(0,desiredLeft),
 behavior:"smooth"
 });
-
 }
-
 }
 }
 
@@ -1967,6 +1937,104 @@ ${r.winners.map(p=>escapeHtml(p.name)).join(", ")}
 `;
 }
 
+/*
+QUICK ALL-SCAT WINNERS
+
+All winning scats from Rounds 1, 2 and 4 are grouped
+by player. Players with the most scats appear first.
+*/
+
+function allScatWinners(){
+const players={};
+
+ROUNDS
+.filter(r=>r.scats)
+.forEach(r=>{
+
+["A","B"].forEach(group=>{
+
+getScatResults(r.id,group).forEach(result=>{
+
+if(result.status!=="scat")return;
+
+const id=String(result.winner.id);
+
+if(!players[id]){
+players[id]={
+id,
+name:result.winner.name,
+group,
+wins:[]
+};
+}
+
+players[id].wins.push({
+round:r.id,
+course:r.course,
+hole:result.hole,
+score:result.score,
+group
+});
+
+});
+
+});
+
+});
+
+const sorted=Object.values(players)
+.map(p=>({
+...p,
+wins:p.wins.sort((a,b)=>{
+if(a.round!==b.round)return a.round-b.round;
+return a.hole-b.hole;
+})
+}))
+.sort((a,b)=>{
+if(b.wins.length!==a.wins.length){
+return b.wins.length-a.wins.length;
+}
+return String(a.name).localeCompare(String(b.name));
+});
+
+if(!sorted.length){
+return`
+<div class="card">
+<h2>All Scat Winners</h2>
+<div class="muted">No scats have been won yet.</div>
+</div>
+`;
+}
+
+return`
+<div class="card">
+
+<h2>All Scat Winners</h2>
+
+${sorted.map(p=>`
+<div class="allScatPlayer">
+
+<div class="allScatPlayerName">
+${escapeHtml(p.name)}
+</div>
+
+<div class="allScatTotal">
+${p.wins.length} ${p.wins.length===1?"scat":"scats"} • Group ${escapeHtml(p.group)}
+</div>
+
+${p.wins.map(w=>`
+<div class="allScatWin">
+<b>${escapeHtml(w.course)}</b> • Hole ${w.hole} • Score ${w.score}
+</div>
+`).join("")}
+
+</div>
+`).join("")}
+
+</div>
+`;
+}
+
 function scatsPage(){
 const rounds=ROUNDS.filter(r=>r.scats);
 
@@ -1978,6 +2046,8 @@ return`
 Gross scores • lowest unique score wins a scat • ties = no scat • no carryovers
 </div>
 </div>
+
+${allScatWinners()}
 
 ${rounds.map(r=>`
 <div class="card">
