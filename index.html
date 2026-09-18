@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
 <title>Delco Duffers 2026</title>
+
 <style>
 *{box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
@@ -40,6 +41,8 @@ input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
 .shared{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin-bottom:12px}
 .viewer{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;padding:10px;border-radius:9px;margin-bottom:12px}
 .admin{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin-bottom:12px}
+.captainMode{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;padding:10px;border-radius:9px;margin-bottom:12px}
+.scorerMode{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;padding:10px;border-radius:9px;margin-bottom:12px}
 .offline{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:10px;border-radius:9px;margin-bottom:12px}
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse}
@@ -75,7 +78,6 @@ border-radius:6px
 .summaryCell{font-weight:900;background:#f3f4f6}
 .scoreHint{font-size:12px;color:#6b7280;margin:6px 0 10px}
 .resultOnly{max-width:650px;margin:14px auto}
-
 .roundnav{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .roundbuttons{display:flex;gap:6px}
 .resultBanner{margin-top:12px;padding:14px;border-radius:10px;font-size:20px;font-weight:900;text-align:center}
@@ -102,6 +104,11 @@ border-radius:6px
 .hackerLabel{font-weight:900;color:#dc2626;margin-bottom:6px}
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
+.accessOwner{font-weight:900;color:#065f46}
+.accessCaptain{font-weight:900;color:#92400e}
+.accessScorer{font-weight:900;color:#5b21b6}
+.accessViewer{font-weight:900;color:#6b7280}
+.userEmail{word-break:break-all}
 
 @media(max-width:650px){
 .players{grid-template-columns:1fr}
@@ -120,17 +127,28 @@ header h1{font-size:25px}
 <div class="logoBox">
 <img src="IMG_5029.jpeg" alt="Delco Duffers" class="logo">
 </div>
+
 <h1>Delco Duffers 2026</h1>
-<div class="headerMeta">32 Players • 40 Points • First to 20.5</div>
+
+<div class="headerMeta">
+32 Players • 40 Points • First to 20.5
+</div>
+
 <div class="captains">
 Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers
 </div>
 </header>
 
 <main>
+
 <div id="connectionStatus"></div>
+
 <div class="nav" id="nav"></div>
-<div id="app"><div class="loading">Loading tournament…</div></div>
+
+<div id="app">
+<div class="loading">Loading tournament…</div>
+</div>
+
 </main>
 
 <script>
@@ -138,7 +156,7 @@ Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers
 const SUPABASE_URL="https://eyymbevpuxqiddyzelfh.supabase.co";
 const SUPABASE_KEY="sb_publishable_la4el5LZaa83Dto90xcPnA_ouqq05dz";
 const TOURNAMENT_ID="delco-duffers-2026";
-const ADMIN_EMAIL="roccopacejr@gmail.com";
+const OWNER_EMAIL="roccopacejr@gmail.com";
 const SESSION_KEY="delcoDuffersAdminSession";
 
 const ROUNDS=[
@@ -147,6 +165,11 @@ const ROUNDS=[
 {id:3,course:"Talamore",format:"2-Man Scramble",matches:8,type:"scramble",skins:false},
 {id:4,course:"Legacy",format:"1v1 Match Play",matches:16,type:"singles",skins:true}
 ];
+
+/*
+SCORECARD DATA BELOW IS UNCHANGED
+FROM THE VERSION PROVIDED BY ROCCO.
+*/
 
 const COURSE_CARDS={
 1:{
@@ -163,47 +186,166 @@ hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
 }
 };
 
-let data={players:[],matchups:{},scores:{},results:{}};
+let data={
+players:[],
+matchups:{},
+scores:{},
+results:{}
+};
+
 let session=null;
-let isAdmin=false;
+let currentUser=null;
+
+let userRole="viewer";
+let userTeam=null;
+
 let connected=false;
 let page="dashboard";
 let currentRound=1;
 let saveTimers={};
 let editingPlayerId=null;
+let tournamentUsers=[];
+
+
+/* =========================================================
+   PERMISSION HELPERS
+========================================================= */
+
+function isSignedIn(){
+return !!(
+session&&
+session.access_token&&
+currentUser
+);
+}
+
+function isOwner(){
+return userRole==="owner";
+}
+
+function isCaptain(){
+return userRole==="captain";
+}
+
+function isScorer(){
+return userRole==="scorer";
+}
+
+function canScore(){
+return (
+userRole==="owner"||
+userRole==="captain"||
+userRole==="scorer"
+);
+}
+
+function canEditPlayers(){
+return isOwner();
+}
+
+function canManageUsers(){
+return isOwner();
+}
+
+function canEditMatchupSide(side){
+
+if(isOwner())return true;
+
+if(!isCaptain())return false;
+
+if(
+side==="hackers"&&
+userTeam==="Hackers"
+){
+return true;
+}
+
+if(
+side==="shankers"&&
+userTeam==="Shankers"
+){
+return true;
+}
+
+return false;
+
+}
+
+
+/* =========================================================
+   SESSION / AUTH
+========================================================= */
 
 function loadStoredSession(){
+
 try{
-session=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");
+
+session=
+JSON.parse(
+localStorage.getItem(SESSION_KEY)||"null"
+);
+
 }catch{
+
 session=null;
+
 }
+
 }
 
 function storeSession(newSession){
+
 session=newSession;
+
 if(session){
-localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+
+localStorage.setItem(
+SESSION_KEY,
+JSON.stringify(session)
+);
+
 }else{
-localStorage.removeItem(SESSION_KEY);
+
+localStorage.removeItem(
+SESSION_KEY
+);
+
 }
+
 }
 
 function authToken(){
-return session&&session.access_token?session.access_token:SUPABASE_KEY;
+
+return session&&session.access_token
+?
+session.access_token
+:
+SUPABASE_KEY;
+
 }
 
 async function refreshSessionIfNeeded(){
+
 if(!session||!session.refresh_token)return;
 
-const expiresAt=Number(session.expires_at||0);
-const now=Math.floor(Date.now()/1000);
+const expiresAt=
+Number(session.expires_at||0);
 
-if(expiresAt&&expiresAt-now>120)return;
+const now=
+Math.floor(Date.now()/1000);
+
+if(
+expiresAt&&
+expiresAt-now>120
+){
+return;
+}
 
 try{
+
 const r=await fetch(
-SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",
+SUPABASE_URL+
+"/auth/v1/token?grant_type=refresh_token",
 {
 method:"POST",
 headers:{
@@ -216,7 +358,9 @@ refresh_token:session.refresh_token
 }
 );
 
-if(!r.ok)throw new Error("Refresh failed");
+if(!r.ok){
+throw new Error("Refresh failed");
+}
 
 const x=await r.json();
 
@@ -225,18 +369,24 @@ Math.floor(Date.now()/1000)+
 Number(x.expires_in||3600);
 
 storeSession(x);
-await checkAdmin();
 
 }catch{
+
 storeSession(null);
-isAdmin=false;
-}
+
+currentUser=null;
+userRole="viewer";
+userTeam=null;
+
 }
 
-async function checkAdmin(){
+}
+
+async function loadCurrentUser(){
+
+currentUser=null;
 
 if(!session||!session.access_token){
-isAdmin=false;
 return;
 }
 
@@ -247,43 +397,211 @@ SUPABASE_URL+"/auth/v1/user",
 {
 headers:{
 apikey:SUPABASE_KEY,
-Authorization:"Bearer "+session.access_token
+Authorization:
+"Bearer "+session.access_token
 }
 }
 );
 
 if(!r.ok){
-isAdmin=false;
-return;
+throw new Error("Session invalid");
 }
 
-const u=await r.json();
-
-isAdmin=
-String(u.email||"").toLowerCase()===
-ADMIN_EMAIL;
+currentUser=await r.json();
 
 }catch{
-isAdmin=false;
+
+storeSession(null);
+currentUser=null;
+
 }
 
 }
+
+async function registerCurrentUser(){
+
+if(!isSignedIn())return;
+
+try{
+
+await fetch(
+SUPABASE_URL+
+"/rest/v1/rpc/register_duffers_user",
+{
+method:"POST",
+headers:{
+apikey:SUPABASE_KEY,
+Authorization:
+"Bearer "+session.access_token,
+"Content-Type":"application/json"
+},
+body:"{}"
+}
+);
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+async function loadMyPermissions(){
+
+userRole="viewer";
+userTeam=null;
+
+if(!isSignedIn())return;
+
+try{
+
+await registerCurrentUser();
+
+const url=
+SUPABASE_URL+
+"/rest/v1/tournament_users"+
+"?tournament_id=eq."+
+encodeURIComponent(TOURNAMENT_ID)+
+"&user_id=eq."+
+encodeURIComponent(currentUser.id)+
+"&select=*";
+
+const r=await fetch(
+url,
+{
+headers:{
+apikey:SUPABASE_KEY,
+Authorization:
+"Bearer "+session.access_token
+}
+}
+);
+
+if(!r.ok){
+throw new Error("Permission lookup failed");
+}
+
+const rows=await r.json();
+
+if(rows.length){
+
+userRole=rows[0].role||"viewer";
+userTeam=rows[0].team||null;
+
+}
+
+if(
+String(currentUser.email||"").toLowerCase()===
+OWNER_EMAIL
+){
+
+userRole="owner";
+userTeam=null;
+
+}
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+
+/* =========================================================
+   LOGIN PAGE
+========================================================= */
 
 function loginPage(){
 
-if(isAdmin){
+if(isSignedIn()){
+
+let access="VIEW ONLY";
+
+if(isOwner()){
+access="OWNER — FULL ACCESS";
+}
+
+else if(isCaptain()){
+access=
+(userTeam||"")+" CAPTAIN";
+}
+
+else if(isScorer()){
+access="SCORER";
+}
 
 return`
 <div class="card loginBox">
-<h2>Admin</h2>
 
-<div class="admin">
-✅ Signed in as administrator<br>
-<b>${ADMIN_EMAIL}</b>
+<h2>Account</h2>
+
+<div class="${
+isOwner()
+?
+"admin"
+:
+isCaptain()
+?
+"captainMode"
+:
+isScorer()
+?
+"scorerMode"
+:
+"viewer"
+}">
+
+<b>${access}</b>
+
+<br><br>
+
+Signed in as:
+
+<br>
+
+<b>${escapeHtml(currentUser.email||"")}</b>
+
 </div>
 
-<button class="danger"
-onclick="adminLogout()">
+${isOwner()
+?
+`
+<p>
+You have full tournament control.
+</p>
+`
+:
+isCaptain()
+?
+`
+<p>
+You can enter all scores and results and change the
+<b>${userTeam}</b> side of the matchups.
+</p>
+`
+:
+isScorer()
+?
+`
+<p>
+You can enter or change any tournament score and official match result.
+</p>
+`
+:
+`
+<p>
+Your account currently has view-only access.
+The tournament owner can give you scoring or captain access.
+</p>
+`
+}
+
+<button
+class="danger"
+onclick="accountLogout()">
 Sign Out
 </button>
 
@@ -295,20 +613,22 @@ Sign Out
 return`
 <div class="card loginBox">
 
-<h2>Admin Login</h2>
+<h2>Sign In</h2>
 
 <p>
-Everyone else can view the tournament.
-Only the administrator can make changes.
+Sign in to enter scores or manage the tournament if you have been given access.
 </p>
 
 <div class="field">
-<label>Admin Email</label>
+
+<label>Email</label>
+
 <input
-id="adminEmail"
+id="loginEmail"
 type="email"
-value="${ADMIN_EMAIL}"
-disabled>
+autocomplete="email"
+placeholder="Email address">
+
 </div>
 
 <div class="field"
@@ -317,109 +637,59 @@ style="margin-top:10px">
 <label>Password</label>
 
 <input
-id="adminPassword"
+id="loginPassword"
 type="password"
-placeholder="Enter your admin password">
+autocomplete="current-password"
+placeholder="Password">
 
 </div>
 
 <button
 class="primary"
 style="margin-top:12px"
-onclick="adminLogin()">
-Admin Login
+onclick="accountLogin()">
+Sign In
 </button>
+
+<hr style="margin:22px 0;border:0;border-top:1px solid #e5e7eb">
+
+<h3>Create Account</h3>
+
+<p class="muted">
+New accounts start with view-only access.
+Rocco can assign Scorer or Captain access after you register.
+</p>
 
 <button
 class="blue"
-style="margin-top:12px"
-onclick="createAdminAccount()">
-Create Admin Account
+onclick="createAccount()">
+Create Account
 </button>
-
-<p class="muted">
-Use Create Admin Account only the first time.
-Afterward, use Admin Login.
-</p>
 
 </div>
 `;
 
 }
 
-async function createAdminAccount(){
+async function accountLogin(){
+
+const email=
+document.getElementById("loginEmail")
+.value.trim()
+.toLowerCase();
 
 const password=
-document.getElementById("adminPassword").value;
+document.getElementById("loginPassword")
+.value;
 
-if(!password||password.length<8){
-alert("Choose a password with at least 8 characters.");
-return;
-}
-
-try{
-
-const r=await fetch(
-SUPABASE_URL+"/auth/v1/signup",
-{
-method:"POST",
-headers:{
-apikey:SUPABASE_KEY,
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-email:ADMIN_EMAIL,
-password
-})
-}
-);
-
-const x=await r.json();
-
-if(!r.ok){
-throw new Error(
-x.msg||
-x.message||
-"Could not create account."
-);
-}
-
-if(x.access_token){
-
-x.expires_at=
-Math.floor(Date.now()/1000)+
-Number(x.expires_in||3600);
-
-storeSession(x);
-
-await checkAdmin();
-
-render();
-
-alert("Admin account created and signed in.");
-
-return;
-
-}
+if(!email||!password){
 
 alert(
-"Account created. Check your Gmail for the confirmation email. After confirming it, come back here and use Admin Login."
+"Enter your email and password."
 );
 
-}catch(e){
-alert(e.message);
-}
-
-}
-
-async function adminLogin(){
-
-const password=
-document.getElementById("adminPassword").value;
-
-if(!password){
-alert("Enter your password.");
 return;
+
 }
 
 try{
@@ -434,7 +704,7 @@ apikey:SUPABASE_KEY,
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-email:ADMIN_EMAIL,
+email,
 password
 })
 }
@@ -443,12 +713,14 @@ password
 const x=await r.json();
 
 if(!r.ok){
+
 throw new Error(
 x.error_description||
 x.msg||
 x.message||
 "Login failed."
 );
+
 }
 
 x.expires_at=
@@ -457,14 +729,8 @@ Number(x.expires_in||3600);
 
 storeSession(x);
 
-await checkAdmin();
-
-if(!isAdmin){
-storeSession(null);
-throw new Error(
-"This account is not authorized as administrator."
-);
-}
+await loadCurrentUser();
+await loadMyPermissions();
 
 page="dashboard";
 
@@ -473,12 +739,109 @@ await loadSharedData(false);
 render();
 
 }catch(e){
+
 alert(e.message);
-}
 
 }
 
-async function adminLogout(){
+}
+
+async function createAccount(){
+
+const email=
+document.getElementById("loginEmail")
+.value.trim()
+.toLowerCase();
+
+const password=
+document.getElementById("loginPassword")
+.value;
+
+if(!email){
+
+alert("Enter your email.");
+
+return;
+
+}
+
+if(!password||password.length<8){
+
+alert(
+"Choose a password with at least 8 characters."
+);
+
+return;
+
+}
+
+try{
+
+const r=await fetch(
+SUPABASE_URL+"/auth/v1/signup",
+{
+method:"POST",
+headers:{
+apikey:SUPABASE_KEY,
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password
+})
+}
+);
+
+const x=await r.json();
+
+if(!r.ok){
+
+throw new Error(
+x.msg||
+x.message||
+"Could not create account."
+);
+
+}
+
+if(x.access_token){
+
+x.expires_at=
+Math.floor(Date.now()/1000)+
+Number(x.expires_in||3600);
+
+storeSession(x);
+
+await loadCurrentUser();
+await loadMyPermissions();
+
+page="dashboard";
+
+await loadSharedData(false);
+
+render();
+
+alert(
+"Account created. You are signed in."
+);
+
+return;
+
+}
+
+alert(
+"Account created. Check your email for the confirmation message. After confirming your email, come back and sign in."
+);
+
+}catch(e){
+
+alert(e.message);
+
+}
+
+}
+
+async function accountLogout(){
 
 try{
 
@@ -502,21 +865,34 @@ Authorization:
 
 storeSession(null);
 
-isAdmin=false;
+currentUser=null;
+userRole="viewer";
+userTeam=null;
+tournamentUsers=[];
 editingPlayerId=null;
 page="dashboard";
+
+await loadSharedData(false);
 
 render();
 
 }
 
+
+/* =========================================================
+   DATABASE HELPERS
+========================================================= */
+
 function headers(extra={}){
+
 return{
 apikey:SUPABASE_KEY,
-Authorization:"Bearer "+authToken(),
+Authorization:
+"Bearer "+authToken(),
 "Content-Type":"application/json",
 ...extra
 };
+
 }
 
 async function apiGet(table){
@@ -531,23 +907,30 @@ table+
 encodeURIComponent(TOURNAMENT_ID)+
 "&select=*";
 
-const r=await fetch(url,{
+const r=await fetch(
+url,
+{
 headers:headers()
-});
+}
+);
 
 if(!r.ok){
-throw new Error("Database read failed");
+
+throw new Error(
+"Database read failed"
+);
+
 }
 
 return await r.json();
 
 }
 
-async function upsert(table,row,conflict){
-
-if(!isAdmin){
-throw new Error("Admin login required.");
-}
+async function upsert(
+table,
+row,
+conflict
+){
 
 await refreshSessionIfNeeded();
 
@@ -572,7 +955,9 @@ body:JSON.stringify(row)
 
 if(!r.ok){
 
-console.error(await r.text());
+const msg=await r.text();
+
+console.error(msg);
 
 throw new Error(
 "Database save failed"
@@ -582,13 +967,10 @@ throw new Error(
 
 }
 
-async function deleteRows(table,filters){
-
-if(!isAdmin){
-throw new Error(
-"Admin login required."
-);
-}
+async function deleteRows(
+table,
+filters
+){
 
 await refreshSessionIfNeeded();
 
@@ -599,14 +981,16 @@ table+
 "?tournament_id=eq."+
 encodeURIComponent(TOURNAMENT_ID);
 
-Object.entries(filters).forEach(
-([k,v])=>{
-url+="&"+
+Object.entries(filters)
+.forEach(([k,v])=>{
+
+url+=
+"&"+
 k+
 "=eq."+
 encodeURIComponent(v);
-}
-);
+
+});
 
 const r=await fetch(
 url,
@@ -617,14 +1001,22 @@ headers:headers()
 );
 
 if(!r.ok){
+
+console.error(
+await r.text()
+);
+
 throw new Error(
 "Database delete failed"
 );
-}
 
 }
 
-async function loadSharedData(rerender=true){
+}
+
+async function loadSharedData(
+rerender=true
+){
 
 try{
 
@@ -658,7 +1050,11 @@ data.matchups[r.round_no]=[];
 }
 
 data.matchups[r.round_no][r.match_no-1]={
-id:"R"+r.round_no+"M"+r.match_no,
+id:
+"R"+
+r.round_no+
+"M"+
+r.match_no,
 matchNo:r.match_no,
 hackers:r.hackers||[],
 shankers:r.shankers||[]
@@ -671,12 +1067,16 @@ data.scores={};
 scores.forEach(r=>{
 
 const id=
-"R"+r.round_no+"M"+r.match_no;
+"R"+
+r.round_no+
+"M"+
+r.match_no;
 
 if(!data.scores[id]){
 
 data.scores[id]={
-holes:Array.from(
+holes:
+Array.from(
 {length:18},
 ()=>({})
 )
@@ -695,7 +1095,10 @@ data.results={};
 results.forEach(r=>{
 
 data.results[
-"R"+r.round_no+"M"+r.match_no
+"R"+
+r.round_no+
+"M"+
+r.match_no
 ]={
 winner:r.winner
 };
@@ -722,6 +1125,11 @@ drawConnectionStatus();
 
 }
 
+
+/* =========================================================
+   STATUS / NAV
+========================================================= */
+
 function drawConnectionStatus(){
 
 const box=
@@ -731,44 +1139,93 @@ document.getElementById(
 
 if(!box)return;
 
-box.innerHTML=
+let mode="";
 
+if(isOwner()){
+
+mode=`
+<div class="admin">
+🔐 OWNER MODE — Full tournament access
+</div>
+`;
+
+}
+
+else if(isCaptain()){
+
+mode=`
+<div class="captainMode">
+⛳ CAPTAIN MODE — ${userTeam} Captain • All scoring • ${userTeam} matchup control
+</div>
+`;
+
+}
+
+else if(isScorer()){
+
+mode=`
+<div class="scorerMode">
+✏️ SCORER MODE — You can enter and change all scores and results
+</div>
+`;
+
+}
+
+else if(isSignedIn()){
+
+mode=`
+<div class="viewer">
+👀 VIEWER MODE — Signed in as ${escapeHtml(currentUser.email||"")}
+</div>
+`;
+
+}
+
+else{
+
+mode=`
+<div class="viewer">
+👀 VIEWER MODE — Read only
+</div>
+`;
+
+}
+
+box.innerHTML=
 (
 connected
 ?
-`<div class="shared">
+`
+<div class="shared">
 ☁️ Shared tournament connected
-</div>`
+</div>
+`
 :
-`<div class="offline">
+`
+<div class="offline">
 ⚠️ Unable to reach shared tournament database
-</div>`
+</div>
+`
 )
-
 +
-
-(
-isAdmin
-?
-`<div class="admin">
-🔐 ADMIN MODE — You can make changes
-</div>`
-:
-`<div class="viewer">
-👀 VIEWER MODE — Read only
-</div>`
-);
+mode;
 
 }
 
 function getPlayer(id){
+
 return data.players.find(
-p=>String(p.id)===String(id)
+p=>
+String(p.id)===
+String(id)
 );
+
 }
 
 function roundInfo(){
+
 return ROUNDS[currentRound-1];
+
 }
 
 function drawNav(){
@@ -778,20 +1235,46 @@ const tabs=[
 ["players","Players"],
 ["matchups","Matchups"],
 ["scoring","Scoring"],
-["skins","Skins"],
-["login",isAdmin?"Admin ✓":"Admin Login"]
+["skins","Skins"]
 ];
+
+if(isOwner()){
+
+tabs.push(
+["users","Users & Access"]
+);
+
+}
+
+tabs.push([
+"login",
+isSignedIn()
+?
+"Account ✓"
+:
+"Sign In"
+]);
 
 document.getElementById("nav").innerHTML=
 tabs.map(t=>`
+
 <button
 class="${page===t[0]?"primary":""}"
-onclick="page='${t[0]}';render();">
+onclick="
+page='${t[0]}';
+render();
+">
 ${t[1]}
 </button>
+
 `).join("");
 
 }
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 function teamPoints(){
 
@@ -799,24 +1282,35 @@ let hackers=0;
 let shankers=0;
 let completed=0;
 
-Object.values(data.results).forEach(r=>{
+Object.values(data.results)
+.forEach(r=>{
 
 if(!r)return;
 
 if(r.winner==="Hackers"){
+
 hackers++;
 completed++;
+
 }
 
-else if(r.winner==="Shankers"){
+else if(
+r.winner==="Shankers"
+){
+
 shankers++;
 completed++;
+
 }
 
-else if(r.winner==="Halved"){
+else if(
+r.winner==="Halved"
+){
+
 hackers+=.5;
 shankers+=.5;
 completed++;
+
 }
 
 });
@@ -890,11 +1384,13 @@ Round ${r.id} — ${r.course}
 <br>
 
 <span class="muted">
+
 ${r.format}
 •
 ${r.matches} points
 •
 ${r.skins?"Skins":"No Skins"}
+
 </span>
 
 </div>
@@ -906,13 +1402,22 @@ ${r.skins?"Skins":"No Skins"}
 
 }
 
+
+/* =========================================================
+   PLAYERS
+========================================================= */
+
 function playersPage(){
 
 let edit="";
 
-if(isAdmin&&editingPlayerId){
+if(
+canEditPlayers()&&
+editingPlayerId
+){
 
-const p=getPlayer(editingPlayerId);
+const p=
+getPlayer(editingPlayerId);
 
 if(p){
 
@@ -924,21 +1429,30 @@ edit=`
 <div class="row">
 
 <div class="field">
+
 <label>Player Name</label>
-<input id="editName" value="${p.name}">
+
+<input
+id="editName"
+value="${escapeHtml(p.name)}">
+
 </div>
 
 <div class="field">
+
 <label>Handicap</label>
+
 <input
 id="editHcp"
 type="number"
 step=".1"
 inputmode="decimal"
 value="${p.handicap}">
+
 </div>
 
 <div class="field">
+
 <label>Team</label>
 
 <select id="editTeam">
@@ -990,7 +1504,10 @@ Save Player
 </button>
 
 <button
-onclick="editingPlayerId=null;render();">
+onclick="
+editingPlayerId=null;
+render();
+">
 Cancel
 </button>
 
@@ -1002,7 +1519,7 @@ Cancel
 }
 
 const add=
-isAdmin
+canEditPlayers()
 ?
 `
 <div class="card">
@@ -1012,35 +1529,49 @@ isAdmin
 <div class="row">
 
 <div class="field">
+
 <label>Player Name</label>
-<input id="name" placeholder="Player name">
+
+<input
+id="name"
+placeholder="Player name">
+
 </div>
 
 <div class="field">
+
 <label>Handicap</label>
+
 <input
 id="hcp"
 type="number"
 step=".1"
 inputmode="decimal">
+
 </div>
 
 <div class="field">
+
 <label>Team</label>
 
 <select id="team">
+
 <option>Hackers</option>
 <option>Shankers</option>
+
 </select>
 
 </div>
 
 <div class="field">
+
 <label>Skins Group</label>
 
 <select id="group">
+
 <option value="A">Group A</option>
 <option value="B">Group B</option>
+
 </select>
 
 </div>
@@ -1059,7 +1590,7 @@ Add Player
 `
 <div class="viewer">
 Roster is read-only.
-Only the administrator can make changes.
+Only the Owner can change players, handicaps, teams or groups.
 </div>
 `;
 
@@ -1088,8 +1619,7 @@ ${h?"hackerHeader":"shankerHeader"}">
 ${team} — Group ${group}
 </h2>
 
-<div
-style="margin-top:4px;font-weight:700;">
+<div style="margin-top:4px;font-weight:700;">
 ${list.length} players
 </div>
 
@@ -1102,7 +1632,7 @@ ${list.length} players
 <tr>
 <th>Name</th>
 <th>HCP</th>
-${isAdmin?"<th></th>":""}
+${canEditPlayers()?"<th></th>":""}
 </tr>
 
 ${list.map(p=>`
@@ -1110,14 +1640,14 @@ ${list.map(p=>`
 <tr>
 
 <td>
-<b>${p.name}</b>
+<b>${escapeHtml(p.name)}</b>
 </td>
 
 <td>
 ${p.handicap}
 </td>
 
-${isAdmin
+${canEditPlayers()
 ?
 `
 <td>
@@ -1164,7 +1694,7 @@ section("Shankers","B");
 
 function startPlayerEdit(id){
 
-if(!isAdmin)return;
+if(!canEditPlayers())return;
 
 editingPlayerId=id;
 
@@ -1179,27 +1709,39 @@ behavior:"smooth"
 
 async function savePlayerEdit(){
 
-if(!isAdmin||!editingPlayerId)return;
+if(
+!canEditPlayers()||
+!editingPlayerId
+){
+return;
+}
 
-const p=getPlayer(editingPlayerId);
+const p=
+getPlayer(editingPlayerId);
 
 if(!p)return;
 
 const name=
-document.getElementById("editName").value.trim();
+document.getElementById("editName")
+.value.trim();
 
 const handicap=
-document.getElementById("editHcp").value||0;
+document.getElementById("editHcp")
+.value||0;
 
 const team=
-document.getElementById("editTeam").value;
+document.getElementById("editTeam")
+.value;
 
 const group=
-document.getElementById("editGroup").value;
+document.getElementById("editGroup")
+.value;
 
 if(!name){
 
-alert("Enter a player name.");
+alert(
+"Enter a player name."
+);
 
 return;
 
@@ -1210,11 +1752,15 @@ team!==p.team&&
 data.players.filter(
 x=>
 x.team===team&&
-String(x.id)!==String(p.id)
+String(x.id)!==
+String(p.id)
 ).length>=16
 ){
 
-alert(team+" already has 16 players.");
+alert(
+team+
+" already has 16 players."
+);
 
 return;
 
@@ -1225,11 +1771,16 @@ group!==p.group&&
 data.players.filter(
 x=>
 x.group===group&&
-String(x.id)!==String(p.id)
+String(x.id)!==
+String(p.id)
 ).length>=16
 ){
 
-alert("Group "+group+" already has 16 players.");
+alert(
+"Group "+
+group+
+" already has 16 players."
+);
 
 return;
 
@@ -1264,7 +1815,9 @@ editingPlayerId=null;
 
 render();
 
-}catch{
+}catch(e){
+
+console.error(e);
 
 alert(
 "Player changes could not be saved."
@@ -1276,29 +1829,37 @@ alert(
 
 async function addPlayer(){
 
-if(!isAdmin){
+if(!canEditPlayers()){
 
-alert("Admin login required.");
+alert(
+"Owner access required."
+);
 
 return;
 
 }
 
 const name=
-document.getElementById("name").value.trim();
+document.getElementById("name")
+.value.trim();
 
 const handicap=
-document.getElementById("hcp").value||0;
+document.getElementById("hcp")
+.value||0;
 
 const team=
-document.getElementById("team").value;
+document.getElementById("team")
+.value;
 
 const group=
-document.getElementById("group").value;
+document.getElementById("group")
+.value;
 
 if(!name){
 
-alert("Enter a player name.");
+alert(
+"Enter a player name."
+);
 
 return;
 
@@ -1318,7 +1879,10 @@ p=>p.team===team
 ).length>=16
 ){
 
-alert(team+" already has 16 players.");
+alert(
+team+
+" already has 16 players."
+);
 
 return;
 
@@ -1330,7 +1894,11 @@ p=>p.group===group
 ).length>=16
 ){
 
-alert("Group "+group+" already has 16 players.");
+alert(
+"Group "+
+group+
+" already has 16 players."
+);
 
 return;
 
@@ -1340,7 +1908,9 @@ const p={
 id:
 "p"+
 Date.now()+
-Math.random().toString(36).slice(2),
+Math.random()
+.toString(36)
+.slice(2),
 name,
 handicap:String(handicap),
 team,
@@ -1366,9 +1936,13 @@ data.players.push(p);
 
 render();
 
-}catch{
+}catch(e){
 
-alert("Player could not be saved.");
+console.error(e);
+
+alert(
+"Player could not be saved."
+);
 
 }
 
@@ -1377,9 +1951,11 @@ alert("Player could not be saved.");
 async function deletePlayer(id){
 
 if(
-!isAdmin||
+!canEditPlayers()||
 !confirm("Delete this player?")
-)return;
+){
+return;
+}
 
 try{
 
@@ -1390,25 +1966,38 @@ await deleteRows(
 
 data.players=
 data.players.filter(
-p=>String(p.id)!==String(id)
+p=>
+String(p.id)!==
+String(id)
 );
 
 render();
 
-}catch{
+}catch(e){
 
-alert("Player could not be deleted.");
+console.error(e);
+
+alert(
+"Player could not be deleted."
+);
 
 }
 
 }
+
+
+/* =========================================================
+   MATCHUPS
+========================================================= */
 
 function setupMatches(){
 
 const r=roundInfo();
 
 if(!data.matchups[currentRound]){
+
 data.matchups[currentRound]=[];
+
 }
 
 while(
@@ -1436,7 +2025,10 @@ return data.matchups[currentRound];
 
 }
 
-function playerOptions(team,current){
+function playerOptions(
+team,
+current
+){
 
 return`
 <option value="">
@@ -1451,7 +2043,7 @@ ${data.players
 value="${p.id}"
 ${String(p.id)===String(current)?"selected":""}>
 
-${p.name}
+${escapeHtml(p.name)}
 — HCP ${p.handicap}
 — Group ${p.group}
 
@@ -1467,6 +2059,10 @@ function matchupPage(){
 const r=roundInfo();
 const m=setupMatches();
 
+const hasMatchupAccess=
+isOwner()||
+isCaptain();
+
 return`
 <div class="card">
 
@@ -1479,12 +2075,14 @@ Round ${r.id} — ${r.course}
 </h2>
 
 <div class="muted">
+
 ${r.id===4
 ?
 "1v1 Match Play • 16 Individual Points • 8 Foursomes"
 :
 `${r.format} • 8 Points • 8 Foursomes`
 }
+
 </div>
 
 </div>
@@ -1492,12 +2090,26 @@ ${r.id===4
 <div class="roundbuttons">
 
 <button
-onclick="currentRound=Math.max(1,currentRound-1);render();">
+onclick="
+currentRound=
+Math.max(
+1,
+currentRound-1
+);
+render();
+">
 ←
 </button>
 
 <button
-onclick="currentRound=Math.min(4,currentRound+1);render();">
+onclick="
+currentRound=
+Math.min(
+4,
+currentRound+1
+);
+render();
+">
 →
 </button>
 
@@ -1505,18 +2117,35 @@ onclick="currentRound=Math.min(4,currentRound+1);render();">
 
 </div>
 
-${!isAdmin
+${!hasMatchupAccess
 ?
-`<div class="viewer">
+`
+<div class="viewer">
 Matchups are read-only.
-</div>`
+</div>
+`
 :
-""
+isCaptain()
+?
+`
+<div class="captainMode">
+You can change the <b>${userTeam}</b> side of each matchup.
+The other team's selections are read-only.
+</div>
+`
+:
+`
+<div class="admin">
+Owner matchup control — you can change both teams.
+</div>
+`
 }
 
 ${currentRound===4
 ?
-Array.from({length:8},(_,f)=>{
+Array.from(
+{length:8},
+(_,f)=>{
 
 const a=f*2;
 const b=a+1;
@@ -1532,13 +2161,21 @@ Foursome ${f+1}
 Matches ${a+1} & ${b+1}
 </div>
 
-${round4SinglesMatch(m[a],a)}
-${round4SinglesMatch(m[b],b)}
+${round4SinglesMatch(
+m[a],
+a
+)}
+
+${round4SinglesMatch(
+m[b],
+b
+)}
 
 </div>
 `;
 
-}).join("")
+}
+).join("")
 :
 m.map(
 (match,i)=>
@@ -1550,7 +2187,7 @@ i
 ).join("")
 }
 
-${isAdmin
+${hasMatchupAccess
 ?
 `
 <button
@@ -1568,17 +2205,38 @@ Validate Matchups
 
 }
 
-function standardFoursomeCard(r,match,i){
+function standardFoursomeCard(
+r,
+match,
+i
+){
 
-while(match.hackers.length<2){
+while(
+match.hackers.length<2
+){
 match.hackers.push("");
 }
 
-while(match.shankers.length<2){
+while(
+match.shankers.length<2
+){
 match.shankers.push("");
 }
 
-if(isAdmin){
+const editHackers=
+canEditMatchupSide(
+"hackers"
+);
+
+const editShankers=
+canEditMatchupSide(
+"shankers"
+);
+
+if(
+editHackers||
+editShankers
+){
 
 return`
 <div class="foursomeCard">
@@ -1606,7 +2264,14 @@ HACKERS
 </div>
 
 <select
-onchange="setMatchPlayer(${i},'hackers',0,this.value)">
+${editHackers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'hackers',
+0,
+this.value
+)">
 ${playerOptions(
 "Hackers",
 match.hackers[0]
@@ -1614,7 +2279,14 @@ match.hackers[0]
 </select>
 
 <select
-onchange="setMatchPlayer(${i},'hackers',1,this.value)">
+${editHackers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'hackers',
+1,
+this.value
+)">
 ${playerOptions(
 "Hackers",
 match.hackers[1]
@@ -1630,7 +2302,14 @@ SHANKERS
 </div>
 
 <select
-onchange="setMatchPlayer(${i},'shankers',0,this.value)">
+${editShankers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'shankers',
+0,
+this.value
+)">
 ${playerOptions(
 "Shankers",
 match.shankers[0]
@@ -1638,7 +2317,14 @@ match.shankers[0]
 </select>
 
 <select
-onchange="setMatchPlayer(${i},'shankers',1,this.value)">
+${editShankers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'shankers',
+1,
+this.value
+)">
 ${playerOptions(
 "Shankers",
 match.shankers[1]
@@ -1657,10 +2343,12 @@ match.shankers[1]
 }
 
 const hs=
-match.hackers.map(getPlayer);
+match.hackers
+.map(id=>getPlayer(id));
 
 const ss=
-match.shankers.map(getPlayer);
+match.shankers
+.map(id=>getPlayer(id));
 
 return`
 <div class="foursomeCard">
@@ -1688,13 +2376,20 @@ HACKERS
 </div>
 
 ${hs.map(p=>`
+
 <div class="pill">
+
 ${p
 ?
-p.name+" • HCP "+p.handicap
+escapeHtml(p.name)+
+" • HCP "+
+p.handicap
 :
-"Not Set"}
+"Not Set"
+}
+
 </div>
+
 `).join("<br>")}
 
 </div>
@@ -1706,13 +2401,20 @@ SHANKERS
 </div>
 
 ${ss.map(p=>`
+
 <div class="pill">
+
 ${p
 ?
-p.name+" • HCP "+p.handicap
+escapeHtml(p.name)+
+" • HCP "+
+p.handicap
 :
-"Not Set"}
+"Not Set"
+}
+
 </div>
+
 `).join("<br>")}
 
 </div>
@@ -1726,19 +2428,39 @@ p.name+" • HCP "+p.handicap
 
 }
 
-function round4SinglesMatch(match,i){
+function round4SinglesMatch(
+match,
+i
+){
 
 if(!match)return"";
 
-while(match.hackers.length<1){
+while(
+match.hackers.length<1
+){
 match.hackers.push("");
 }
 
-while(match.shankers.length<1){
+while(
+match.shankers.length<1
+){
 match.shankers.push("");
 }
 
-if(isAdmin){
+const editHackers=
+canEditMatchupSide(
+"hackers"
+);
+
+const editShankers=
+canEditMatchupSide(
+"shankers"
+);
+
+if(
+editHackers||
+editShankers
+){
 
 return`
 <div class="innerMatch">
@@ -1756,7 +2478,14 @@ HACKER
 </div>
 
 <select
-onchange="setMatchPlayer(${i},'hackers',0,this.value)">
+${editHackers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'hackers',
+0,
+this.value
+)">
 ${playerOptions(
 "Hackers",
 match.hackers[0]
@@ -1772,7 +2501,14 @@ SHANKER
 </div>
 
 <select
-onchange="setMatchPlayer(${i},'shankers',0,this.value)">
+${editShankers?"":"disabled"}
+onchange="
+setMatchPlayer(
+${i},
+'shankers',
+0,
+this.value
+)">
 ${playerOptions(
 "Shankers",
 match.shankers[0]
@@ -1788,8 +2524,15 @@ match.shankers[0]
 
 }
 
-const h=getPlayer(match.hackers[0]);
-const s=getPlayer(match.shankers[0]);
+const h=
+getPlayer(
+match.hackers[0]
+);
+
+const s=
+getPlayer(
+match.shankers[0]
+);
 
 return`
 <div class="innerMatch">
@@ -1807,11 +2550,16 @@ HACKER
 </div>
 
 <div class="pill">
+
 ${h
 ?
-h.name+" • HCP "+h.handicap
+escapeHtml(h.name)+
+" • HCP "+
+h.handicap
 :
-"Not Set"}
+"Not Set"
+}
+
 </div>
 
 </div>
@@ -1823,11 +2571,16 @@ SHANKER
 </div>
 
 <div class="pill">
+
 ${s
 ?
-s.name+" • HCP "+s.handicap
+escapeHtml(s.name)+
+" • HCP "+
+s.handicap
 :
-"Not Set"}
+"Not Set"
+}
+
 </div>
 
 </div>
@@ -1846,30 +2599,64 @@ slot,
 playerId
 ){
 
-if(!isAdmin)return;
+if(
+!canEditMatchupSide(side)
+){
+
+alert(
+"You do not have permission to change this side of the matchup."
+);
+
+return;
+
+}
 
 const match=
 data.matchups[currentRound][i];
 
-match[side][slot]=playerId;
+const oldValue=
+match[side][slot]||"";
 
-render();
+match[side][slot]=playerId;
 
 try{
 
-await upsert(
-"tournament_matchups",
+await refreshSessionIfNeeded();
+
+const r=await fetch(
+SUPABASE_URL+
+"/rest/v1/rpc/set_duffers_matchup_slot",
 {
-tournament_id:TOURNAMENT_ID,
-round_no:currentRound,
-match_no:i+1,
-hackers:match.hackers,
-shankers:match.shankers
-},
-"tournament_id,round_no,match_no"
+method:"POST",
+headers:headers(),
+body:JSON.stringify({
+p_round_no:currentRound,
+p_match_no:i+1,
+p_side:side,
+p_slot:slot,
+p_player_id:playerId||""
+})
+}
 );
 
-}catch{
+if(!r.ok){
+
+const msg=
+await r.text();
+
+console.error(msg);
+
+throw new Error(
+"Matchup save failed"
+);
+
+}
+
+}catch(e){
+
+match[side][slot]=oldValue;
+
+console.error(e);
 
 alert(
 "Matchup could not be saved."
@@ -1881,26 +2668,46 @@ alert(
 
 function validateRound(){
 
-if(!isAdmin)return;
+if(
+!isOwner()&&
+!isCaptain()
+){
+return;
+}
 
 const r=roundInfo();
 const m=setupMatches();
 const used=new Set();
 
-for(let i=0;i<m.length;i++){
+for(
+let i=0;
+i<m.length;
+i++
+){
 
 const match=m[i];
 
 const required=
-r.type==="singles"?1:2;
+r.type==="singles"
+?
+1
+:
+2;
 
 if(
-match.hackers.filter(Boolean).length!==required||
-match.shankers.filter(Boolean).length!==required
+match.hackers
+.filter(Boolean)
+.length!==required
+||
+match.shankers
+.filter(Boolean)
+.length!==required
 ){
 
 alert(
-"Match "+(i+1)+" is incomplete."
+"Match "+
+(i+1)+
+" is incomplete."
 );
 
 return;
@@ -1948,6 +2755,11 @@ currentRound+
 
 }
 
+
+/* =========================================================
+   SCORING
+========================================================= */
+
 function getScore(id){
 
 if(!data.scores[id]){
@@ -1966,7 +2778,9 @@ while(
 data.scores[id].holes.length<18
 ){
 
-data.scores[id].holes.push({});
+data.scores[id]
+.holes
+.push({});
 
 }
 
@@ -1974,7 +2788,11 @@ return data.scores[id];
 
 }
 
-function enteredNine(score,id,start){
+function enteredNine(
+score,
+id,
+start
+){
 
 let total=0;
 
@@ -1990,7 +2808,9 @@ Number(
 );
 
 if(!(v>0)){
+
 return "—";
+
 }
 
 total+=v;
@@ -2001,31 +2821,52 @@ return total;
 
 }
 
-function enteredTotal(score,id){
+function enteredTotal(
+score,
+id
+){
 
 const out=
-enteredNine(score,id,0);
+enteredNine(
+score,
+id,
+0
+);
 
 const inn=
-enteredNine(score,id,9);
+enteredNine(
+score,
+id,
+9
+);
 
 if(
 out==="—"||
 inn==="—"
 ){
+
 return "—";
+
 }
 
 return out+inn;
 
 }
 
-function nineTotal(values,start){
+function nineTotal(
+values,
+start
+){
 
 return values
-.slice(start,start+9)
+.slice(
+start,
+start+9
+)
 .reduce(
-(a,b)=>a+Number(b||0),
+(a,b)=>
+a+
+Number(b||0),
 0
 );
 
@@ -2040,14 +2881,16 @@ return`
 
 ${Array.from(
 {length:9},
-(_,i)=>`<th>${i+1}</th>`
+(_,i)=>
+`<th>${i+1}</th>`
 ).join("")}
 
 <th>OUT</th>
 
 ${Array.from(
 {length:9},
-(_,i)=>`<th>${i+10}</th>`
+(_,i)=>
+`<th>${i+10}</th>`
 ).join("")}
 
 <th>IN</th>
@@ -2075,7 +2918,9 @@ label==="PAR"
 "courseHcp"
 }">
 
-<td>${label}</td>
+<td>
+${label}
+</td>
 
 ${values
 .slice(0,9)
@@ -2083,12 +2928,17 @@ ${values
 .join("")}
 
 <td class="summaryCell">
+
 ${showTotals
 ?
-nineTotal(values,0)
+nineTotal(
+values,
+0
+)
 :
 ""
 }
+
 </td>
 
 ${values
@@ -2097,21 +2947,31 @@ ${values
 .join("")}
 
 <td class="summaryCell">
+
 ${showTotals
 ?
-nineTotal(values,9)
+nineTotal(
+values,
+9
+)
 :
 ""
 }
+
 </td>
 
 <td class="summaryCell">
+
 ${showTotals
 ?
-values.reduce((a,b)=>a+b,0)
+values.reduce(
+(a,b)=>a+b,
+0
+)
 :
 ""
 }
+
 </td>
 
 </tr>
@@ -2136,7 +2996,11 @@ p.team==="Hackers"
 
 let cells="";
 
-for(let h=0;h<9;h++){
+for(
+let h=0;
+h<9;
+h++
+){
 
 const value=
 (score.holes[h]||{})[p.id]??"";
@@ -2150,7 +3014,7 @@ inputmode="numeric"
 pattern="[0-9]*"
 min="1"
 max="20"
-${isAdmin?"":"disabled"}
+${canScore()?"":"disabled"}
 value="${value}"
 oninput="
 queueScore(
@@ -2169,7 +3033,9 @@ this.value
 }
 
 cells+=`
-<td class="summaryCell">
+<td
+class="summaryCell"
+id="out-${matchId}-${p.id}">
 ${enteredNine(
 score,
 p.id,
@@ -2178,7 +3044,11 @@ p.id,
 </td>
 `;
 
-for(let h=9;h<18;h++){
+for(
+let h=9;
+h<18;
+h++
+){
 
 const value=
 (score.holes[h]||{})[p.id]??"";
@@ -2192,7 +3062,7 @@ inputmode="numeric"
 pattern="[0-9]*"
 min="1"
 max="20"
-${isAdmin?"":"disabled"}
+${canScore()?"":"disabled"}
 value="${value}"
 oninput="
 queueScore(
@@ -2211,7 +3081,9 @@ this.value
 }
 
 cells+=`
-<td class="summaryCell">
+<td
+class="summaryCell"
+id="in-${matchId}-${p.id}">
 ${enteredNine(
 score,
 p.id,
@@ -2219,7 +3091,9 @@ p.id,
 )}
 </td>
 
-<td class="summaryCell">
+<td
+class="summaryCell"
+id="total-${matchId}-${p.id}">
 ${enteredTotal(
 score,
 p.id
@@ -2232,14 +3106,16 @@ return`
 
 <td>
 
-${p.name}
+${escapeHtml(p.name)}
 
 <br>
 
 <span class="muted">
+
 HCP ${p.handicap}
 •
 Group ${p.group}
+
 </span>
 
 </td>
@@ -2251,7 +3127,76 @@ ${cells}
 
 }
 
-function resultControls(match,i){
+function updateScoreTotals(
+matchId,
+playerId
+){
+
+const score=
+getScore(matchId);
+
+const out=
+document.getElementById(
+"out-"+
+matchId+
+"-"+
+playerId
+);
+
+const inn=
+document.getElementById(
+"in-"+
+matchId+
+"-"+
+playerId
+);
+
+const total=
+document.getElementById(
+"total-"+
+matchId+
+"-"+
+playerId
+);
+
+if(out){
+
+out.textContent=
+enteredNine(
+score,
+playerId,
+0
+);
+
+}
+
+if(inn){
+
+inn.textContent=
+enteredNine(
+score,
+playerId,
+9
+);
+
+}
+
+if(total){
+
+total.textContent=
+enteredTotal(
+score,
+playerId
+);
+
+}
+
+}
+
+function resultControls(
+match,
+i
+){
 
 const saved=
 data.results[match.id]
@@ -2265,30 +3210,31 @@ let banner="";
 if(saved==="Hackers"){
 
 banner=`
-<div
-class="resultBanner resultHackers">
+<div class="resultBanner resultHackers">
 HACKERS WIN — 1 POINT
 </div>
 `;
 
 }
 
-else if(saved==="Shankers"){
+else if(
+saved==="Shankers"
+){
 
 banner=`
-<div
-class="resultBanner resultShankers">
+<div class="resultBanner resultShankers">
 SHANKERS WIN — 1 POINT
 </div>
 `;
 
 }
 
-else if(saved==="Halved"){
+else if(
+saved==="Halved"
+){
 
 banner=`
-<div
-class="resultBanner resultHalved">
+<div class="resultBanner resultHalved">
 MATCH HALVED — ½ POINT EACH
 </div>
 `;
@@ -2296,7 +3242,7 @@ MATCH HALVED — ½ POINT EACH
 }
 
 const controls=
-isAdmin
+canScore()
 ?
 `
 <div style="margin-top:15px">
@@ -2305,7 +3251,8 @@ isAdmin
 Official Match Result
 </label>
 
-<select id="result-${match.id}">
+<select
+id="result-${match.id}">
 
 <option value="">
 Select Result
@@ -2369,9 +3316,11 @@ Round ${r.id} Scoring
 </h2>
 
 <div class="muted">
+
 ${r.course}
 •
 ${r.format}
+
 </div>
 
 </div>
@@ -2406,19 +3355,28 @@ render();
 
 </div>
 
-${isAdmin
+${canScore()
 ?
 `
-<div class="notice">
-Admin scoring mode.
-Scores save to the shared tournament.
+<div class="${
+isOwner()
+?
+"admin"
+:
+isCaptain()
+?
+"captainMode"
+:
+"scorerMode"
+}">
+You can enter and change all tournament scores and official match results.
 </div>
 `
 :
 `
 <div class="viewer">
 Scores are read-only.
-Only the administrator can enter or change scores.
+Sign in with scoring access to enter or change scores.
 </div>
 `
 }
@@ -2454,13 +3412,17 @@ i
 
 }
 
-function scoreCard(r,match,i){
+function scoreCard(
+r,
+match,
+i
+){
 
 const players=[
 ...match.hackers,
 ...match.shankers
 ]
-.map(getPlayer)
+.map(id=>getPlayer(id))
 .filter(Boolean);
 
 const required=
@@ -2488,6 +3450,7 @@ Matchup not set.
 
 }
 
+
 /* ROUND 3 — RESULT ONLY */
 
 if(r.id===3){
@@ -2513,9 +3476,11 @@ ${match.hackers
 .map(p=>`
 
 <div class="pill">
-${p.name}
+
+${escapeHtml(p.name)}
 •
 HCP ${p.handicap}
+
 </div>
 
 `).join("<br>")}
@@ -2534,9 +3499,11 @@ ${match.shankers
 .map(p=>`
 
 <div class="pill">
-${p.name}
+
+${escapeHtml(p.name)}
 •
 HCP ${p.handicap}
+
 </div>
 
 `).join("<br>")}
@@ -2620,7 +3587,7 @@ scorer,
 value
 ){
 
-if(!isAdmin)return;
+if(!canScore())return;
 
 const score=
 getScore(matchId);
@@ -2631,6 +3598,11 @@ value===""
 ""
 :
 Number(value);
+
+updateScoreTotals(
+matchId,
+scorer
+);
 
 const key=
 round+
@@ -2691,7 +3663,7 @@ scorer,
 value
 ){
 
-if(!isAdmin)return;
+if(!canScore())return;
 
 try{
 
@@ -2733,10 +3705,10 @@ matchNo,
 matchId
 ){
 
-if(!isAdmin){
+if(!canScore()){
 
 alert(
-"Admin login required."
+"Scoring access required."
 );
 
 return;
@@ -2802,6 +3774,11 @@ alert(
 
 }
 
+
+/* =========================================================
+   SKINS
+========================================================= */
+
 function getSkinResults(
 roundId,
 group
@@ -2821,7 +3798,11 @@ data.matchups[roundId]||[];
 
 const results=[];
 
-for(let h=0;h<18;h++){
+for(
+let h=0;
+h<18;
+h++
+){
 
 const entered=[];
 
@@ -2840,11 +3821,16 @@ sd.holes[h]||{};
 [
 ...(match.hackers||[]),
 ...(match.shankers||[])
-].forEach(id=>{
+]
+.forEach(id=>{
 
-const p=getPlayer(id);
+const p=
+getPlayer(id);
 
-if(!p||p.group!==group){
+if(
+!p||
+p.group!==group
+){
 return;
 }
 
@@ -2924,9 +3910,12 @@ const counts={};
 getSkinResults(
 roundId,
 group
-).forEach(r=>{
+)
+.forEach(r=>{
 
-if(r.status!=="skin"){
+if(
+r.status!=="skin"
+){
 return;
 }
 
@@ -2949,7 +3938,8 @@ counts[id].count++;
 return Object
 .values(counts)
 .sort(
-(a,b)=>b.count-a.count
+(a,b)=>
+b.count-a.count
 );
 
 }
@@ -2999,7 +3989,7 @@ ${summary.map(x=>`
 <span class="pill">
 
 <b>
-${x.name}
+${escapeHtml(x.name)}
 </b>
 
 —
@@ -3039,7 +4029,7 @@ Hole ${r.hole} — SKIN
 
 <br>
 
-${r.winner.name}
+${escapeHtml(r.winner.name)}
 —
 ${r.score}
 
@@ -3073,7 +4063,7 @@ Tie at ${r.score}
 <br>
 
 ${r.winners
-.map(p=>p.name)
+.map(p=>escapeHtml(p.name))
 .join(", ")}
 
 </div>
@@ -3134,16 +4124,404 @@ ${r.format}
 
 </div>
 
-${skinGroupCard(r,"A")}
+${skinGroupCard(
+r,
+"A"
+)}
 
-${skinGroupCard(r,"B")}
+${skinGroupCard(
+r,
+"B"
+)}
 
 `).join("")}
 `;
 
 }
 
+
+/* =========================================================
+   USERS & ACCESS — OWNER ONLY
+========================================================= */
+
+async function loadTournamentUsers(){
+
+if(!canManageUsers()){
+return;
+}
+
+try{
+
+await refreshSessionIfNeeded();
+
+const url=
+SUPABASE_URL+
+"/rest/v1/tournament_users"+
+"?tournament_id=eq."+
+encodeURIComponent(TOURNAMENT_ID)+
+"&select=*"+
+"&order=email.asc";
+
+const r=await fetch(
+url,
+{
+headers:headers()
+}
+);
+
+if(!r.ok){
+
+console.error(
+await r.text()
+);
+
+throw new Error(
+"Could not load users."
+);
+
+}
+
+tournamentUsers=
+await r.json();
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+function accessLabel(u){
+
+if(u.role==="owner"){
+
+return`
+<span class="accessOwner">
+OWNER
+</span>
+`;
+
+}
+
+if(u.role==="captain"){
+
+return`
+<span class="accessCaptain">
+${u.team||""} CAPTAIN
+</span>
+`;
+
+}
+
+if(u.role==="scorer"){
+
+return`
+<span class="accessScorer">
+SCORER
+</span>
+`;
+
+}
+
+return`
+<span class="accessViewer">
+NO ACCESS
+</span>
+`;
+
+}
+
+function usersPage(){
+
+if(!isOwner()){
+
+return`
+<div class="viewer">
+Only the Owner can manage user access.
+</div>
+`;
+
+}
+
+return`
+<div class="card">
+
+<h2>Users & Access</h2>
+
+<p>
+People will appear here after they create an account.
+New users start with <b>No Access</b>.
+</p>
+
+<div class="notice">
+
+<b>Permissions</b><br><br>
+
+<b>Owner:</b> Everything<br>
+
+<b>Hackers Captain:</b> Hackers matchups + all scores/results<br>
+
+<b>Shankers Captain:</b> Shankers matchups + all scores/results<br>
+
+<b>Scorer:</b> All scores/results<br>
+
+<b>No Access:</b> View only
+
+</div>
+
+<button
+class="blue"
+onclick="refreshUsers()">
+Refresh Users
+</button>
+
+</div>
+
+${tournamentUsers.length
+?
+tournamentUsers.map(u=>`
+
+<div class="card">
+
+<div class="userEmail">
+
+<b>
+${escapeHtml(u.email)}
+</b>
+
+</div>
+
+<div style="margin:8px 0 12px">
+
+Current Access:
+${accessLabel(u)}
+
+</div>
+
+${u.role==="owner"
+?
+`
+<div class="admin">
+Owner access cannot be changed here.
+</div>
+`
+:
+`
+<label>
+Change Access
+</label>
+
+<select
+id="access-${u.user_id}">
+
+<option
+value="viewer"
+${u.role==="viewer"?"selected":""}>
+No Access / View Only
+</option>
+
+<option
+value="scorer"
+${u.role==="scorer"?"selected":""}>
+Scorer
+</option>
+
+<option
+value="captain-hackers"
+${u.role==="captain"&&u.team==="Hackers"?"selected":""}>
+Hackers Captain
+</option>
+
+<option
+value="captain-shankers"
+${u.role==="captain"&&u.team==="Shankers"?"selected":""}>
+Shankers Captain
+</option>
+
+</select>
+
+<button
+class="good"
+style="margin-top:10px"
+onclick="
+saveUserAccess(
+'${u.user_id}'
+)">
+Save Access
+</button>
+`
+}
+
+</div>
+
+`).join("")
+:
+`
+<div class="card">
+
+<div class="muted">
+No registered users found yet.
+</div>
+
+</div>
+`
+}
+`;
+
+}
+
+async function refreshUsers(){
+
+if(!isOwner())return;
+
+await loadTournamentUsers();
+
+render();
+
+}
+
+async function saveUserAccess(
+userId
+){
+
+if(!isOwner()){
+
+alert(
+"Owner access required."
+);
+
+return;
+
+}
+
+const box=
+document.getElementById(
+"access-"+userId
+);
+
+if(!box)return;
+
+let role="viewer";
+let team=null;
+
+if(
+box.value==="scorer"
+){
+
+role="scorer";
+
+}
+
+else if(
+box.value==="captain-hackers"
+){
+
+role="captain";
+team="Hackers";
+
+}
+
+else if(
+box.value==="captain-shankers"
+){
+
+role="captain";
+team="Shankers";
+
+}
+
+try{
+
+await refreshSessionIfNeeded();
+
+const url=
+SUPABASE_URL+
+"/rest/v1/tournament_users"+
+"?tournament_id=eq."+
+encodeURIComponent(TOURNAMENT_ID)+
+"&user_id=eq."+
+encodeURIComponent(userId);
+
+const r=await fetch(
+url,
+{
+method:"PATCH",
+headers:headers({
+Prefer:"return=minimal"
+}),
+body:JSON.stringify({
+role,
+team,
+updated_at:
+new Date().toISOString()
+})
+}
+);
+
+if(!r.ok){
+
+console.error(
+await r.text()
+);
+
+throw new Error(
+"Access update failed"
+);
+
+}
+
+await loadTournamentUsers();
+
+render();
+
+alert(
+"User access updated."
+);
+
+}catch(e){
+
+console.error(e);
+
+alert(
+"User access could not be updated."
+);
+
+}
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHtml(value){
+
+return String(value??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
 function render(){
+
+if(
+page==="users"&&
+!isOwner()
+){
+
+page="dashboard";
+
+}
 
 drawNav();
 
@@ -3176,9 +4554,19 @@ page==="skins"
 skinsPage()
 
 :
+page==="users"
+?
+usersPage()
+
+:
 loginPage();
 
 }
+
+
+/* =========================================================
+   AUTO REFRESH
+========================================================= */
 
 setInterval(
 async()=>{
@@ -3195,7 +4583,18 @@ a.tagName==="SELECT"
 
 if(!editing){
 
-await loadSharedData(true);
+await loadSharedData(false);
+
+if(
+page==="users"&&
+isOwner()
+){
+
+await loadTournamentUsers();
+
+}
+
+render();
 
 }
 
@@ -3203,15 +4602,32 @@ await loadSharedData(true);
 10000
 );
 
+
+/* =========================================================
+   START APP
+========================================================= */
+
 async function start(){
 
 loadStoredSession();
 
 await refreshSessionIfNeeded();
 
-await checkAdmin();
+await loadCurrentUser();
+
+if(isSignedIn()){
+
+await loadMyPermissions();
+
+}
 
 await loadSharedData(false);
+
+if(isOwner()){
+
+await loadTournamentUsers();
+
+}
 
 render();
 
