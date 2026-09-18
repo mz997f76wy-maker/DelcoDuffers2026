@@ -47,7 +47,6 @@ input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 
-/* SCORECARDS */
 .scoretable{min-width:1280px}
 .scoretable th,.scoretable td{text-align:center;border:1px solid #d1d5db;padding:5px;white-space:nowrap}
 .scoretable th:first-child,.scoretable td:first-child{position:sticky;left:0;background:white;z-index:3;min-width:155px;text-align:left}
@@ -92,7 +91,6 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
 
-/* LIVE MATCH BOARD */
 .liveCard{padding:0;overflow:hidden}
 .liveRoundControl{padding:14px 16px;background:white}
 .liveRoundControl label{font-size:13px}
@@ -168,7 +166,6 @@ const ROUNDS=[
 {id:4,course:"Legacy",format:"1v1 Match Play",matches:16,type:"singles",scats:true}
 ];
 
-/* SCORECARD DATA UNCHANGED */
 const COURSE_CARDS={
 1:{
 par:[5,4,3,5,4,3,4,3,4,4,5,4,5,3,4,4,3,4],
@@ -219,8 +216,6 @@ if(side==="hackers"&&userTeam==="Hackers")return true;
 if(side==="shankers"&&userTeam==="Shankers")return true;
 return false;
 }
-
-/* AUTH */
 
 function loadStoredSession(){
 try{session=JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}
@@ -334,8 +329,6 @@ userRole="owner";
 userTeam=null;
 }
 }
-
-/* DATABASE */
 
 function headers(extra={}){
 return{
@@ -466,8 +459,6 @@ drawConnectionStatus();
 }
 }
 
-/* STATUS / NAV */
-
 function drawConnectionStatus(){
 const box=document.getElementById("connectionStatus");
 if(!box)return;
@@ -528,8 +519,6 @@ return data.players.find(p=>String(p.id)===String(id));
 function roundInfo(){
 return ROUNDS[currentRound-1];
 }
-
-/* DASHBOARD */
 
 function teamPoints(){
 let hackers=0,shankers=0,completed=0;
@@ -687,8 +676,6 @@ ${r.format} • ${r.matches} points • ${r.scats?"Scats":"No Scats"}
 </div>
 `;
 }
-
-/* PLAYERS */
 
 function playersPage(){
 let edit="";
@@ -958,8 +945,6 @@ render();
 alert("Player could not be deleted.");
 }
 }
-
-/* MATCHUPS */
 
 function setupMatches(){
 const r=roundInfo();
@@ -1238,8 +1223,6 @@ return;
 alert("Round "+currentRound+" matchups are ready!");
 }
 
-/* SCORING */
-
 function getScore(id){
 if(!data.scores[id]){
 data.scores[id]={holes:Array.from({length:18},()=>({}))};
@@ -1313,37 +1296,23 @@ ${values.slice(9).map(v=>`<td>${v}</td>`).join("")}
 /*
 FAST SCORE ENTRY
 
-Desktop / normal keyboards:
-Enter advances immediately.
+2–9:
+Advance after 0.2 seconds.
 
-iPhone:
-Done / checkmark often BLURS the numeric input instead
-of sending a normal Enter event. The blur handler catches
-that and advances to the next hole.
+1:
+Wait 0.45 seconds in case the score is 10 or higher.
 
-If you manually tap another score box, the app respects
-that choice and does NOT auto-advance somewhere else.
+The next field receives focus while the current number
+field is still active. This is designed to keep the
+iPhone numeric keyboard open.
 */
 
-let scorePointerTarget=null;
-let scorePointerClearTimer=null;
 let scoreAdvanceTimer=null;
-let suppressScoreBlur=null;
-
-function markScorePointer(el){
-scorePointerTarget=el;
-
-clearTimeout(scorePointerClearTimer);
-
-scorePointerClearTimer=setTimeout(()=>{
-if(scorePointerTarget===el){
-scorePointerTarget=null;
-}
-},500);
-}
 
 function selectScoreInput(el){
 if(!el||el.disabled)return;
+
+clearTimeout(scoreAdvanceTimer);
 
 setTimeout(()=>{
 try{
@@ -1363,67 +1332,70 @@ return;
 
 event.preventDefault();
 
-suppressScoreBlur=el;
+clearTimeout(scoreAdvanceTimer);
+
 advanceScoreInput(el);
 }
 
-function handleScoreBlur(event,el){
-if(!el||el.disabled)return;
+function handleScoreInput(
+round,
+matchNo,
+matchId,
+holeIndex,
+scorer,
+el
+){
+if(!canScore()||!el)return;
 
-if(suppressScoreBlur===el){
-suppressScoreBlur=null;
-return;
-}
-
-if(String(el.value??"").trim()===""){
-return;
-}
+queueScore(
+round,
+matchNo,
+matchId,
+holeIndex,
+scorer,
+el.value
+);
 
 clearTimeout(scoreAdvanceTimer);
 
+const raw=String(el.value??"").trim();
+
+if(raw==="")return;
+
+const n=Number(raw);
+
+if(!Number.isFinite(n)||n<1||n>20)return;
+
+/*
+A first digit of 1 gets a little extra time
+for 10, 11, 12, etc.
+*/
+const delay=raw==="1"?450:200;
+
 scoreAdvanceTimer=setTimeout(()=>{
-const active=document.activeElement;
 
 /*
-If the golfer manually tapped a different field,
-do not override their choice.
+If the scorer manually moved somewhere else,
+do not pull focus away from them.
 */
-if(
-scorePointerTarget&&
-scorePointerTarget!==el
-){
-return;
-}
+if(document.activeElement!==el)return;
 
-/*
-If another control already has focus, leave it alone.
-*/
-if(
-active&&
-active!==document.body&&
-active!==document.documentElement&&
-active!==el
-){
-return;
-}
-
-/*
-iPhone Done/checkmark closed the keyboard.
-Advance to the next hole.
-*/
 advanceScoreInput(el);
 
-},120);
+},delay);
 }
 
 function advanceScoreInput(el){
 if(!el)return;
 
 const table=el.closest(".scoretable");
+
 if(!table)return;
 
 const inputs=Array.from(
-table.querySelectorAll("input.scoreInput:not(:disabled)")
+table.querySelectorAll(
+"input.scoreInput:not(:disabled)"
+)
 );
 
 const currentIndex=inputs.indexOf(el);
@@ -1432,24 +1404,20 @@ if(currentIndex<0)return;
 
 const next=inputs[currentIndex+1];
 
-/*
-After the final golfer's Hole 18, stop.
-Hole 18 of every earlier golfer automatically
-moves to Hole 1 of the next golfer.
-*/
 if(!next){
 el.blur();
 return;
 }
 
 /*
-Prevent the blur caused by our own focus change
-from triggering another advance and skipping a hole.
+Move directly from one numeric input to the next.
+Do not blur first. This gives iPhone the best chance
+of leaving the number pad open.
 */
-suppressScoreBlur=el;
-
 try{
-next.focus({preventScroll:true});
+next.focus({
+preventScroll:true
+});
 }catch(e){
 next.focus();
 }
@@ -1462,17 +1430,26 @@ const wrapper=next.closest(".tablewrap");
 const cell=next.closest("td");
 
 if(wrapper&&cell){
+
 const wrapperRect=wrapper.getBoundingClientRect();
 const cellRect=cell.getBoundingClientRect();
 
 const stickyWidth=155;
-const leftLimit=wrapperRect.left+stickyWidth+8;
-const rightLimit=wrapperRect.right-8;
+
+const leftLimit=
+wrapperRect.left+
+stickyWidth+
+8;
+
+const rightLimit=
+wrapperRect.right-
+8;
 
 if(
 cellRect.left<leftLimit||
 cellRect.right>rightLimit
 ){
+
 const desiredLeft=
 wrapper.scrollLeft+
 (cellRect.left-wrapperRect.left)-
@@ -1483,7 +1460,9 @@ wrapper.scrollTo({
 left:Math.max(0,desiredLeft),
 behavior:"smooth"
 });
+
 }
+
 }
 }
 
@@ -1507,13 +1486,10 @@ min="1"
 max="20"
 ${canScore()?"":"disabled"}
 value="${value}"
-onpointerdown="markScorePointer(this)"
-ontouchstart="markScorePointer(this)"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
-onblur="handleScoreBlur(event,this)"
-oninput="queueScore(${round},${matchNo},'${matchId}',${h},'${p.id}',this.value)">
+oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
 </td>
 `;
 }
@@ -1539,13 +1515,10 @@ min="1"
 max="20"
 ${canScore()?"":"disabled"}
 value="${value}"
-onpointerdown="markScorePointer(this)"
-ontouchstart="markScorePointer(this)"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
-onblur="handleScoreBlur(event,this)"
-oninput="queueScore(${round},${matchNo},'${matchId}',${h},'${p.id}',this.value)">
+oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
 </td>
 `;
 }
@@ -1643,7 +1616,7 @@ return`
 </div>
 
 ${canScore()
-?`<div class="notice">Enter a score and tap <b>Next / ✓ / Done</b> to move to the next hole.</div>`
+?`<div class="notice"><b>Fast Entry:</b> Tap the first score box and start entering scores. Scores 2–9 advance automatically in <b>0.2 seconds</b>. A score starting with 1 waits slightly longer for a possible 10+.</div>`
 :`<div class="viewer">Scores are read-only.</div>`
 }
 
@@ -1656,7 +1629,7 @@ Select Hackers, Shankers or Halved for each match.
 `
 :`
 <div class="scoreHint">
-Scores move left-to-right. After Hole 18, entry moves to Hole 1 for the next golfer.
+The number pad stays open as scores move left-to-right. After Hole 18, entry moves to Hole 1 for the next golfer.
 </div>
 `
 }
@@ -1683,7 +1656,6 @@ return`
 `;
 }
 
-/* ROUND 3 — RESULT ONLY */
 if(r.id===3){
 return`
 <div class="match resultOnly">
@@ -1851,8 +1823,6 @@ console.error(e);
 alert("Match result could not be saved or reset.");
 }
 }
-
-/* SCATS */
 
 function getScatResults(roundId,group){
 const r=ROUNDS.find(x=>x.id===roundId);
@@ -2024,8 +1994,6 @@ ${scatGroupCard(r,"B")}
 `).join("")}
 `;
 }
-
-/* USERS & ACCESS */
 
 async function loadTournamentUsers(){
 if(!isOwner()){
@@ -2211,8 +2179,6 @@ console.error(e);
 alert("User permissions could not be saved.");
 }
 }
-
-/* ACCOUNT */
 
 function loginPage(){
 if(isSignedIn()){
@@ -2412,8 +2378,6 @@ await loadSharedData(false);
 render();
 }
 
-/* RENDER */
-
 function render(){
 if(page==="users"&&!isOwner()){
 page="dashboard";
@@ -2443,7 +2407,6 @@ html=loginPage();
 document.getElementById("app").innerHTML=html;
 }
 
-/* Auto refresh without interrupting active score entry */
 setInterval(async()=>{
 const a=document.activeElement;
 
