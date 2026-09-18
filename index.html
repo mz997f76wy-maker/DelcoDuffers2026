@@ -61,6 +61,64 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .summaryCell{font-weight:900;background:#f3f4f6}
 .scoreHint{font-size:12px;color:#6b7280;margin:6px 0 10px}
 
+.scoringAccessPanel{
+background:#f9fafb;
+border:1px solid #d1d5db;
+border-radius:12px;
+padding:14px;
+margin:14px 0
+}
+.scoringAccessPanel h3{margin:0 0 8px}
+.scoringAccessRow{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+padding:11px 0;
+border-top:1px solid #e5e7eb
+}
+.scoringAccessRow:first-of-type{border-top:0}
+.scoringAccessName{font-weight:900}
+.scoringAccessActions{display:flex;align-items:center;gap:8px}
+.scoringOpenBadge{
+display:inline-block;
+background:#d1fae5;
+color:#065f46;
+border:1px solid #6ee7b7;
+border-radius:99px;
+padding:6px 9px;
+font-size:12px;
+font-weight:900
+}
+.scoringLockedBadge{
+display:inline-block;
+background:#fee2e2;
+color:#991b1b;
+border:1px solid #fca5a5;
+border-radius:99px;
+padding:6px 9px;
+font-size:12px;
+font-weight:900
+}
+.scoringOpenNotice{
+background:#ecfdf5;
+color:#065f46;
+border:1px solid #6ee7b7;
+padding:10px;
+border-radius:9px;
+margin:10px 0;
+font-weight:900
+}
+.scoringLockedNotice{
+background:#fee2e2;
+color:#991b1b;
+border:1px solid #fca5a5;
+padding:10px;
+border-radius:9px;
+margin:10px 0;
+font-weight:900
+}
+
 .resultOnly{max-width:650px;margin:14px auto}
 .roundnav{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .roundbuttons{display:flex;gap:6px}
@@ -136,6 +194,8 @@ header h1{font-size:25px}
 .liveMatchRow{grid-template-columns:minmax(0,1fr) 43px minmax(0,1fr);min-height:57px;border-bottom:2px solid #e7e5df}
 .liveSide{font-size:14px;padding:6px 5px}
 .liveCenter{font-size:10px}
+.scoringAccessRow{align-items:flex-start}
+.scoringAccessActions{flex-shrink:0}
 }
 </style>
 </head>
@@ -198,6 +258,7 @@ let dashboardRound=Number(localStorage.getItem("delcoDashboardRound")||1);
 let saveTimers={};
 let editingPlayerId=null;
 let tournamentUsers=[];
+let roundSettings={1:true,2:true,3:true,4:true};
 
 function escapeHtml(value){
 return String(value??"")
@@ -213,6 +274,8 @@ function isCaptain(){return userRole==="captain"}
 function isScorer(){return userRole==="scorer"}
 function canScore(){return userRole==="owner"||userRole==="captain"||userRole==="scorer"}
 function canEditPlayers(){return isOwner()}
+function isScoringOpen(roundId){return roundSettings[Number(roundId)]!==false}
+function canScoreRound(roundId){return canScore()&&isScoringOpen(roundId)}
 
 function canEditMatchupSide(side){
 if(isOwner())return true;
@@ -406,11 +469,12 @@ throw new Error("Database delete failed");
 
 async function loadSharedData(rerender=true){
 try{
-const [players,matchups,scores,results]=await Promise.all([
+const [players,matchups,scores,results,settings]=await Promise.all([
 apiGet("tournament_players"),
 apiGet("tournament_matchups"),
 apiGet("tournament_scores"),
-apiGet("tournament_results")
+apiGet("tournament_results"),
+apiGet("tournament_round_settings")
 ]);
 
 data.players=players.map(r=>({
@@ -450,6 +514,12 @@ data.results={};
 
 results.forEach(r=>{
 data.results["R"+r.round_no+"M"+r.match_no]={winner:r.winner};
+});
+
+roundSettings={1:true,2:true,3:true,4:true};
+
+settings.forEach(r=>{
+roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
 
 connected=true;
@@ -1344,7 +1414,7 @@ holeIndex,
 scorer,
 el
 ){
-if(!canScore()||!el)return;
+if(!canScoreRound(round)||!el)return;
 
 queueScore(
 round,
@@ -1454,7 +1524,7 @@ pattern="[0-9]*"
 enterkeyhint="next"
 min="1"
 max="20"
-${canScore()?"":"disabled"}
+${canScoreRound(round)?"":"disabled"}
 value="${value}"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
@@ -1483,7 +1553,7 @@ pattern="[0-9]*"
 enterkeyhint="next"
 min="1"
 max="20"
-${canScore()?"":"disabled"}
+${canScoreRound(round)?"":"disabled"}
 value="${value}"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
@@ -1527,6 +1597,92 @@ if(inn)inn.textContent=enteredNine(score,playerId,9);
 if(total)total.textContent=enteredTotal(score,playerId);
 }
 
+/*
+ROUND SCORING ACCESS
+
+Only the owner sees these controls.
+The setting is stored in Supabase so the lock applies
+to every captain/scorer/device.
+*/
+
+function scoringAccessControls(){
+if(!isOwner())return"";
+
+return`
+<div class="scoringAccessPanel">
+
+<h3>Scoring Access</h3>
+
+<div class="muted" style="margin-bottom:6px">
+Open or lock scoring separately for each round.
+</div>
+
+${ROUNDS.map(r=>{
+const open=isScoringOpen(r.id);
+
+return`
+<div class="scoringAccessRow">
+
+<div>
+<div class="scoringAccessName">
+Round ${r.id} — ${r.course}
+</div>
+</div>
+
+<div class="scoringAccessActions">
+
+<span class="${open?"scoringOpenBadge":"scoringLockedBadge"}">
+${open?"OPEN":"LOCKED"}
+</span>
+
+<button
+class="${open?"danger":"good"}"
+onclick="setRoundScoring(${r.id},${open?"false":"true"})">
+${open?"Lock":"Open"}
+</button>
+
+</div>
+</div>
+`;
+}).join("")}
+
+</div>
+`;
+}
+
+async function setRoundScoring(roundId,open){
+if(!isOwner())return;
+
+const action=open?"OPEN":"LOCK";
+const course=ROUNDS.find(r=>r.id===Number(roundId))?.course||"this round";
+
+if(!confirm(action+" scoring for Round "+roundId+" — "+course+"?")){
+return;
+}
+
+try{
+
+await upsert(
+"tournament_round_settings",
+{
+tournament_id:TOURNAMENT_ID,
+round_no:Number(roundId),
+scoring_open:!!open,
+updated_at:new Date().toISOString()
+},
+"tournament_id,round_no"
+);
+
+roundSettings[Number(roundId)]=!!open;
+
+render();
+
+}catch(e){
+console.error(e);
+alert("Scoring access could not be changed.");
+}
+}
+
 function resultControls(match,i){
 const saved=data.results[match.id]?data.results[match.id].winner:"";
 
@@ -1540,7 +1696,7 @@ banner=`<div class="resultBanner resultShankers">SHANKERS WIN — 1 POINT</div>`
 banner=`<div class="resultBanner resultHalved">MATCH HALVED — ½ POINT EACH</div>`;
 }
 
-const controls=canScore()
+const controls=canScoreRound(currentRound)
 ?`
 <div style="margin-top:15px">
 
@@ -1585,8 +1741,15 @@ return`
 
 </div>
 
+${scoringAccessControls()}
+
+${isScoringOpen(r.id)
+?`<div class="scoringOpenNotice">🟢 ROUND ${r.id} SCORING IS OPEN</div>`
+:`<div class="scoringLockedNotice">🔒 ROUND ${r.id} SCORING IS LOCKED — scores and match results are read-only.</div>`
+}
+
 ${!canScore()
-?`<div class="viewer">Scores are read-only.</div>`
+?`<div class="viewer">Scores are read-only for your account.</div>`
 :""
 }
 
@@ -1691,7 +1854,7 @@ ${resultControls(match,i)}
 }
 
 function queueScore(round,matchNo,matchId,holeIndex,scorer,value){
-if(!canScore())return;
+if(!canScoreRound(round))return;
 
 const score=getScore(matchId);
 
@@ -1725,7 +1888,7 @@ score:Number(value)
 }
 
 async function saveScoreOnline(round,matchNo,hole,scorer,value){
-if(!canScore())return;
+if(!canScoreRound(round))return;
 
 try{
 if(value===""){
@@ -1741,12 +1904,20 @@ scorer_key:scorer
 }else{
 await saveScoreDirect(round,matchNo,hole,scorer,Number(value));
 }
-}catch(e){console.error(e)}
+}catch(e){
+console.error(e);
+await loadSharedData(false);
+}
 }
 
 async function saveMatchResult(round,matchNo,matchId){
 if(!canScore()){
 alert("Scoring access required.");
+return;
+}
+
+if(!isScoringOpen(round)){
+alert("Round "+round+" scoring is locked.");
 return;
 }
 
@@ -1787,6 +1958,8 @@ render();
 }catch(e){
 console.error(e);
 alert("Match result could not be saved or reset.");
+await loadSharedData(false);
+render();
 }
 }
 
