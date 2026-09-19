@@ -59,7 +59,6 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .hackerScoreRow td:first-child{background:#fee2e2;color:#991b1b;font-weight:900}
 .shankerScoreRow td:first-child{background:#dbeafe;color:#1d4ed8;font-weight:900}
 .summaryCell{font-weight:900;background:#f3f4f6}
-.scoreHint{font-size:12px;color:#6b7280;margin:6px 0 10px}
 
 .scoringAccessPanel{
 background:#f9fafb;
@@ -117,6 +116,18 @@ padding:10px;
 border-radius:9px;
 margin:10px 0;
 font-weight:900
+}
+.resetArea{
+margin-top:16px;
+padding-top:16px;
+border-top:2px solid #e5e7eb
+}
+.resetButton{
+width:100%;
+background:#991b1b;
+color:white;
+font-size:16px;
+padding:14px
 }
 
 .resultOnly{max-width:650px;margin:14px auto}
@@ -1368,16 +1379,6 @@ ${values.slice(9).map(v=>`<td>${v}</td>`).join("")}
 `;
 }
 
-/*
-FAST SCORE ENTRY
-
-2–9:
-Advance after 0.2 seconds.
-
-1:
-Wait 0.45 seconds in case the score is 10 or higher.
-*/
-
 let scoreAdvanceTimer=null;
 
 function selectScoreInput(el){
@@ -1597,14 +1598,6 @@ if(inn)inn.textContent=enteredNine(score,playerId,9);
 if(total)total.textContent=enteredTotal(score,playerId);
 }
 
-/*
-ROUND SCORING ACCESS
-
-Only the owner sees these controls.
-The setting is stored in Supabase so the lock applies
-to every captain/scorer/device.
-*/
-
 function scoringAccessControls(){
 if(!isOwner())return"";
 
@@ -1646,6 +1639,20 @@ ${open?"Lock":"Open"}
 `;
 }).join("")}
 
+<div class="resetArea">
+<div style="font-weight:900;color:#991b1b;margin-bottom:4px">
+Testing / Tournament Reset
+</div>
+
+<div class="muted" style="font-size:13px;margin-bottom:10px">
+Clears every entered score and official match result. Players, handicaps, teams, groups, matchups and permissions stay unchanged.
+</div>
+
+<button class="resetButton" onclick="resetAllScores()">
+Reset All Scores & Results
+</button>
+</div>
+
 </div>
 `;
 }
@@ -1680,6 +1687,74 @@ render();
 }catch(e){
 console.error(e);
 alert("Scoring access could not be changed.");
+}
+}
+
+async function resetAllScores(){
+if(!isOwner())return;
+
+const first=confirm(
+"RESET ALL SCORES & RESULTS?\n\n"+
+"This will permanently erase:\n"+
+"• Every hole score\n"+
+"• Every official match result\n"+
+"• All current Scat results\n"+
+"• The current Ryder Cup points\n\n"+
+"Players, handicaps, teams, groups, matchups and permissions will NOT be changed."
+);
+
+if(!first)return;
+
+const typed=prompt(
+"Final confirmation.\n\nType RESET to erase all scores and results."
+);
+
+if(typed!=="RESET"){
+if(typed!==null){
+alert("Reset cancelled. You must type RESET exactly.");
+}
+return;
+}
+
+try{
+await refreshSessionIfNeeded();
+
+const r=await fetch(
+SUPABASE_URL+"/rest/v1/rpc/reset_duffers_scores",
+{
+method:"POST",
+headers:headers(),
+body:"{}"
+}
+);
+
+if(!r.ok){
+const message=await r.text();
+console.error(message);
+throw new Error("Reset failed");
+}
+
+Object.keys(saveTimers).forEach(k=>{
+clearTimeout(saveTimers[k]);
+});
+
+saveTimers={};
+data.scores={};
+data.results={};
+
+await loadSharedData(false);
+render();
+
+alert(
+"Reset complete.\n\nAll scores and match results have been cleared."
+);
+
+}catch(e){
+console.error(e);
+
+alert(
+"Reset could not be completed. No other tournament settings were changed."
+);
 }
 }
 
@@ -2109,13 +2184,6 @@ ${r.winners.map(p=>escapeHtml(p.name)).join(", ")}
 </div>
 `;
 }
-
-/*
-QUICK ALL-SCAT WINNERS
-
-All winning scats from Rounds 1, 2 and 4 are grouped
-by player. Players with the most scats appear first.
-*/
 
 function allScatWinners(){
 const players={};
