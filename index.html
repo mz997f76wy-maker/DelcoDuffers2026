@@ -1051,11 +1051,43 @@ shankers:[]
 return data.matchups[currentRound];
 }
 
+/* =========================================================
+   PREVENT DUPLICATE PLAYERS IN THE SAME ROUND
+   Once a player is selected, they disappear from every
+   other dropdown in that round.
+   ========================================================= */
+
+function usedPlayerIdsThisRound(){
+const used=new Set();
+const matches=data.matchups[currentRound]||[];
+
+matches.forEach(match=>{
+if(!match)return;
+
+[
+...(match.hackers||[]),
+...(match.shankers||[])
+].forEach(id=>{
+if(id)used.add(String(id));
+});
+});
+
+return used;
+}
+
 function playerOptions(team,current){
+const used=usedPlayerIdsThisRound();
+
 return`
 <option value="">Select Player</option>
 ${data.players
-.filter(p=>p.team===team)
+.filter(p=>
+p.team===team &&
+(
+String(p.id)===String(current) ||
+!used.has(String(p.id))
+)
+)
 .map(p=>`
 <option value="${p.id}" ${String(p.id)===String(current)?"selected":""}>
 ${escapeHtml(p.name)} — HCP ${escapeHtml(p.handicap)} — Group ${escapeHtml(p.group)}
@@ -1241,6 +1273,25 @@ if(!canEditMatchupSide(side))return;
 
 const match=data.matchups[currentRound][i];
 const oldValue=match[side][slot];
+
+if(playerId){
+const duplicate=(data.matchups[currentRound]||[]).some((m,matchIndex)=>{
+if(!m)return false;
+
+return ["hackers","shankers"].some(checkSide=>
+(m[checkSide]||[]).some((id,checkSlot)=>{
+if(matchIndex===i&&checkSide===side&&checkSlot===slot)return false;
+return String(id)===String(playerId);
+})
+);
+});
+
+if(duplicate){
+alert("That player is already selected in this round.");
+render();
+return;
+}
+}
 
 match[side][slot]=playerId;
 render();
