@@ -505,7 +505,8 @@ data.matchups[r.round_no][r.match_no-1]={
 id:"R"+r.round_no+"M"+r.match_no,
 matchNo:r.match_no,
 hackers:r.hackers||[],
-shankers:r.shankers||[]
+shankers:r.shankers||[],
+teeTime:r.tee_time||""
 };
 });
 
@@ -634,6 +635,15 @@ localStorage.setItem("delcoDashboardRound",String(dashboardRound));
 render();
 }
 
+function formatTeeTime(value){
+if(!value)return"—";
+const parts=String(value).slice(0,5).split(":");
+let h=Number(parts[0]),m=parts[1];
+const ap=h>=12?"PM":"AM";
+h=h%12||12;
+return h+":"+m+" "+ap;
+}
+
 function livePlayerNames(ids){
 const names=(ids||[])
 .map(getPlayer)
@@ -647,7 +657,20 @@ return names.join("<br>");
 
 function liveMatchBoard(){
 const r=ROUNDS[dashboardRound-1];
-const matches=data.matchups[dashboardRound]||[];
+const rawMatches=data.matchups[dashboardRound]||[];
+
+const matches=Array.from({length:r.matches},(_,i)=>rawMatches[i]||{
+id:"R"+r.id+"M"+(i+1),
+matchNo:i+1,
+hackers:[],
+shankers:[],
+teeTime:""
+}).sort((a,b)=>{
+const at=a.teeTime||"99:99";
+const bt=b.teeTime||"99:99";
+return at.localeCompare(bt)||(a.matchNo-b.matchNo);
+});
+
 const totals=teamPoints();
 
 return`
@@ -681,13 +704,7 @@ ROUND ${r.id} — ${r.course}
 
 <div class="liveRows">
 
-${Array.from({length:r.matches},(_,i)=>{
-const match=matches[i]||{
-id:"R"+r.id+"M"+(i+1),
-hackers:[],
-shankers:[]
-};
-
+${matches.map((match)=>{
 const result=data.results[match.id]?.winner||"";
 
 let rowClass="";
@@ -707,7 +724,12 @@ center="A/S";
 return`
 <div class="liveMatchRow ${rowClass}">
 <div class="liveSide left"><div>${livePlayerNames(match.hackers)}</div></div>
-<div class="liveCenter">${center}</div>
+<div class="liveCenter">
+<div>
+${match.teeTime?formatTeeTime(match.teeTime)+"<br>":""}
+${center}
+</div>
+</div>
 <div class="liveSide right"><div>${livePlayerNames(match.shankers)}</div></div>
 </div>
 `;
@@ -1044,18 +1066,13 @@ data.matchups[currentRound][i]={
 id:"R"+currentRound+"M"+(i+1),
 matchNo:i+1,
 hackers:[],
-shankers:[]
+shankers:[],
+teeTime:""
 };
 }
 
 return data.matchups[currentRound];
 }
-
-/* =========================================================
-   PREVENT DUPLICATE PLAYERS IN THE SAME ROUND
-   Once a player is selected, they disappear from every
-   other dropdown in that round.
-   ========================================================= */
 
 function usedPlayerIdsThisRound(){
 const used=new Set();
@@ -1139,6 +1156,7 @@ return`
 <div class="foursomeCard">
 <h2>Foursome ${f+1}</h2>
 <div class="muted">Matches ${a+1} & ${b+1}</div>
+${teeTimeControl(a,m[a]?.teeTime||"",true)}
 ${round4SinglesMatch(m[a],a)}
 ${round4SinglesMatch(m[b],b)}
 </div>
@@ -1164,6 +1182,8 @@ return`
 
 <h2>Foursome ${i+1}</h2>
 <div class="muted">Match ${i+1}</div>
+
+${teeTimeControl(i,match.teeTime||"",false)}
 
 <div class="innerMatch">
 
@@ -1266,6 +1286,99 @@ ${playerOptions("Shankers",match.shankers[0])}
 </div>
 </div>
 `;
+}
+
+function teeTimeControl(i,value,isRound4Foursome){
+const label=value?formatTeeTime(value):"Not set";
+
+if(!isOwner()){
+return `<div class="pill">Tee Time: ${escapeHtml(label)}</div>`;
+}
+
+return`
+<div class="row" style="margin:10px 0">
+<div class="field" style="max-width:220px">
+<label>TEE TIME</label>
+<input
+type="time"
+step="600"
+value="${escapeHtml(String(value||"").slice(0,5))}"
+onchange="${isRound4Foursome
+?`setFoursomeTeeTime(${i},this.value)`
+:`setTeeTime(${i},this.value)`
+}">
+</div>
+</div>
+`;
+}
+
+async function saveTeeTime(matchIndex,value){
+await refreshSessionIfNeeded();
+
+const r=await fetch(
+SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_time",
+{
+method:"POST",
+headers:headers(),
+body:JSON.stringify({
+p_round_no:currentRound,
+p_match_no:matchIndex+1,
+p_tee_time:value||null
+})
+}
+);
+
+if(!r.ok){
+console.error(await r.text());
+throw new Error("Tee time save failed");
+}
+}
+
+async function setTeeTime(i,value){
+if(!isOwner())return;
+
+const match=data.matchups[currentRound]?.[i];
+if(!match)return;
+
+const old=match.teeTime||"";
+match.teeTime=value||"";
+render();
+
+try{
+await saveTeeTime(i,value);
+}catch(e){
+console.error(e);
+match.teeTime=old;
+render();
+alert("Tee time could not be saved.");
+}
+}
+
+async function setFoursomeTeeTime(firstMatchIndex,value){
+if(!isOwner())return;
+
+const a=data.matchups[currentRound]?.[firstMatchIndex];
+const b=data.matchups[currentRound]?.[firstMatchIndex+1];
+
+if(!a||!b)return;
+
+const oldA=a.teeTime||"";
+const oldB=b.teeTime||"";
+
+a.teeTime=value||"";
+b.teeTime=value||"";
+render();
+
+try{
+await saveTeeTime(firstMatchIndex,value);
+await saveTeeTime(firstMatchIndex+1,value);
+}catch(e){
+console.error(e);
+a.teeTime=oldA;
+b.teeTime=oldB;
+render();
+alert("Tee time could not be saved.");
+}
 }
 
 async function setMatchPlayer(i,side,slot,playerId){
