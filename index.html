@@ -628,9 +628,14 @@ const at=a.teeTime||"99:99";
 const bt=b.teeTime||"99:99";
 const timeCompare=at.localeCompare(bt);
 if(timeCompare)return timeCompare;
+
+if(dashboardRound===2||dashboardRound===3){
 const ah=Number(a.teeStartHole||99);
 const bh=Number(b.teeStartHole||99);
-return ah-bh||(a.matchNo-b.matchNo);
+if(ah!==bh)return ah-bh;
+}
+
+return a.matchNo-b.matchNo;
 });
 
 const totals=teamPoints();
@@ -683,13 +688,16 @@ rowClass="liveHalved";
 center="A/S";
 }
 
+const showStartHole=
+(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
+
 return`
 <div class="liveMatchRow ${rowClass}">
 <div class="liveSide left"><div>${livePlayerNames(match.hackers)}</div></div>
 <div class="liveCenter">
 <div>
 ${match.teeTime?formatTeeTime(match.teeTime)+"<br>":""}
-${match.teeStartHole?"Hole "+match.teeStartHole+"<br>":""}
+${showStartHole?"Hole "+match.teeStartHole+"<br>":""}
 ${center}
 </div>
 </div>
@@ -1254,10 +1262,16 @@ ${playerOptions("Shankers",match.shankers[0])}
 
 function teeTimeControl(i,value,startHole,isRound4Foursome){
 const label=value?formatTeeTime(value):"Not set";
+const showStartHole=currentRound===2||currentRound===3;
 const holeLabel=startHole?"Hole "+startHole:"Start hole not set";
 
 if(!isOwner()){
-return `<div class="pill">Tee Time: ${escapeHtml(label)} • ${escapeHtml(holeLabel)}</div>`;
+return`
+<div class="pill">
+Tee Time: ${escapeHtml(label)}
+${showStartHole?" • "+escapeHtml(holeLabel):""}
+</div>
+`;
 }
 
 return`
@@ -1275,6 +1289,7 @@ onchange="${isRound4Foursome
 }">
 </div>
 
+${showStartHole?`
 <div class="field" style="max-width:220px">
 <label>STARTING HOLE</label>
 <select onchange="${isRound4Foursome
@@ -1286,6 +1301,7 @@ onchange="${isRound4Foursome
 <option value="10" ${Number(startHole)===10?"selected":""}>Hole 10</option>
 </select>
 </div>
+`:""}
 
 </div>
 `;
