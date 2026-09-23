@@ -79,56 +79,12 @@ border-top:1px solid #e5e7eb
 .scoringAccessRow:first-of-type{border-top:0}
 .scoringAccessName{font-weight:900}
 .scoringAccessActions{display:flex;align-items:center;gap:8px}
-.scoringOpenBadge{
-display:inline-block;
-background:#d1fae5;
-color:#065f46;
-border:1px solid #6ee7b7;
-border-radius:99px;
-padding:6px 9px;
-font-size:12px;
-font-weight:900
-}
-.scoringLockedBadge{
-display:inline-block;
-background:#fee2e2;
-color:#991b1b;
-border:1px solid #fca5a5;
-border-radius:99px;
-padding:6px 9px;
-font-size:12px;
-font-weight:900
-}
-.scoringOpenNotice{
-background:#ecfdf5;
-color:#065f46;
-border:1px solid #6ee7b7;
-padding:10px;
-border-radius:9px;
-margin:10px 0;
-font-weight:900
-}
-.scoringLockedNotice{
-background:#fee2e2;
-color:#991b1b;
-border:1px solid #fca5a5;
-padding:10px;
-border-radius:9px;
-margin:10px 0;
-font-weight:900
-}
-.resetArea{
-margin-top:16px;
-padding-top:16px;
-border-top:2px solid #e5e7eb
-}
-.resetButton{
-width:100%;
-background:#991b1b;
-color:white;
-font-size:16px;
-padding:14px
-}
+.scoringOpenBadge{display:inline-block;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:99px;padding:6px 9px;font-size:12px;font-weight:900}
+.scoringLockedBadge{display:inline-block;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:99px;padding:6px 9px;font-size:12px;font-weight:900}
+.scoringOpenNotice{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin:10px 0;font-weight:900}
+.scoringLockedNotice{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:10px;border-radius:9px;margin:10px 0;font-weight:900}
+.resetArea{margin-top:16px;padding-top:16px;border-top:2px solid #e5e7eb}
+.resetButton{width:100%;background:#991b1b;color:white;font-size:16px;padding:14px}
 
 .resultOnly{max-width:650px;margin:14px auto}
 .roundnav{display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -506,7 +462,8 @@ id:"R"+r.round_no+"M"+r.match_no,
 matchNo:r.match_no,
 hackers:r.hackers||[],
 shankers:r.shankers||[],
-teeTime:r.tee_time||""
+teeTime:r.tee_time||"",
+teeStartHole:r.tee_start_hole||""
 };
 });
 
@@ -664,11 +621,16 @@ id:"R"+r.id+"M"+(i+1),
 matchNo:i+1,
 hackers:[],
 shankers:[],
-teeTime:""
+teeTime:"",
+teeStartHole:""
 }).sort((a,b)=>{
 const at=a.teeTime||"99:99";
 const bt=b.teeTime||"99:99";
-return at.localeCompare(bt)||(a.matchNo-b.matchNo);
+const timeCompare=at.localeCompare(bt);
+if(timeCompare)return timeCompare;
+const ah=Number(a.teeStartHole||99);
+const bh=Number(b.teeStartHole||99);
+return ah-bh||(a.matchNo-b.matchNo);
 });
 
 const totals=teamPoints();
@@ -727,6 +689,7 @@ return`
 <div class="liveCenter">
 <div>
 ${match.teeTime?formatTeeTime(match.teeTime)+"<br>":""}
+${match.teeStartHole?"Hole "+match.teeStartHole+"<br>":""}
 ${center}
 </div>
 </div>
@@ -1067,7 +1030,8 @@ id:"R"+currentRound+"M"+(i+1),
 matchNo:i+1,
 hackers:[],
 shankers:[],
-teeTime:""
+teeTime:"",
+teeStartHole:""
 };
 }
 
@@ -1156,7 +1120,7 @@ return`
 <div class="foursomeCard">
 <h2>Foursome ${f+1}</h2>
 <div class="muted">Matches ${a+1} & ${b+1}</div>
-${teeTimeControl(a,m[a]?.teeTime||"",true)}
+${teeTimeControl(a,m[a]?.teeTime||"",m[a]?.teeStartHole||"",true)}
 ${round4SinglesMatch(m[a],a)}
 ${round4SinglesMatch(m[b],b)}
 </div>
@@ -1183,7 +1147,7 @@ return`
 <h2>Foursome ${i+1}</h2>
 <div class="muted">Match ${i+1}</div>
 
-${teeTimeControl(i,match.teeTime||"",false)}
+${teeTimeControl(i,match.teeTime||"",match.teeStartHole||"",false)}
 
 <div class="innerMatch">
 
@@ -1288,15 +1252,17 @@ ${playerOptions("Shankers",match.shankers[0])}
 `;
 }
 
-function teeTimeControl(i,value,isRound4Foursome){
+function teeTimeControl(i,value,startHole,isRound4Foursome){
 const label=value?formatTeeTime(value):"Not set";
+const holeLabel=startHole?"Hole "+startHole:"Start hole not set";
 
 if(!isOwner()){
-return `<div class="pill">Tee Time: ${escapeHtml(label)}</div>`;
+return `<div class="pill">Tee Time: ${escapeHtml(label)} • ${escapeHtml(holeLabel)}</div>`;
 }
 
 return`
 <div class="row" style="margin:10px 0">
+
 <div class="field" style="max-width:220px">
 <label>TEE TIME</label>
 <input
@@ -1308,6 +1274,19 @@ onchange="${isRound4Foursome
 :`setTeeTime(${i},this.value)`
 }">
 </div>
+
+<div class="field" style="max-width:220px">
+<label>STARTING HOLE</label>
+<select onchange="${isRound4Foursome
+?`setFoursomeStartHole(${i},this.value)`
+:`setTeeStartHole(${i},this.value)`
+}">
+<option value="" ${!startHole?"selected":""}>Select Hole</option>
+<option value="1" ${Number(startHole)===1?"selected":""}>Hole 1</option>
+<option value="10" ${Number(startHole)===10?"selected":""}>Hole 10</option>
+</select>
+</div>
+
 </div>
 `;
 }
@@ -1334,6 +1313,28 @@ throw new Error("Tee time save failed");
 }
 }
 
+async function saveTeeStartHole(matchIndex,value){
+await refreshSessionIfNeeded();
+
+const r=await fetch(
+SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_start_hole",
+{
+method:"POST",
+headers:headers(),
+body:JSON.stringify({
+p_round_no:currentRound,
+p_match_no:matchIndex+1,
+p_tee_start_hole:value?Number(value):null
+})
+}
+);
+
+if(!r.ok){
+console.error(await r.text());
+throw new Error("Starting hole save failed");
+}
+}
+
 async function setTeeTime(i,value){
 if(!isOwner())return;
 
@@ -1351,6 +1352,26 @@ console.error(e);
 match.teeTime=old;
 render();
 alert("Tee time could not be saved.");
+}
+}
+
+async function setTeeStartHole(i,value){
+if(!isOwner())return;
+
+const match=data.matchups[currentRound]?.[i];
+if(!match)return;
+
+const old=match.teeStartHole||"";
+match.teeStartHole=value?Number(value):"";
+render();
+
+try{
+await saveTeeStartHole(i,value);
+}catch(e){
+console.error(e);
+match.teeStartHole=old;
+render();
+alert("Starting hole could not be saved.");
 }
 }
 
@@ -1378,6 +1399,33 @@ a.teeTime=oldA;
 b.teeTime=oldB;
 render();
 alert("Tee time could not be saved.");
+}
+}
+
+async function setFoursomeStartHole(firstMatchIndex,value){
+if(!isOwner())return;
+
+const a=data.matchups[currentRound]?.[firstMatchIndex];
+const b=data.matchups[currentRound]?.[firstMatchIndex+1];
+
+if(!a||!b)return;
+
+const oldA=a.teeStartHole||"";
+const oldB=b.teeStartHole||"";
+
+a.teeStartHole=value?Number(value):"";
+b.teeStartHole=value?Number(value):"";
+render();
+
+try{
+await saveTeeStartHole(firstMatchIndex,value);
+await saveTeeStartHole(firstMatchIndex+1,value);
+}catch(e){
+console.error(e);
+a.teeStartHole=oldA;
+b.teeStartHole=oldB;
+render();
+alert("Starting hole could not be saved.");
 }
 }
 
@@ -1571,24 +1619,10 @@ clearTimeout(scoreAdvanceTimer);
 advanceScoreInput(el);
 }
 
-function handleScoreInput(
-round,
-matchNo,
-matchId,
-holeIndex,
-scorer,
-el
-){
+function handleScoreInput(round,matchNo,matchId,holeIndex,scorer,el){
 if(!canScoreRound(round)||!el)return;
 
-queueScore(
-round,
-matchNo,
-matchId,
-holeIndex,
-scorer,
-el.value
-);
+queueScore(round,matchNo,matchId,holeIndex,scorer,el.value);
 
 clearTimeout(scoreAdvanceTimer);
 
@@ -1603,11 +1637,8 @@ if(!Number.isFinite(n)||n<1||n>20)return;
 const delay=raw==="1"?450:200;
 
 scoreAdvanceTimer=setTimeout(()=>{
-
 if(document.activeElement!==el)return;
-
 advanceScoreInput(el);
-
 },delay);
 }
 
