@@ -121,6 +121,31 @@ border-top:1px solid #e5e7eb
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
 
+/* SMALL HANDICAPS IN MATCHUPS */
+.matchupSelectRow{
+display:flex;
+align-items:center;
+gap:7px;
+margin-bottom:8px
+}
+.matchupSelectRow select{
+flex:1;
+min-width:0;
+margin-bottom:0
+}
+.matchupHcp{
+font-size:11px;
+font-weight:700;
+color:#6b7280;
+white-space:nowrap
+}
+.matchupPlayer{
+font-weight:800
+}
+.matchupPlayer .matchupHcp{
+margin-left:4px
+}
+
 .liveCard{padding:0;overflow:hidden}
 .liveRoundControl{padding:14px 16px;background:white}
 .liveRoundControl label{font-size:13px}
@@ -144,6 +169,15 @@ border-top:1px solid #e5e7eb
 .liveWinShankers .liveSide.right{background:#2563eb;color:white}
 .liveHalved .liveSide{background:#f3f4f6}
 .liveEmpty{color:#9ca3af;font-weight:700}
+
+/* SMALL HANDICAPS ON DASHBOARD */
+.livePlayerHcp{
+font-size:.62em;
+font-weight:700;
+opacity:.72;
+white-space:nowrap;
+margin-left:3px
+}
 
 /* ROUND 4 — THIN BOX AROUND EACH FOURSOME */
 .liveFoursome{
@@ -178,10 +212,12 @@ header h1{font-size:25px}
 .liveMatchRow{grid-template-columns:minmax(0,1fr) 43px minmax(0,1fr);min-height:57px;border-bottom:2px solid #e7e5df}
 .liveSide{font-size:14px;padding:6px 5px}
 .liveCenter{font-size:10px}
+.livePlayerHcp{font-size:.65em;margin-left:2px}
 .liveFoursome{margin:8px 3px;border-width:1px}
 .liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
 .scoringAccessRow{align-items:flex-start}
 .scoringAccessActions{flex-shrink:0}
+.matchupHcp{font-size:10px}
 }
 </style>
 </head>
@@ -579,6 +615,12 @@ function getPlayer(id){
 return data.players.find(p=>String(p.id)===String(id));
 }
 
+function matchupHcp(id){
+const p=getPlayer(id);
+if(!p)return"";
+return`<span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span>`;
+}
+
 function roundInfo(){
 return ROUNDS[currentRound-1];
 }
@@ -621,14 +663,18 @@ return h+":"+m+" "+ap;
 }
 
 function livePlayerNames(ids){
-const names=(ids||[])
+const players=(ids||[])
 .map(getPlayer)
-.filter(Boolean)
-.map(p=>escapeHtml(p.name));
+.filter(Boolean);
 
-if(!names.length)return`<span class="liveEmpty">NOT SET</span>`;
+if(!players.length)return`<span class="liveEmpty">NOT SET</span>`;
 
-return names.join("<br>");
+return players.map(p=>`
+<span class="livePlayerName">
+${escapeHtml(p.name)}
+<span class="livePlayerHcp">HCP ${escapeHtml(p.handicap)}</span>
+</span>
+`).join("<br>");
 }
 
 function renderLiveMatchRow(match){
@@ -1143,7 +1189,7 @@ String(p.id)===String(current) ||
 )
 .map(p=>`
 <option value="${p.id}" ${String(p.id)===String(current)?"selected":""}>
-${escapeHtml(p.name)} — HCP ${escapeHtml(p.handicap)} — Group ${escapeHtml(p.group)}
+${escapeHtml(p.name)} — Group ${escapeHtml(p.group)}
 </option>
 `).join("")}
 `;
@@ -1232,17 +1278,25 @@ ${teeTimeControl(i,match.teeTime||"",match.teeStartHole||"",false)}
 
 ${canEditMatchupSide("hackers")
 ?`
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions("Hackers",match.hackers[0])}
 </select>
+${matchupHcp(match.hackers[0])}
+</div>
 
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',1,this.value)">
 ${playerOptions("Hackers",match.hackers[1])}
 </select>
+${matchupHcp(match.hackers[1])}
+</div>
 `
 :match.hackers.map(id=>{
 const p=getPlayer(id);
-return`<div class="pill">${p?escapeHtml(p.name)+" • HCP "+escapeHtml(p.handicap):"Not Set"}</div>`;
+return p
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span></div>`
+:`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
 
@@ -1253,17 +1307,25 @@ return`<div class="pill">${p?escapeHtml(p.name)+" • HCP "+escapeHtml(p.handica
 
 ${canEditMatchupSide("shankers")
 ?`
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions("Shankers",match.shankers[0])}
 </select>
+${matchupHcp(match.shankers[0])}
+</div>
 
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',1,this.value)">
 ${playerOptions("Shankers",match.shankers[1])}
 </select>
+${matchupHcp(match.shankers[1])}
+</div>
 `
 :match.shankers.map(id=>{
 const p=getPlayer(id);
-return`<div class="pill">${p?escapeHtml(p.name)+" • HCP "+escapeHtml(p.handicap):"Not Set"}</div>`;
+return p
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span></div>`
+:`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
 
@@ -1296,11 +1358,16 @@ return`
 
 ${canEditMatchupSide("hackers")
 ?`
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions("Hackers",match.hackers[0])}
 </select>
+${matchupHcp(match.hackers[0])}
+</div>
 `
-:`<div class="pill">${h?escapeHtml(h.name)+" • HCP "+escapeHtml(h.handicap):"Not Set"}</div>`
+:h
+?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">HCP ${escapeHtml(h.handicap)}</span></div>`
+:`<div class="pill">Not Set</div>`
 }
 
 </div>
@@ -1310,11 +1377,16 @@ ${playerOptions("Hackers",match.hackers[0])}
 
 ${canEditMatchupSide("shankers")
 ?`
+<div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions("Shankers",match.shankers[0])}
 </select>
+${matchupHcp(match.shankers[0])}
+</div>
 `
-:`<div class="pill">${s?escapeHtml(s.name)+" • HCP "+escapeHtml(s.handicap):"Not Set"}</div>`
+:s
+?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">HCP ${escapeHtml(s.handicap)}</span></div>`
+:`<div class="pill">Not Set</div>`
 }
 
 </div>
@@ -2013,6 +2085,7 @@ Object.keys(saveTimers).forEach(k=>{
 clearTimeout(saveTimers[k]);
 });
 
+clearTimeout(scoreAdvanceTimer);
 saveTimers={};
 data.scores={};
 data.results={};
