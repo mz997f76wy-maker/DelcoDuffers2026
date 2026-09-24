@@ -154,7 +154,21 @@ white-space:nowrap
 .liveWinShankers .liveSide.right{background:#2563eb;color:white}
 .liveHalved .liveSide{background:#f3f4f6}
 .liveEmpty{color:#9ca3af;font-weight:700}
-.livePlayerHcp{font-size:.62em;font-weight:700;opacity:.72;white-space:nowrap;margin-left:3px}
+
+/* Every Dashboard player uses the same two-line format */
+.livePlayerName{
+display:block;
+}
+
+.livePlayerHcp{
+display:block;
+font-size:.62em;
+font-weight:700;
+opacity:.72;
+white-space:nowrap;
+margin-left:0;
+margin-top:2px;
+}
 
 .liveFoursome{border:1px solid #9ca3af;border-radius:8px;margin:9px 5px;overflow:hidden;background:white}
 .liveFoursome:first-child{margin-top:5px}
@@ -178,7 +192,11 @@ header h1{font-size:25px}
 .liveMatchRow{grid-template-columns:minmax(0,1fr) 43px minmax(0,1fr);min-height:57px;border-bottom:2px solid #e7e5df}
 .liveSide{font-size:14px;padding:6px 5px}
 .liveCenter{font-size:10px}
-.livePlayerHcp{font-size:.65em;margin-left:2px}
+.livePlayerHcp{
+font-size:.65em;
+margin-left:0;
+margin-top:2px;
+}
 .liveFoursome{margin:8px 3px;border-width:1px}
 .liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
 .scoringAccessRow{align-items:flex-start}
@@ -234,20 +252,6 @@ hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
 }
 };
 
-/*
-PLAYER TEE OPTIONS + COURSE HANDICAP DATA
-
-Course Handicap =
-Handicap Index × (Slope / 113) + (Course Rating - Par)
-
-Existing/default tees:
-Tobacco Road = Disc
-Mid South = White
-Legacy = White
-
-Talamore remains unchanged for now because no alternate
-tee rating/slope data has been entered for that course.
-*/
 const COURSE_HANDICAP_DATA={
 1:{
 course:"Tobacco Road",
@@ -732,6 +736,10 @@ h=h%12||12;
 return h+":"+m+" "+ap;
 }
 
+/* DASHBOARD PLAYER FORMAT:
+   NAME
+   HCP X • TEE
+*/
 function livePlayerNames(ids){
 const players=(ids||[])
 .map(getPlayer)
@@ -746,7 +754,7 @@ ${escapeHtml(p.name)}
 ${escapeHtml(handicapDisplay(p,dashboardRound))}
 </span>
 </span>
-`).join("<br>");
+`).join("");
 }
 
 function renderLiveMatchRow(match){
