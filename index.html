@@ -60,22 +60,9 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .shankerScoreRow td:first-child{background:#dbeafe;color:#1d4ed8;font-weight:900}
 .summaryCell{font-weight:900;background:#f3f4f6}
 
-.scoringAccessPanel{
-background:#f9fafb;
-border:1px solid #d1d5db;
-border-radius:12px;
-padding:14px;
-margin:14px 0
-}
+.scoringAccessPanel{background:#f9fafb;border:1px solid #d1d5db;border-radius:12px;padding:14px;margin:14px 0}
 .scoringAccessPanel h3{margin:0 0 8px}
-.scoringAccessRow{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px;
-padding:11px 0;
-border-top:1px solid #e5e7eb
-}
+.scoringAccessRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid #e5e7eb}
 .scoringAccessRow:first-of-type{border-top:0}
 .scoringAccessName{font-weight:900}
 .scoringAccessActions{display:flex;align-items:center;gap:8px}
@@ -121,30 +108,11 @@ border-top:1px solid #e5e7eb
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
 
-/* SMALL HANDICAPS IN MATCHUPS */
-.matchupSelectRow{
-display:flex;
-align-items:center;
-gap:7px;
-margin-bottom:8px
-}
-.matchupSelectRow select{
-flex:1;
-min-width:0;
-margin-bottom:0
-}
-.matchupHcp{
-font-size:11px;
-font-weight:700;
-color:#6b7280;
-white-space:nowrap
-}
-.matchupPlayer{
-font-weight:800
-}
-.matchupPlayer .matchupHcp{
-margin-left:4px
-}
+.matchupSelectRow{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.matchupSelectRow select{flex:1;min-width:0;margin-bottom:0}
+.matchupHcp{font-size:11px;font-weight:700;color:#6b7280;white-space:nowrap}
+.matchupPlayer{font-weight:800}
+.matchupPlayer .matchupHcp{margin-left:4px}
 
 .liveCard{padding:0;overflow:hidden}
 .liveRoundControl{padding:14px 16px;background:white}
@@ -169,32 +137,13 @@ margin-left:4px
 .liveWinShankers .liveSide.right{background:#2563eb;color:white}
 .liveHalved .liveSide{background:#f3f4f6}
 .liveEmpty{color:#9ca3af;font-weight:700}
+.livePlayerHcp{font-size:.62em;font-weight:700;opacity:.72;white-space:nowrap;margin-left:3px}
 
-/* SMALL HANDICAPS ON DASHBOARD */
-.livePlayerHcp{
-font-size:.62em;
-font-weight:700;
-opacity:.72;
-white-space:nowrap;
-margin-left:3px
-}
-
-/* ROUND 4 — THIN BOX AROUND EACH FOURSOME */
-.liveFoursome{
-border:1px solid #9ca3af;
-border-radius:8px;
-margin:9px 5px;
-overflow:hidden;
-background:white;
-}
+.liveFoursome{border:1px solid #9ca3af;border-radius:8px;margin:9px 5px;overflow:hidden;background:white}
 .liveFoursome:first-child{margin-top:5px}
 .liveFoursome:last-child{margin-bottom:5px}
-.liveFoursome .liveMatchRow{
-border-bottom:1px solid #e5e7eb;
-}
-.liveFoursome .liveMatchRow:last-child{
-border-bottom:0;
-}
+.liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
+.liveFoursome .liveMatchRow:last-child{border-bottom:0}
 
 @media(max-width:650px){
 .players{grid-template-columns:1fr}
@@ -268,6 +217,21 @@ hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
 }
 };
 
+/*
+COURSE HANDICAP DATA
+
+Course Handicap =
+Handicap Index × (Slope / 113) + (Course Rating - Par)
+
+Talamore does not have course-rating/slope data entered yet,
+so Round 3 displays the player's regular Handicap Index.
+*/
+const COURSE_HANDICAP_DATA={
+1:{rating:71.3,slope:143,par:71},
+2:{rating:70.0,slope:132,par:71},
+4:{rating:69.6,slope:130,par:72}
+};
+
 let data={players:[],matchups:{},scores:{},results:{}};
 let session=null;
 let currentUser=null;
@@ -288,6 +252,26 @@ return String(value??"")
 .replaceAll("<","&lt;")
 .replaceAll(">","&gt;")
 .replaceAll('"',"&quot;");
+}
+
+function courseHandicap(player,roundId){
+if(!player)return"";
+
+const index=Number(player.handicap);
+
+if(!Number.isFinite(index)){
+return player.handicap??"";
+}
+
+const course=COURSE_HANDICAP_DATA[Number(roundId)];
+
+if(!course){
+return player.handicap;
+}
+
+return Math.round(
+index*(course.slope/113)+(course.rating-course.par)
+);
 }
 
 function isSignedIn(){return !!(session&&session.access_token&&currentUser)}
@@ -618,7 +602,7 @@ return data.players.find(p=>String(p.id)===String(id));
 function matchupHcp(id){
 const p=getPlayer(id);
 if(!p)return"";
-return`<span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span>`;
+return`<span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span>`;
 }
 
 function roundInfo(){
@@ -672,7 +656,7 @@ if(!players.length)return`<span class="liveEmpty">NOT SET</span>`;
 return players.map(p=>`
 <span class="livePlayerName">
 ${escapeHtml(p.name)}
-<span class="livePlayerHcp">HCP ${escapeHtml(p.handicap)}</span>
+<span class="livePlayerHcp">HCP ${escapeHtml(courseHandicap(p,dashboardRound))}</span>
 </span>
 `).join("<br>");
 }
@@ -779,9 +763,7 @@ ${f.pair.map(renderLiveMatchRow).join("")}
 `).join("");
 
 }else{
-
 liveRowsHtml=matches.map(renderLiveMatchRow).join("");
-
 }
 
 return`
@@ -885,7 +867,7 @@ edit=`
 </div>
 
 <div class="field">
-<label>Handicap</label>
+<label>Handicap Index</label>
 <input id="editHcp" type="number" step=".1" inputmode="decimal" value="${escapeHtml(p.handicap)}">
 </div>
 
@@ -927,7 +909,7 @@ const add=canEditPlayers()
 </div>
 
 <div class="field">
-<label>Handicap</label>
+<label>Handicap Index</label>
 <input id="hcp" type="number" step=".1" inputmode="decimal">
 </div>
 
@@ -971,7 +953,7 @@ return`
 
 <tr>
 <th>Name</th>
-<th>HCP</th>
+<th>Index</th>
 ${canEditPlayers()?"<th></th>":""}
 </tr>
 
@@ -1295,7 +1277,7 @@ ${matchupHcp(match.hackers[1])}
 :match.hackers.map(id=>{
 const p=getPlayer(id);
 return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
@@ -1324,7 +1306,7 @@ ${matchupHcp(match.shankers[1])}
 :match.shankers.map(id=>{
 const p=getPlayer(id);
 return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(p.handicap)}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
@@ -1366,7 +1348,7 @@ ${matchupHcp(match.hackers[0])}
 </div>
 `
 :h
-?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">HCP ${escapeHtml(h.handicap)}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(h,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`
 }
 
@@ -1385,7 +1367,7 @@ ${matchupHcp(match.shankers[0])}
 </div>
 `
 :s
-?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">HCP ${escapeHtml(s.handicap)}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(s,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`
 }
 
@@ -1751,9 +1733,7 @@ if(!el||el.disabled)return;
 clearTimeout(scoreAdvanceTimer);
 
 setTimeout(()=>{
-try{
-el.select();
-}catch(e){}
+try{el.select()}catch(e){}
 },0);
 }
 
@@ -1821,9 +1801,7 @@ next.focus({preventScroll:true});
 next.focus();
 }
 
-try{
-next.select();
-}catch(e){}
+try{next.select()}catch(e){}
 
 const wrapper=next.closest(".tablewrap");
 const cell=next.closest("td");
@@ -2015,7 +1993,6 @@ return;
 }
 
 try{
-
 await upsert(
 "tournament_round_settings",
 {
@@ -2028,7 +2005,6 @@ updated_at:new Date().toISOString()
 );
 
 roundSettings[Number(roundId)]=!!open;
-
 render();
 
 }catch(e){
