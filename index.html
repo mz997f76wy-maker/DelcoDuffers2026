@@ -108,6 +108,23 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
 
+.teeSection{
+margin-top:14px;
+padding-top:13px;
+border-top:1px solid #e5e7eb
+}
+.teeSectionTitle{
+font-size:13px;
+font-weight:900;
+margin-bottom:8px
+}
+.teeList{
+font-size:11px;
+line-height:1.5;
+color:#6b7280;
+white-space:nowrap
+}
+
 .matchupSelectRow{display:flex;align-items:center;gap:7px;margin-bottom:8px}
 .matchupSelectRow select{flex:1;min-width:0;margin-bottom:0}
 .matchupHcp{font-size:11px;font-weight:700;color:#6b7280;white-space:nowrap}
@@ -218,18 +235,53 @@ hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
 };
 
 /*
-COURSE HANDICAP DATA
+PLAYER TEE OPTIONS + COURSE HANDICAP DATA
 
 Course Handicap =
 Handicap Index × (Slope / 113) + (Course Rating - Par)
 
-Talamore does not have course-rating/slope data entered yet,
-so Round 3 displays the player's regular Handicap Index.
+Existing/default tees:
+Tobacco Road = Disc
+Mid South = White
+Legacy = White
+
+Talamore remains unchanged for now because no alternate
+tee rating/slope data has been entered for that course.
 */
 const COURSE_HANDICAP_DATA={
-1:{rating:71.3,slope:143,par:71},
-2:{rating:70.0,slope:132,par:71},
-4:{rating:69.6,slope:130,par:72}
+1:{
+course:"Tobacco Road",
+par:71,
+teeField:"tobaccoTee",
+defaultTee:"Disc",
+tees:{
+"Ripper":{rating:72.5,slope:145},
+"Disc":{rating:71.3,slope:143},
+"Plow":{rating:69.4,slope:132}
+}
+},
+2:{
+course:"Mid South",
+par:71,
+teeField:"midsouthTee",
+defaultTee:"White",
+tees:{
+"Blue":{rating:72.1,slope:139},
+"White":{rating:70.0,slope:132},
+"Green":{rating:67.8,slope:122}
+}
+},
+4:{
+course:"Legacy",
+par:72,
+teeField:"legacyTee",
+defaultTee:"White",
+tees:{
+"Blue":{rating:72.2,slope:134},
+"White":{rating:69.6,slope:130},
+"White/Green":{rating:67.7,slope:125}
+}
+}
 };
 
 let data={players:[],matchups:{},scores:{},results:{}};
@@ -254,6 +306,16 @@ return String(value??"")
 .replaceAll('"',"&quot;");
 }
 
+function playerTee(player,roundId){
+if(!player)return"";
+
+const course=COURSE_HANDICAP_DATA[Number(roundId)];
+
+if(!course)return"";
+
+return player[course.teeField]||course.defaultTee;
+}
+
 function courseHandicap(player,roundId){
 if(!player)return"";
 
@@ -269,9 +331,25 @@ if(!course){
 return player.handicap;
 }
 
+const teeName=playerTee(player,roundId);
+const tee=course.tees[teeName]||course.tees[course.defaultTee];
+
 return Math.round(
-index*(course.slope/113)+(course.rating-course.par)
+index*(tee.slope/113)+(tee.rating-course.par)
 );
+}
+
+function handicapDisplay(player,roundId){
+if(!player)return"";
+
+const hcp=courseHandicap(player,roundId);
+const tee=playerTee(player,roundId);
+
+if(tee){
+return`HCP ${hcp} • ${tee}`;
+}
+
+return`HCP ${hcp}`;
 }
 
 function isSignedIn(){return !!(session&&session.access_token&&currentUser)}
@@ -488,7 +566,10 @@ id:r.id,
 name:r.name,
 handicap:r.handicap,
 team:r.team,
-group:r.group_name
+group:r.group_name,
+tobaccoTee:r.tobacco_tee||"Disc",
+midsouthTee:r.midsouth_tee||"White",
+legacyTee:r.legacy_tee||"White"
 }));
 
 data.matchups={};
@@ -602,7 +683,12 @@ return data.players.find(p=>String(p.id)===String(id));
 function matchupHcp(id){
 const p=getPlayer(id);
 if(!p)return"";
-return`<span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span>`;
+
+return`
+<span class="matchupHcp">
+${escapeHtml(handicapDisplay(p,currentRound))}
+</span>
+`;
 }
 
 function roundInfo(){
@@ -656,7 +742,9 @@ if(!players.length)return`<span class="liveEmpty">NOT SET</span>`;
 return players.map(p=>`
 <span class="livePlayerName">
 ${escapeHtml(p.name)}
-<span class="livePlayerHcp">HCP ${escapeHtml(courseHandicap(p,dashboardRound))}</span>
+<span class="livePlayerHcp">
+${escapeHtml(handicapDisplay(p,dashboardRound))}
+</span>
 </span>
 `).join("<br>");
 }
@@ -763,7 +851,9 @@ ${f.pair.map(renderLiveMatchRow).join("")}
 `).join("");
 
 }else{
+
 liveRowsHtml=matches.map(renderLiveMatchRow).join("");
+
 }
 
 return`
@@ -848,6 +938,21 @@ ${r.format} • ${r.matches} points • ${r.scats?"Scats":"No Scats"}
 `;
 }
 
+function teeOptions(courseKey,current){
+const course=COURSE_HANDICAP_DATA[courseKey];
+if(!course)return"";
+
+return Object.keys(course.tees).map(name=>{
+const tee=course.tees[name];
+
+return`
+<option value="${escapeHtml(name)}" ${name===current?"selected":""}>
+${escapeHtml(name)} — ${tee.rating}/${tee.slope}
+</option>
+`;
+}).join("");
+}
+
 function playersPage(){
 let edit="";
 
@@ -889,8 +994,44 @@ edit=`
 
 </div>
 
+<div class="teeSection">
+<div class="teeSectionTitle">Player Tees</div>
+
+<div class="row">
+
+<div class="field">
+<label>Tobacco Road</label>
+<select id="editTobaccoTee">
+${teeOptions(1,p.tobaccoTee||"Disc")}
+</select>
+</div>
+
+<div class="field">
+<label>Mid South</label>
+<select id="editMidsouthTee">
+${teeOptions(2,p.midsouthTee||"White")}
+</select>
+</div>
+
+<div class="field">
+<label>Legacy</label>
+<select id="editLegacyTee">
+${teeOptions(4,p.legacyTee||"White")}
+</select>
+</div>
+
+</div>
+
+<div class="muted" style="font-size:12px;margin-top:7px">
+Course handicaps are calculated automatically from the player's Handicap Index and selected tee.
+</div>
+</div>
+
+<div style="margin-top:14px">
 <button class="good" onclick="savePlayerEdit()">Save Player</button>
 <button onclick="editingPlayerId=null;render();">Cancel</button>
+</div>
+
 </div>
 `;
 }
@@ -931,7 +1072,36 @@ const add=canEditPlayers()
 
 </div>
 
-<button class="primary" onclick="addPlayer()">Add Player</button>
+<div class="teeSection">
+<div class="teeSectionTitle">Player Tees</div>
+
+<div class="row">
+
+<div class="field">
+<label>Tobacco Road</label>
+<select id="tobaccoTee">
+${teeOptions(1,"Disc")}
+</select>
+</div>
+
+<div class="field">
+<label>Mid South</label>
+<select id="midsouthTee">
+${teeOptions(2,"White")}
+</select>
+</div>
+
+<div class="field">
+<label>Legacy</label>
+<select id="legacyTee">
+${teeOptions(4,"White")}
+</select>
+</div>
+
+</div>
+</div>
+
+<button class="primary" style="margin-top:14px" onclick="addPlayer()">Add Player</button>
 </div>
 `
 :`<div class="viewer">Roster is read-only.</div>`;
@@ -954,13 +1124,23 @@ return`
 <tr>
 <th>Name</th>
 <th>Index</th>
+<th>Tees</th>
 ${canEditPlayers()?"<th></th>":""}
 </tr>
 
 ${list.map(p=>`
 <tr>
 <td><b>${escapeHtml(p.name)}</b></td>
+
 <td>${escapeHtml(p.handicap)}</td>
+
+<td>
+<div class="teeList">
+<b>TR:</b> ${escapeHtml(p.tobaccoTee||"Disc")}<br>
+<b>MS:</b> ${escapeHtml(p.midsouthTee||"White")}<br>
+<b>LEG:</b> ${escapeHtml(p.legacyTee||"White")}
+</div>
+</td>
 
 ${canEditPlayers()
 ?`
@@ -1006,6 +1186,10 @@ const handicap=document.getElementById("editHcp").value||0;
 const team=document.getElementById("editTeam").value;
 const group=document.getElementById("editGroup").value;
 
+const tobaccoTee=document.getElementById("editTobaccoTee").value;
+const midsouthTee=document.getElementById("editMidsouthTee").value;
+const legacyTee=document.getElementById("editLegacyTee").value;
+
 if(!name){
 alert("Enter a player name.");
 return;
@@ -1030,12 +1214,24 @@ id:p.id,
 name,
 handicap:String(handicap),
 team,
-group_name:group
+group_name:group,
+tobacco_tee:tobaccoTee,
+midsouth_tee:midsouthTee,
+legacy_tee:legacyTee
 },
 "tournament_id,id"
 );
 
-Object.assign(p,{name,handicap:String(handicap),team,group});
+Object.assign(p,{
+name,
+handicap:String(handicap),
+team,
+group,
+tobaccoTee,
+midsouthTee,
+legacyTee
+});
+
 editingPlayerId=null;
 render();
 
@@ -1052,6 +1248,10 @@ const name=document.getElementById("name").value.trim();
 const handicap=document.getElementById("hcp").value||0;
 const team=document.getElementById("team").value;
 const group=document.getElementById("group").value;
+
+const tobaccoTee=document.getElementById("tobaccoTee").value;
+const midsouthTee=document.getElementById("midsouthTee").value;
+const legacyTee=document.getElementById("legacyTee").value;
 
 if(!name){
 alert("Enter a player name.");
@@ -1078,7 +1278,10 @@ id:"p"+Date.now()+Math.random().toString(36).slice(2),
 name,
 handicap:String(handicap),
 team,
-group
+group,
+tobaccoTee,
+midsouthTee,
+legacyTee
 };
 
 try{
@@ -1090,7 +1293,10 @@ id:p.id,
 name:p.name,
 handicap:p.handicap,
 team:p.team,
-group_name:p.group
+group_name:p.group,
+tobacco_tee:p.tobaccoTee,
+midsouth_tee:p.midsouthTee,
+legacy_tee:p.legacyTee
 },
 "tournament_id,id"
 );
@@ -1277,7 +1483,7 @@ ${matchupHcp(match.hackers[1])}
 :match.hackers.map(id=>{
 const p=getPlayer(id);
 return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
@@ -1306,7 +1512,7 @@ ${matchupHcp(match.shankers[1])}
 :match.shankers.map(id=>{
 const p=getPlayer(id);
 return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(p,currentRound))}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`;
 }).join("<br>")
 }
@@ -1348,7 +1554,7 @@ ${matchupHcp(match.hackers[0])}
 </div>
 `
 :h
-?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(h,currentRound))}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(h,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`
 }
 
@@ -1367,7 +1573,7 @@ ${matchupHcp(match.shankers[0])}
 </div>
 `
 :s
-?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">HCP ${escapeHtml(courseHandicap(s,currentRound))}</span></div>`
+?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(s,currentRound))}</span></div>`
 :`<div class="pill">Not Set</div>`
 }
 
@@ -1899,12 +2105,17 @@ ${enteredTotal(score,p.id)}
 </td>
 `;
 
+const playerHandicap=
+round===1||round===2||round===4
+?handicapDisplay(p,round)
+:`HCP ${p.handicap} • Group ${p.group}`;
+
 return`
 <tr class="${cls}">
 <td>
 ${escapeHtml(p.name)}
 <br>
-<span class="muted">HCP ${escapeHtml(p.handicap)} • Group ${escapeHtml(p.group)}</span>
+<span class="muted">${escapeHtml(playerHandicap)}</span>
 </td>
 ${cells}
 </tr>
@@ -1993,6 +2204,7 @@ return;
 }
 
 try{
+
 await upsert(
 "tournament_round_settings",
 {
@@ -2005,6 +2217,7 @@ updated_at:new Date().toISOString()
 );
 
 roundSettings[Number(roundId)]=!!open;
+
 render();
 
 }catch(e){
