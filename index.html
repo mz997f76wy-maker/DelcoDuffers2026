@@ -16,7 +16,23 @@ header h1{margin:0 0 5px;font-size:28px}
 .headerMeta{font-size:18px}
 .captains{font-size:14px;margin-top:5px;opacity:.9}
 main{max-width:1100px;margin:auto;padding:12px}
-.nav{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px}
+
+.navWrap{position:relative;margin-bottom:12px}
+.nav{
+display:flex;
+gap:7px;
+overflow-x:auto;
+-webkit-overflow-scrolling:touch;
+scrollbar-width:none;
+padding:2px 46px 4px 0;
+margin-bottom:0
+}
+.nav::-webkit-scrollbar{display:none}
+.nav button{flex:0 0 auto}
+.navScrollCue{
+display:none;
+}
+
 button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:15px;cursor:pointer}
 .primary{background:#111827;color:white}
 .good{background:#d1fae5;color:#065f46}
@@ -90,6 +106,76 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .allScatTotal{font-size:14px;font-weight:900;color:#065f46;margin-top:2px}
 .allScatWin{padding:8px 0;border-top:1px solid #e5e7eb;margin-top:8px}
 .allScatWin:first-of-type{margin-top:10px}
+
+/* PAR 3 CLOSEST TO THE PIN */
+.par3Hero{
+background:#111827;
+color:white;
+border-radius:16px;
+padding:20px;
+margin-bottom:14px;
+text-align:center
+}
+.par3Hero h2{margin:0 0 5px;font-size:28px}
+.par3Hero p{margin:0;color:#d1d5db;font-size:14px}
+.par3Round{
+background:white;
+border-radius:16px;
+overflow:hidden;
+margin-bottom:15px;
+box-shadow:0 2px 10px #00000010;
+border:1px solid #d1d5db
+}
+.par3RoundHeader{
+background:#111827;
+color:white;
+padding:14px 16px
+}
+.par3RoundHeader h2{margin:0;font-size:21px}
+.par3RoundHeader div{font-size:13px;margin-top:3px;opacity:.8}
+.par3Hole{
+display:grid;
+grid-template-columns:85px minmax(0,1fr);
+align-items:center;
+gap:12px;
+padding:14px 16px;
+border-bottom:2px solid #e5e7eb
+}
+.par3Hole:last-child{border-bottom:0}
+.par3HoleNumber{
+width:70px;
+height:54px;
+background:#f3f4f6;
+border:1px solid #d1d5db;
+border-radius:12px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+font-weight:1000
+}
+.par3HoleNumber span:first-child{font-size:11px;color:#6b7280;text-transform:uppercase}
+.par3HoleNumber span:last-child{font-size:22px}
+.par3WinnerLabel{
+font-size:11px;
+font-weight:900;
+text-transform:uppercase;
+letter-spacing:.5px;
+color:#6b7280;
+margin-bottom:5px
+}
+.par3WinnerName{
+font-size:18px;
+font-weight:900
+}
+.par3WinnerPending{color:#9ca3af;font-weight:800}
+.par3Select{font-weight:800}
+.par3Saved{
+font-size:12px;
+font-weight:900;
+color:#065f46;
+margin-top:5px
+}
 
 .loginBox{max-width:500px;margin:auto}
 .loading{text-align:center;padding:40px;font-size:18px;font-weight:bold}
@@ -311,10 +397,7 @@ padding:14px;
 background:#fff
 }
 
-.historySection h3{
-margin:0 0 10px;
-font-size:17px
-}
+.historySection h3{margin:0 0 10px;font-size:17px}
 
 .historyResult{
 display:flex;
@@ -355,6 +438,35 @@ header h1{font-size:25px}
 .headerMeta{font-size:16px}
 .captains{font-size:13px}
 .big{font-size:32px}
+
+.navWrap{
+background:#fff;
+border:2px solid #d1d5db;
+border-radius:13px;
+padding:5px 5px 28px;
+box-shadow:0 2px 8px #00000012
+}
+.nav{padding:1px 44px 2px 1px}
+.navScrollCue{
+display:block;
+position:absolute;
+right:5px;
+bottom:4px;
+font-size:11px;
+font-weight:1000;
+letter-spacing:.5px;
+color:#1d4ed8;
+background:#dbeafe;
+padding:4px 8px;
+border-radius:99px;
+pointer-events:none;
+animation:cueMove 1.2s ease-in-out infinite alternate
+}
+@keyframes cueMove{
+from{transform:translateX(-4px)}
+to{transform:translateX(2px)}
+}
+
 .liveBoard{padding:7px}
 .liveTitle{font-size:21px;padding:12px 10px;margin-bottom:8px}
 .liveSubtitle{font-size:11px}
@@ -374,6 +486,9 @@ header h1{font-size:25px}
 .historyCtp{grid-column:auto}
 .historyYearHeader h2{font-size:25px}
 .historyChampionTeam{font-size:20px}
+.par3Hero h2{font-size:24px}
+.par3Hole{grid-template-columns:68px minmax(0,1fr);gap:9px;padding:12px 10px}
+.par3HoleNumber{width:60px;height:52px}
 }
 </style>
 </head>
@@ -391,7 +506,12 @@ header h1{font-size:25px}
 
 <main>
 <div id="connectionStatus"></div>
+
+<div class="navWrap">
 <div class="nav" id="nav"></div>
+<div class="navScrollCue">SWIPE FOR MORE →</div>
+</div>
+
 <div id="app"><div class="loading">Loading tournament…</div></div>
 </main>
 
@@ -407,6 +527,13 @@ const ROUNDS=[
 {id:2,course:"Mid South",format:"2v2 Best Ball",matches:8,type:"bestball",scats:true},
 {id:3,course:"Talamore",format:"2-Man Scramble",matches:8,type:"scramble",scats:false},
 {id:4,course:"Legacy",format:"1v1 Match Play",matches:16,type:"singles",scats:true}
+];
+
+const PAR3_HOLES=[
+{round:1,course:"Tobacco Road",holes:[3,6,8,14,17]},
+{round:2,course:"Mid South",holes:[3,6,11,17]},
+{round:3,course:"Talamore",holes:[2,5,13,15]},
+{round:4,course:"Legacy",holes:[5,11,17]}
 ];
 
 const COURSE_CARDS={
@@ -466,20 +593,10 @@ year:2025,
 winner:"PARSONS / SHANKERS",
 score:"19.5–15.5",
 roster:[
-"Steve Parsons",
-"Rocco Pace",
-"Ken Travetti",
-"Tony Borsuk",
-"John Schneider",
-"Ed Maul / Jack Kelly",
-"Cole Parsons",
-"Rob Sladek",
-"Jake Cislo",
-"Bob Pace",
-"Jim Capitanos",
-"George Sweeney",
-"Joe Pace",
-"John Blair"
+"Steve Parsons","Rocco Pace","Ken Travetti","Tony Borsuk",
+"John Schneider","Ed Maul / Jack Kelly","Cole Parsons",
+"Rob Sladek","Jake Cislo","Bob Pace","Jim Capitanos",
+"George Sweeney","Joe Pace","John Blair"
 ],
 lowGross:[
 {name:"Tom Breslin",score:"237 (+24)"},
@@ -513,16 +630,9 @@ year:2024,
 winner:"SHANKERS",
 score:"17–11",
 roster:[
-"John Blair",
-"Joe Pace",
-"Zach Prettyman",
-"Jim Capitanos",
-"Steve Parsons",
-"Rob Sladek",
-"Jeff Blair",
-"Bob Pace",
-"Ken Travetti",
-"Rocco Pace"
+"John Blair","Joe Pace","Zach Prettyman","Jim Capitanos",
+"Steve Parsons","Rob Sladek","Jeff Blair","Bob Pace",
+"Ken Travetti","Rocco Pace"
 ],
 lowGross:[
 {name:"Justin Stroh",score:"241 (+27)"},
@@ -550,7 +660,7 @@ ctp:[
 }
 ];
 
-let data={players:[],matchups:{},scores:{},results:{}};
+let data={players:[],matchups:{},scores:{},results:{},par3Results:{}};
 let session=null;
 let currentUser=null;
 let userRole="viewer";
@@ -582,36 +692,19 @@ return player[course.teeField]||course.defaultTee;
 function courseHandicap(player,roundId){
 if(!player)return"";
 const index=Number(player.handicap);
-
-if(!Number.isFinite(index)){
-return player.handicap??"";
-}
-
+if(!Number.isFinite(index))return player.handicap??"";
 const course=COURSE_HANDICAP_DATA[Number(roundId)];
-
-if(!course){
-return player.handicap;
-}
-
+if(!course)return player.handicap;
 const teeName=playerTee(player,roundId);
 const tee=course.tees[teeName]||course.tees[course.defaultTee];
-
-return Math.round(
-index*(tee.slope/113)+(tee.rating-course.par)
-);
+return Math.round(index*(tee.slope/113)+(tee.rating-course.par));
 }
 
 function handicapDisplay(player,roundId){
 if(!player)return"";
-
 const hcp=courseHandicap(player,roundId);
 const tee=playerTee(player,roundId);
-
-if(tee){
-return`HCP ${hcp} • ${tee}`;
-}
-
-return`HCP ${hcp}`;
+return tee?`HCP ${hcp} • ${tee}`:`HCP ${hcp}`;
 }
 
 function isSignedIn(){return !!(session&&session.access_token&&currentUser)}
@@ -622,6 +715,7 @@ function canScore(){return userRole==="owner"||userRole==="captain"||userRole===
 function canEditPlayers(){return isOwner()}
 function isScoringOpen(roundId){return roundSettings[Number(roundId)]!==false}
 function canScoreRound(roundId){return canScore()&&isScoringOpen(roundId)}
+function canEditPar3(roundId){return isOwner()||(canScore()&&isScoringOpen(roundId))}
 
 function canEditMatchupSide(side){
 if(isOwner())return true;
@@ -648,10 +742,8 @@ return session&&session.access_token?session.access_token:SUPABASE_KEY;
 
 async function refreshSessionIfNeeded(){
 if(!session||!session.refresh_token)return;
-
 const expiresAt=Number(session.expires_at||0);
 const now=Math.floor(Date.now()/1000);
-
 if(expiresAt&&expiresAt-now>120)return;
 
 try{
@@ -660,13 +752,10 @@ method:"POST",
 headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({refresh_token:session.refresh_token})
 });
-
 if(!r.ok)throw new Error("Refresh failed");
-
 const x=await r.json();
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
 storeSession(x);
-
 }catch{
 storeSession(null);
 currentUser=null;
@@ -678,58 +767,41 @@ userTeam=null;
 async function loadCurrentUser(){
 currentUser=null;
 if(!session||!session.access_token)return;
-
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/user",{
-headers:{
-apikey:SUPABASE_KEY,
-Authorization:"Bearer "+session.access_token
-}
+headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}
 });
-
 if(!r.ok)return;
 currentUser=await r.json();
-
 }catch(e){console.error(e)}
 }
 
 async function registerCurrentUser(){
 if(!isSignedIn())return;
-
 try{
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/register_duffers_user",{
-method:"POST",
-headers:headers(),
-body:"{}"
+method:"POST",headers:headers(),body:"{}"
 });
-
 if(!r.ok)console.error(await r.text());
-
 }catch(e){console.error(e)}
 }
 
 async function loadMyPermissions(){
 userRole="viewer";
 userTeam=null;
-
 if(!isSignedIn())return;
-
 await registerCurrentUser();
 
 try{
-const url=
-SUPABASE_URL+
+const url=SUPABASE_URL+
 "/rest/v1/tournament_users?tournament_id=eq."+
 encodeURIComponent(TOURNAMENT_ID)+
-"&user_id=eq."+
-encodeURIComponent(currentUser.id)+
+"&user_id=eq."+encodeURIComponent(currentUser.id)+
 "&select=*";
 
 const r=await fetch(url,{headers:headers()});
-
 if(r.ok){
 const rows=await r.json();
-
 if(rows.length){
 userRole=rows[0].role||"viewer";
 userTeam=rows[0].team||null;
@@ -755,15 +827,8 @@ Authorization:"Bearer "+authToken(),
 
 async function apiGet(table){
 await refreshSessionIfNeeded();
-
-const url=
-SUPABASE_URL+
-"/rest/v1/"+
-table+
-"?tournament_id=eq."+
-encodeURIComponent(TOURNAMENT_ID)+
-"&select=*";
-
+const url=SUPABASE_URL+"/rest/v1/"+table+
+"?tournament_id=eq."+encodeURIComponent(TOURNAMENT_ID)+"&select=*";
 const r=await fetch(url,{headers:headers()});
 if(!r.ok)throw new Error("Database read failed: "+table);
 return await r.json();
@@ -771,20 +836,13 @@ return await r.json();
 
 async function upsert(table,row,conflict){
 await refreshSessionIfNeeded();
-
-const url=
-SUPABASE_URL+
-"/rest/v1/"+
-table+
-"?on_conflict="+
-encodeURIComponent(conflict);
-
+const url=SUPABASE_URL+"/rest/v1/"+table+
+"?on_conflict="+encodeURIComponent(conflict);
 const r=await fetch(url,{
 method:"POST",
 headers:headers({Prefer:"resolution=merge-duplicates,return=minimal"}),
 body:JSON.stringify(row)
 });
-
 if(!r.ok){
 console.error(await r.text());
 throw new Error("Database save failed");
@@ -793,20 +851,14 @@ throw new Error("Database save failed");
 
 async function deleteRows(table,filters){
 await refreshSessionIfNeeded();
-
-let url=
-SUPABASE_URL+
-"/rest/v1/"+
-table+
-"?tournament_id=eq."+
-encodeURIComponent(TOURNAMENT_ID);
+let url=SUPABASE_URL+"/rest/v1/"+table+
+"?tournament_id=eq."+encodeURIComponent(TOURNAMENT_ID);
 
 Object.entries(filters).forEach(([k,v])=>{
 url+="&"+k+"=eq."+encodeURIComponent(v);
 });
 
 const r=await fetch(url,{method:"DELETE",headers:headers()});
-
 if(!r.ok){
 console.error(await r.text());
 throw new Error("Database delete failed");
@@ -815,12 +867,13 @@ throw new Error("Database delete failed");
 
 async function loadSharedData(rerender=true){
 try{
-const [players,matchups,scores,results,settings]=await Promise.all([
+const [players,matchups,scores,results,settings,par3]=await Promise.all([
 apiGet("tournament_players"),
 apiGet("tournament_matchups"),
 apiGet("tournament_scores"),
 apiGet("tournament_results"),
-apiGet("tournament_round_settings")
+apiGet("tournament_round_settings"),
+apiGet("tournament_par3_results")
 ]);
 
 data.players=players.map(r=>({
@@ -835,10 +888,8 @@ legacyTee:r.legacy_tee||"White"
 }));
 
 data.matchups={};
-
 matchups.forEach(r=>{
 if(!data.matchups[r.round_no])data.matchups[r.round_no]=[];
-
 data.matchups[r.round_no][r.match_no-1]={
 id:"R"+r.round_no+"M"+r.match_no,
 matchNo:r.match_no,
@@ -850,32 +901,31 @@ teeStartHole:r.tee_start_hole||""
 });
 
 data.scores={};
-
 scores.forEach(r=>{
 const id="R"+r.round_no+"M"+r.match_no;
-
 if(!data.scores[id]){
 data.scores[id]={holes:Array.from({length:18},()=>({}))};
 }
-
 data.scores[id].holes[r.hole-1][r.scorer_key]=r.score;
 });
 
 data.results={};
-
 results.forEach(r=>{
 data.results["R"+r.round_no+"M"+r.match_no]={winner:r.winner};
 });
 
-roundSettings={1:true,2:true,3:true,4:true};
+data.par3Results={};
+par3.forEach(r=>{
+data.par3Results["R"+r.round_no+"H"+r.hole]=r.player_id||"";
+});
 
+roundSettings={1:true,2:true,3:true,4:true};
 settings.forEach(r=>{
 roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
 
 connected=true;
 drawConnectionStatus();
-
 if(rerender)render();
 
 }catch(e){
@@ -893,27 +943,22 @@ if(!connected){
 box.innerHTML=`<div class="offline">⚠️ Unable to reach shared tournament database</div>`;
 return;
 }
-
 if(isOwner()){
 box.innerHTML=`<div class="admin">🔐 OWNER MODE — Full tournament access</div>`;
 return;
 }
-
 if(isCaptain()){
 box.innerHTML=`<div class="captainMode">⛳ CAPTAIN MODE — ${escapeHtml(userTeam)} Captain • All scoring • ${escapeHtml(userTeam)} matchup control</div>`;
 return;
 }
-
 if(isScorer()){
 box.innerHTML=`<div class="scorerMode">✏️ SCORER MODE — You can enter and change all scores and results</div>`;
 return;
 }
-
 if(isSignedIn()){
 box.innerHTML=`<div class="viewer">👀 VIEWER MODE — Signed in as ${escapeHtml(currentUser.email)}</div>`;
 return;
 }
-
 box.innerHTML=`<div class="viewer">👀 VIEWER MODE — Read only</div>`;
 }
 
@@ -921,6 +966,7 @@ function drawNav(){
 const tabs=[
 ["dashboard","Dashboard"],
 ["scats","Scats"],
+["par3","Par 3’s"],
 ["players","Players"],
 ["matchups","Matchups"],
 ["scoring","Scoring"],
@@ -928,7 +974,6 @@ const tabs=[
 ];
 
 if(isOwner())tabs.push(["users","Users & Access"]);
-
 tabs.push(["login",isSignedIn()?"Account ✓":"Sign In"]);
 
 document.getElementById("nav").innerHTML=
@@ -946,37 +991,19 @@ return data.players.find(p=>String(p.id)===String(id));
 function matchupHcp(id){
 const p=getPlayer(id);
 if(!p)return"";
-
-return`
-<span class="matchupHcp">
-${escapeHtml(handicapDisplay(p,currentRound))}
-</span>
-`;
+return`<span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span>`;
 }
 
-function roundInfo(){
-return ROUNDS[currentRound-1];
-}
+function roundInfo(){return ROUNDS[currentRound-1]}
 
 function teamPoints(){
 let hackers=0,shankers=0,completed=0;
-
 Object.values(data.results).forEach(r=>{
 if(!r)return;
-
-if(r.winner==="Hackers"){
-hackers++;
-completed++;
-}else if(r.winner==="Shankers"){
-shankers++;
-completed++;
-}else if(r.winner==="Halved"){
-hackers+=.5;
-shankers+=.5;
-completed++;
-}
+if(r.winner==="Hackers"){hackers++;completed++}
+else if(r.winner==="Shankers"){shankers++;completed++}
+else if(r.winner==="Halved"){hackers+=.5;shankers+=.5;completed++}
 });
-
 return{hackers,shankers,completed};
 }
 
@@ -996,52 +1023,35 @@ return h+":"+m+" "+ap;
 }
 
 function livePlayerNames(ids){
-const players=(ids||[])
-.map(getPlayer)
-.filter(Boolean);
-
+const players=(ids||[]).map(getPlayer).filter(Boolean);
 if(!players.length)return`<span class="liveEmpty">NOT SET</span>`;
-
 return players.map(p=>`
 <span class="livePlayerName">
 ${escapeHtml(p.name)}
-<span class="livePlayerHcp">
-${escapeHtml(handicapDisplay(p,dashboardRound))}
-</span>
+<span class="livePlayerHcp">${escapeHtml(handicapDisplay(p,dashboardRound))}</span>
 </span>
 `).join("");
 }
 
 function renderLiveMatchRow(match){
 const result=data.results[match.id]?.winner||"";
-
 let rowClass="";
 let center="—";
 
-if(result==="Hackers"){
-rowClass="liveWinHackers";
-center="FINAL";
-}else if(result==="Shankers"){
-rowClass="liveWinShankers";
-center="FINAL";
-}else if(result==="Halved"){
-rowClass="liveHalved";
-center="A/S";
-}
+if(result==="Hackers"){rowClass="liveWinHackers";center="FINAL"}
+else if(result==="Shankers"){rowClass="liveWinShankers";center="FINAL"}
+else if(result==="Halved"){rowClass="liveHalved";center="A/S"}
 
-const showStartHole=
-(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
+const showStartHole=(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
 
 return`
 <div class="liveMatchRow ${rowClass}">
 <div class="liveSide left"><div>${livePlayerNames(match.hackers)}</div></div>
-<div class="liveCenter">
-<div>
+<div class="liveCenter"><div>
 ${match.teeTime?formatTeeTime(match.teeTime)+"<br>":""}
 ${showStartHole?"Hole "+match.teeStartHole+"<br>":""}
 ${center}
-</div>
-</div>
+</div></div>
 <div class="liveSide right"><div>${livePlayerNames(match.shankers)}</div></div>
 </div>
 `;
@@ -1053,57 +1063,38 @@ const rawMatches=data.matchups[dashboardRound]||[];
 
 const matches=Array.from({length:r.matches},(_,i)=>rawMatches[i]||{
 id:"R"+r.id+"M"+(i+1),
-matchNo:i+1,
-hackers:[],
-shankers:[],
-teeTime:"",
-teeStartHole:""
+matchNo:i+1,hackers:[],shankers:[],teeTime:"",teeStartHole:""
 }).sort((a,b)=>{
 const at=a.teeTime||"99:99";
 const bt=b.teeTime||"99:99";
 const timeCompare=at.localeCompare(bt);
 if(timeCompare)return timeCompare;
-
 if(dashboardRound===2||dashboardRound===3){
 const ah=Number(a.teeStartHole||99);
 const bh=Number(b.teeStartHole||99);
 if(ah!==bh)return ah-bh;
 }
-
 return a.matchNo-b.matchNo;
 });
 
 const totals=teamPoints();
-
 let liveRowsHtml="";
 
 if(dashboardRound===4){
-
 const foursomes=Array.from({length:8},(_,f)=>{
 const firstMatch=f*2+1;
 const secondMatch=f*2+2;
-
-const pair=matches
-.filter(m=>m.matchNo===firstMatch||m.matchNo===secondMatch)
+const pair=matches.filter(m=>m.matchNo===firstMatch||m.matchNo===secondMatch)
 .sort((a,b)=>a.matchNo-b.matchNo);
-
-const teeTime=
-pair.find(m=>m.teeTime)?.teeTime||"";
-
-return{
-foursomeNo:f+1,
-teeTime,
-pair
-};
+const teeTime=pair.find(m=>m.teeTime)?.teeTime||"";
+return{foursomeNo:f+1,teeTime,pair};
 });
 
 foursomes.sort((a,b)=>{
 const at=a.teeTime||"99:99";
 const bt=b.teeTime||"99:99";
-
 const timeCompare=at.localeCompare(bt);
 if(timeCompare)return timeCompare;
-
 return a.foursomeNo-b.foursomeNo;
 });
 
@@ -1112,30 +1103,23 @@ liveRowsHtml=foursomes.map(f=>`
 ${f.pair.map(renderLiveMatchRow).join("")}
 </div>
 `).join("");
-
 }else{
-
 liveRowsHtml=matches.map(renderLiveMatchRow).join("");
-
 }
 
 return`
 <div class="card liveCard">
-
 <div class="liveRoundControl">
 <label>Live Match Board</label>
-
 <select onchange="setDashboardRound(this.value)">
 ${ROUNDS.map(x=>`
 <option value="${x.id}" ${x.id===dashboardRound?"selected":""}>
 Round ${x.id} — ${x.course}
-</option>
-`).join("")}
+</option>`).join("")}
 </select>
 </div>
 
 <div class="liveBoard">
-
 <div class="liveTitle">
 ROUND ${r.id} — ${r.course}
 <div class="liveSubtitle">${r.format}</div>
@@ -1148,71 +1132,157 @@ ROUND ${r.id} — ${r.course}
 <div class="liveTeamName s">SHANKERS</div>
 </div>
 
-<div class="liveRows">
-${liveRowsHtml}
+<div class="liveRows">${liveRowsHtml}</div>
 </div>
-
-</div>
-</div>
-`;
+</div>`;
 }
 
 function dashboard(){
 const p=teamPoints();
-
 return`
 <div class="card">
-
 <div class="scoreboard">
-
 <div class="team hackers">
 <b>HACKERS</b>
 <div class="big">${p.hackers}</div>
 <div style="font-size:13px;margin-top:4px">Captain Howells</div>
 </div>
-
 <div class="team shankers">
 <b>SHANKERS</b>
 <div class="big">${p.shankers}</div>
 <div style="font-size:13px;margin-top:4px">Captain Parsons</div>
 </div>
-
 </div>
-
 <p><b>${40-p.completed}</b> matches remaining</p>
-
 </div>
 
 ${liveMatchBoard()}
 
 <div class="card">
 <h2>Tournament Schedule</h2>
-
 ${ROUNDS.map(r=>`
 <div class="match">
 <b>Round ${r.id} — ${r.course}</b><br>
-<span class="muted">
-${r.format} • ${r.matches} points • ${r.scats?"Scats":"No Scats"}
-</span>
-</div>
-`).join("")}
+<span class="muted">${r.format} • ${r.matches} points • ${r.scats?"Scats":"No Scats"}</span>
+</div>`).join("")}
+</div>`;
+}
 
+/* PAR 3 PAGE */
+
+function par3PlayerOptions(current){
+const sorted=data.players.slice().sort((a,b)=>a.name.localeCompare(b.name));
+return`
+<option value="">Select Winner</option>
+${sorted.map(p=>`
+<option value="${p.id}" ${String(current)===String(p.id)?"selected":""}>
+${escapeHtml(p.name)}
+</option>`).join("")}
+`;
+}
+
+function par3Page(){
+return`
+<div class="par3Hero">
+<h2>🎯 Par 3’s</h2>
+<p>Closest to the Pin • All 16 Par 3 contests</p>
+</div>
+
+${PAR3_HOLES.map(r=>`
+<div class="par3Round">
+<div class="par3RoundHeader">
+<h2>Round ${r.round} — ${escapeHtml(r.course)}</h2>
+<div>${r.holes.length} Closest-to-the-Pin Holes</div>
+</div>
+
+${r.holes.map(hole=>{
+const key="R"+r.round+"H"+hole;
+const playerId=data.par3Results[key]||"";
+const winner=getPlayer(playerId);
+
+return`
+<div class="par3Hole">
+<div class="par3HoleNumber">
+<span>Hole</span>
+<span>${hole}</span>
+</div>
+
+<div>
+<div class="par3WinnerLabel">Closest to the Pin Winner</div>
+
+${canEditPar3(r.round)
+?`
+<select class="par3Select"
+onchange="savePar3Winner(${r.round},${hole},this.value)">
+${par3PlayerOptions(playerId)}
+</select>
+${winner?`<div class="par3Saved">✓ ${escapeHtml(winner.name)}</div>`:""}
+`
+:winner
+?`<div class="par3WinnerName">${escapeHtml(winner.name)}</div>`
+:`<div class="par3WinnerPending">Winner not selected yet</div>`
+}
+</div>
 </div>
 `;
+}).join("")}
+
+</div>
+`).join("")}
+`;
+}
+
+async function savePar3Winner(round,hole,playerId){
+if(!canEditPar3(round)){
+alert("You do not have access to change this result.");
+render();
+return;
+}
+
+const key="R"+round+"H"+hole;
+const old=data.par3Results[key]||"";
+
+data.par3Results[key]=playerId||"";
+render();
+
+try{
+if(!playerId){
+await deleteRows("tournament_par3_results",{
+round_no:round,
+hole:hole
+});
+delete data.par3Results[key];
+}else{
+await upsert(
+"tournament_par3_results",
+{
+tournament_id:TOURNAMENT_ID,
+round_no:Number(round),
+hole:Number(hole),
+player_id:String(playerId),
+updated_at:new Date().toISOString()
+},
+"tournament_id,round_no,hole"
+);
+}
+render();
+}catch(e){
+console.error(e);
+data.par3Results[key]=old;
+render();
+alert("Closest-to-the-pin winner could not be saved.");
+}
 }
 
 function teeOptions(courseKey,current){
 const course=COURSE_HANDICAP_DATA[courseKey];
 if(!course)return"";
-
 return Object.keys(course.tees).map(name=>{
 const tee=course.tees[name];
-
 return`
 <option value="${escapeHtml(name)}" ${name===current?"selected":""}>
 ${escapeHtml(name)} — ${tee.rating}/${tee.slope}
-</option>
-`;
+</option>`;
 }).join("");
 }
 
@@ -1221,14 +1291,12 @@ let edit="";
 
 if(canEditPlayers()&&editingPlayerId){
 const p=getPlayer(editingPlayerId);
-
 if(p){
 edit=`
 <div class="card editBox">
 <h2>Edit Player</h2>
 
 <div class="row">
-
 <div class="field">
 <label>Player Name</label>
 <input id="editName" value="${escapeHtml(p.name)}">
@@ -1254,37 +1322,24 @@ edit=`
 <option value="B" ${p.group==="B"?"selected":""}>Group B</option>
 </select>
 </div>
-
 </div>
 
 <div class="teeSection">
 <div class="teeSectionTitle">Player Tees</div>
-
 <div class="row">
-
 <div class="field">
 <label>Tobacco Road</label>
-<select id="editTobaccoTee">
-${teeOptions(1,p.tobaccoTee||"Disc")}
-</select>
+<select id="editTobaccoTee">${teeOptions(1,p.tobaccoTee||"Disc")}</select>
 </div>
-
 <div class="field">
 <label>Mid South</label>
-<select id="editMidsouthTee">
-${teeOptions(2,p.midsouthTee||"White")}
-</select>
+<select id="editMidsouthTee">${teeOptions(2,p.midsouthTee||"White")}</select>
 </div>
-
 <div class="field">
 <label>Legacy</label>
-<select id="editLegacyTee">
-${teeOptions(4,p.legacyTee||"White")}
-</select>
+<select id="editLegacyTee">${teeOptions(4,p.legacyTee||"White")}</select>
 </div>
-
 </div>
-
 <div class="muted" style="font-size:12px;margin-top:7px">
 Course handicaps are calculated automatically from the player's Handicap Index and selected tee.
 </div>
@@ -1294,80 +1349,43 @@ Course handicaps are calculated automatically from the player's Handicap Index a
 <button class="good" onclick="savePlayerEdit()">Save Player</button>
 <button onclick="editingPlayerId=null;render();">Cancel</button>
 </div>
-
-</div>
-`;
+</div>`;
 }
 }
 
-const add=canEditPlayers()
-?`
+const add=canEditPlayers()?`
 <div class="card">
 <h2>Add Player</h2>
-
 <div class="row">
-
 <div class="field">
 <label>Player Name</label>
 <input id="name" placeholder="Player name">
 </div>
-
 <div class="field">
 <label>Handicap Index</label>
 <input id="hcp" type="number" step=".1" inputmode="decimal">
 </div>
-
 <div class="field">
 <label>Team</label>
-<select id="team">
-<option>Hackers</option>
-<option>Shankers</option>
-</select>
+<select id="team"><option>Hackers</option><option>Shankers</option></select>
 </div>
-
 <div class="field">
 <label>Scats Group</label>
-<select id="group">
-<option value="A">Group A</option>
-<option value="B">Group B</option>
-</select>
+<select id="group"><option value="A">Group A</option><option value="B">Group B</option></select>
 </div>
-
 </div>
 
 <div class="teeSection">
 <div class="teeSectionTitle">Player Tees</div>
-
 <div class="row">
-
-<div class="field">
-<label>Tobacco Road</label>
-<select id="tobaccoTee">
-${teeOptions(1,"Disc")}
-</select>
-</div>
-
-<div class="field">
-<label>Mid South</label>
-<select id="midsouthTee">
-${teeOptions(2,"White")}
-</select>
-</div>
-
-<div class="field">
-<label>Legacy</label>
-<select id="legacyTee">
-${teeOptions(4,"White")}
-</select>
-</div>
-
+<div class="field"><label>Tobacco Road</label><select id="tobaccoTee">${teeOptions(1,"Disc")}</select></div>
+<div class="field"><label>Mid South</label><select id="midsouthTee">${teeOptions(2,"White")}</select></div>
+<div class="field"><label>Legacy</label><select id="legacyTee">${teeOptions(4,"White")}</select></div>
 </div>
 </div>
-
 <button class="primary" style="margin-top:14px" onclick="addPlayer()">Add Player</button>
 </div>
-`
-:`<div class="viewer">Roster is read-only.</div>`;
+`:`<div class="viewer">Roster is read-only.</div>`;
 
 function section(team,group){
 const list=data.players.filter(p=>p.team===team&&p.group===group);
@@ -1375,7 +1393,6 @@ const h=team==="Hackers";
 
 return`
 <div class="card playerGroupCard ${h?"hackerGroup":"shankerGroup"}">
-
 <div class="playerTeamHeader ${h?"hackerHeader":"shankerHeader"}">
 <h2>${team} — Group ${group}</h2>
 <div style="margin-top:4px;font-weight:700;">${list.length} players</div>
@@ -1383,48 +1400,28 @@ return`
 
 <div class="tablewrap">
 <table>
-
-<tr>
-<th>Name</th>
-<th>Index</th>
-<th>Tees</th>
-${canEditPlayers()?"<th></th>":""}
-</tr>
-
+<tr><th>Name</th><th>Index</th><th>Tees</th>${canEditPlayers()?"<th></th>":""}</tr>
 ${list.map(p=>`
 <tr>
 <td><b>${escapeHtml(p.name)}</b></td>
-
 <td>${escapeHtml(p.handicap)}</td>
-
-<td>
-<div class="teeList">
+<td><div class="teeList">
 <b>TR:</b> ${escapeHtml(p.tobaccoTee||"Disc")}<br>
 <b>MS:</b> ${escapeHtml(p.midsouthTee||"White")}<br>
 <b>LEG:</b> ${escapeHtml(p.legacyTee||"White")}
-</div>
-</td>
-
-${canEditPlayers()
-?`
+</div></td>
+${canEditPlayers()?`
 <td>
 <button class="blue" onclick="startPlayerEdit('${p.id}')">Edit</button>
 <button class="danger" onclick="deletePlayer('${p.id}')">Delete</button>
-</td>
-`
-:""}
-
-</tr>
-`).join("")}
-
+</td>`:""}
+</tr>`).join("")}
 </table>
 </div>
-</div>
-`;
+</div>`;
 }
 
-return edit+
-add+
+return edit+add+
 section("Hackers","A")+
 section("Hackers","B")+
 section("Shankers","A")+
@@ -1440,7 +1437,6 @@ window.scrollTo({top:0,behavior:"smooth"});
 
 async function savePlayerEdit(){
 if(!canEditPlayers()||!editingPlayerId)return;
-
 const p=getPlayer(editingPlayerId);
 if(!p)return;
 
@@ -1448,56 +1444,29 @@ const name=document.getElementById("editName").value.trim();
 const handicap=document.getElementById("editHcp").value||0;
 const team=document.getElementById("editTeam").value;
 const group=document.getElementById("editGroup").value;
-
 const tobaccoTee=document.getElementById("editTobaccoTee").value;
 const midsouthTee=document.getElementById("editMidsouthTee").value;
 const legacyTee=document.getElementById("editLegacyTee").value;
 
-if(!name){
-alert("Enter a player name.");
-return;
-}
+if(!name){alert("Enter a player name.");return}
 
 if(team!==p.team&&data.players.filter(x=>x.team===team&&String(x.id)!==String(p.id)).length>=16){
-alert(team+" already has 16 players.");
-return;
+alert(team+" already has 16 players.");return;
 }
-
 if(group!==p.group&&data.players.filter(x=>x.group===group&&String(x.id)!==String(p.id)).length>=16){
-alert("Group "+group+" already has 16 players.");
-return;
+alert("Group "+group+" already has 16 players.");return;
 }
 
 try{
-await upsert(
-"tournament_players",
-{
-tournament_id:TOURNAMENT_ID,
-id:p.id,
-name,
-handicap:String(handicap),
-team,
-group_name:group,
-tobacco_tee:tobaccoTee,
-midsouth_tee:midsouthTee,
-legacy_tee:legacyTee
-},
-"tournament_id,id"
-);
+await upsert("tournament_players",{
+tournament_id:TOURNAMENT_ID,id:p.id,name,
+handicap:String(handicap),team,group_name:group,
+tobacco_tee:tobaccoTee,midsouth_tee:midsouthTee,legacy_tee:legacyTee
+},"tournament_id,id");
 
-Object.assign(p,{
-name,
-handicap:String(handicap),
-team,
-group,
-tobaccoTee,
-midsouthTee,
-legacyTee
-});
-
+Object.assign(p,{name,handicap:String(handicap),team,group,tobaccoTee,midsouthTee,legacyTee});
 editingPlayerId=null;
 render();
-
 }catch(e){
 console.error(e);
 alert("Player changes could not be saved.");
@@ -1506,67 +1475,32 @@ alert("Player changes could not be saved.");
 
 async function addPlayer(){
 if(!canEditPlayers())return;
-
 const name=document.getElementById("name").value.trim();
 const handicap=document.getElementById("hcp").value||0;
 const team=document.getElementById("team").value;
 const group=document.getElementById("group").value;
-
 const tobaccoTee=document.getElementById("tobaccoTee").value;
 const midsouthTee=document.getElementById("midsouthTee").value;
 const legacyTee=document.getElementById("legacyTee").value;
 
-if(!name){
-alert("Enter a player name.");
-return;
-}
-
-if(data.players.length>=32){
-alert("Roster is full.");
-return;
-}
-
-if(data.players.filter(p=>p.team===team).length>=16){
-alert(team+" already has 16 players.");
-return;
-}
-
-if(data.players.filter(p=>p.group===group).length>=16){
-alert("Group "+group+" already has 16 players.");
-return;
-}
+if(!name){alert("Enter a player name.");return}
+if(data.players.length>=32){alert("Roster is full.");return}
+if(data.players.filter(p=>p.team===team).length>=16){alert(team+" already has 16 players.");return}
+if(data.players.filter(p=>p.group===group).length>=16){alert("Group "+group+" already has 16 players.");return}
 
 const p={
 id:"p"+Date.now()+Math.random().toString(36).slice(2),
-name,
-handicap:String(handicap),
-team,
-group,
-tobaccoTee,
-midsouthTee,
-legacyTee
+name,handicap:String(handicap),team,group,tobaccoTee,midsouthTee,legacyTee
 };
 
 try{
-await upsert(
-"tournament_players",
-{
-tournament_id:TOURNAMENT_ID,
-id:p.id,
-name:p.name,
-handicap:p.handicap,
-team:p.team,
-group_name:p.group,
-tobacco_tee:p.tobaccoTee,
-midsouth_tee:p.midsouthTee,
-legacy_tee:p.legacyTee
-},
-"tournament_id,id"
-);
-
+await upsert("tournament_players",{
+tournament_id:TOURNAMENT_ID,id:p.id,name:p.name,
+handicap:p.handicap,team:p.team,group_name:p.group,
+tobacco_tee:p.tobaccoTee,midsouth_tee:p.midsouthTee,legacy_tee:p.legacyTee
+},"tournament_id,id");
 data.players.push(p);
 render();
-
 }catch(e){
 console.error(e);
 alert("Player could not be saved.");
@@ -1575,12 +1509,10 @@ alert("Player could not be saved.");
 
 async function deletePlayer(id){
 if(!canEditPlayers()||!confirm("Delete this player?"))return;
-
 try{
 await deleteRows("tournament_players",{id});
 data.players=data.players.filter(p=>String(p.id)!==String(id));
 render();
-
 }catch{
 alert("Player could not be deleted.");
 }
@@ -1588,62 +1520,40 @@ alert("Player could not be deleted.");
 
 function setupMatches(){
 const r=roundInfo();
-
 if(!data.matchups[currentRound])data.matchups[currentRound]=[];
 
 while(data.matchups[currentRound].length<r.matches){
 const i=data.matchups[currentRound].length;
-
 data.matchups[currentRound][i]={
 id:"R"+currentRound+"M"+(i+1),
-matchNo:i+1,
-hackers:[],
-shankers:[],
-teeTime:"",
-teeStartHole:""
+matchNo:i+1,hackers:[],shankers:[],teeTime:"",teeStartHole:""
 };
 }
-
 return data.matchups[currentRound];
 }
 
 function usedPlayerIdsThisRound(){
 const used=new Set();
 const matches=data.matchups[currentRound]||[];
-
 matches.forEach(match=>{
 if(!match)return;
-
-[
-...(match.hackers||[]),
-...(match.shankers||[])
-].forEach(id=>{
+[...(match.hackers||[]),...(match.shankers||[])].forEach(id=>{
 if(id)used.add(String(id));
 });
 });
-
 return used;
 }
 
 function playerOptions(team,current){
 const used=usedPlayerIdsThisRound();
-
 return`
 <option value="">Select Player</option>
-${data.players
-.filter(p=>
-p.team===team &&
-(
-String(p.id)===String(current) ||
-!used.has(String(p.id))
-)
-)
-.map(p=>`
+${data.players.filter(p=>
+p.team===team&&(String(p.id)===String(current)||!used.has(String(p.id)))
+).map(p=>`
 <option value="${p.id}" ${String(p.id)===String(current)?"selected":""}>
 ${escapeHtml(p.name)} — Group ${escapeHtml(p.group)}
-</option>
-`).join("")}
-`;
+</option>`).join("")}`;
 }
 
 function matchupPage(){
@@ -1652,39 +1562,28 @@ const m=setupMatches();
 
 return`
 <div class="card">
-
 <div class="roundnav">
-
 <div>
 <h2>Round ${r.id} — ${r.course}</h2>
 <div class="muted">
-${r.id===4
-?"1v1 Match Play • 16 Individual Points • 8 Foursomes"
-:`${r.format} • 8 Points • 8 Foursomes`
-}
+${r.id===4?"1v1 Match Play • 16 Individual Points • 8 Foursomes":`${r.format} • 8 Points • 8 Foursomes`}
 </div>
 </div>
-
 <div class="roundbuttons">
 <button onclick="currentRound=Math.max(1,currentRound-1);render();">←</button>
 <button onclick="currentRound=Math.min(4,currentRound+1);render();">→</button>
 </div>
-
 </div>
 
 ${userRole==="viewer"||userRole==="scorer"
-?`<div class="viewer">Matchups are read-only for your account.</div>`
-:""}
+?`<div class="viewer">Matchups are read-only for your account.</div>`:""}
 
 ${isCaptain()
-?`<div class="captainMode">Captain mode — You can change the ${escapeHtml(userTeam)} side of each matchup.</div>`
-:""}
+?`<div class="captainMode">Captain mode — You can change the ${escapeHtml(userTeam)} side of each matchup.</div>`:""}
 
 ${currentRound===4
 ?Array.from({length:8},(_,f)=>{
-const a=f*2;
-const b=a+1;
-
+const a=f*2,b=a+1;
 return`
 <div class="foursomeCard">
 <h2>Foursome ${f+1}</h2>
@@ -1692,18 +1591,12 @@ return`
 ${teeTimeControl(a,m[a]?.teeTime||"",m[a]?.teeStartHole||"",true)}
 ${round4SinglesMatch(m[a],a)}
 ${round4SinglesMatch(m[b],b)}
-</div>
-`;
+</div>`;
 }).join("")
-:m.map((match,i)=>standardFoursomeCard(r,match,i)).join("")
-}
+:m.map((match,i)=>standardFoursomeCard(r,match,i)).join("")}
 
-${isOwner()
-?`<button class="primary" onclick="validateRound()">Validate Matchups</button>`
-:""}
-
-</div>
-`;
+${isOwner()?`<button class="primary" onclick="validateRound()">Validate Matchups</button>`:""}
+</div>`;
 }
 
 function standardFoursomeCard(r,match,i){
@@ -1712,85 +1605,59 @@ while(match.shankers.length<2)match.shankers.push("");
 
 return`
 <div class="foursomeCard">
-
 <h2>Foursome ${i+1}</h2>
 <div class="muted">Match ${i+1}</div>
-
 ${teeTimeControl(i,match.teeTime||"",match.teeStartHole||"",false)}
 
 <div class="innerMatch">
-
 <h3>Match ${i+1}</h3>
-
 <div class="players">
 
 <div class="teamSelects">
 <div class="hackerLabel">HACKERS</div>
-
-${canEditMatchupSide("hackers")
-?`
+${canEditMatchupSide("hackers")?`
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions("Hackers",match.hackers[0])}
-</select>
-${matchupHcp(match.hackers[0])}
+</select>${matchupHcp(match.hackers[0])}
 </div>
-
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',1,this.value)">
 ${playerOptions("Hackers",match.hackers[1])}
-</select>
-${matchupHcp(match.hackers[1])}
-</div>
-`
+</select>${matchupHcp(match.hackers[1])}
+</div>`
 :match.hackers.map(id=>{
 const p=getPlayer(id);
-return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`
-:`<div class="pill">Not Set</div>`;
-}).join("<br>")
-}
-
+return p?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`;
+}).join("<br>")}
 </div>
 
 <div class="teamSelects">
 <div class="shankerLabel">SHANKERS</div>
-
-${canEditMatchupSide("shankers")
-?`
+${canEditMatchupSide("shankers")?`
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions("Shankers",match.shankers[0])}
-</select>
-${matchupHcp(match.shankers[0])}
+</select>${matchupHcp(match.shankers[0])}
 </div>
-
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',1,this.value)">
 ${playerOptions("Shankers",match.shankers[1])}
-</select>
-${matchupHcp(match.shankers[1])}
-</div>
-`
+</select>${matchupHcp(match.shankers[1])}
+</div>`
 :match.shankers.map(id=>{
 const p=getPlayer(id);
-return p
-?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`
-:`<div class="pill">Not Set</div>`;
-}).join("<br>")
-}
-
+return p?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`;
+}).join("<br>")}
 </div>
 
 </div>
 </div>
-</div>
-`;
+</div>`;
 }
 
 function round4SinglesMatch(match,i){
 if(!match)return"";
-
 while(match.hackers.length<1)match.hackers.push("");
 while(match.shankers.length<1)match.shankers.push("");
 
@@ -1799,52 +1666,31 @@ const s=getPlayer(match.shankers[0]);
 
 return`
 <div class="innerMatch">
-
 <h3>Match ${i+1}</h3>
-
 <div class="players">
-
 <div>
 <div class="hackerLabel">HACKER</div>
-
-${canEditMatchupSide("hackers")
-?`
+${canEditMatchupSide("hackers")?`
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions("Hackers",match.hackers[0])}
-</select>
-${matchupHcp(match.hackers[0])}
-</div>
-`
-:h
-?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(h,currentRound))}</span></div>`
-:`<div class="pill">Not Set</div>`
-}
-
+</select>${matchupHcp(match.hackers[0])}
+</div>`
+:h?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(h,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
 </div>
 
 <div>
 <div class="shankerLabel">SHANKER</div>
-
-${canEditMatchupSide("shankers")
-?`
+${canEditMatchupSide("shankers")?`
 <div class="matchupSelectRow">
 <select onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions("Shankers",match.shankers[0])}
-</select>
-${matchupHcp(match.shankers[0])}
-</div>
-`
-:s
-?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(s,currentRound))}</span></div>`
-:`<div class="pill">Not Set</div>`
-}
-
-</div>
-
+</select>${matchupHcp(match.shankers[0])}
+</div>`
+:s?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(s,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
 </div>
 </div>
-`;
+</div>`;
 }
 
 function teeTimeControl(i,value,startHole,isRound4Foursome){
@@ -1853,142 +1699,94 @@ const showStartHole=currentRound===2||currentRound===3;
 const holeLabel=startHole?"Hole "+startHole:"Start hole not set";
 
 if(!isOwner()){
-return`
-<div class="pill">
+return`<div class="pill">
 Tee Time: ${escapeHtml(label)}
 ${showStartHole?" • "+escapeHtml(holeLabel):""}
-</div>
-`;
+</div>`;
 }
 
 return`
 <div class="row" style="margin:10px 0">
-
 <div class="field" style="max-width:220px">
 <label>TEE TIME</label>
-<input
-type="time"
-step="600"
+<input type="time" step="600"
 value="${escapeHtml(String(value||"").slice(0,5))}"
-onchange="${isRound4Foursome
-?`setFoursomeTeeTime(${i},this.value)`
-:`setTeeTime(${i},this.value)`
-}">
+onchange="${isRound4Foursome?`setFoursomeTeeTime(${i},this.value)`:`setTeeTime(${i},this.value)`}">
 </div>
 
 ${showStartHole?`
 <div class="field" style="max-width:220px">
 <label>STARTING HOLE</label>
-<select onchange="${isRound4Foursome
-?`setFoursomeStartHole(${i},this.value)`
-:`setTeeStartHole(${i},this.value)`
-}">
+<select onchange="${isRound4Foursome?`setFoursomeStartHole(${i},this.value)`:`setTeeStartHole(${i},this.value)`}">
 <option value="" ${!startHole?"selected":""}>Select Hole</option>
 <option value="1" ${Number(startHole)===1?"selected":""}>Hole 1</option>
 <option value="10" ${Number(startHole)===10?"selected":""}>Hole 10</option>
 </select>
-</div>
-`:""}
-
-</div>
-`;
+</div>`:""}
+</div>`;
 }
 
 async function saveTeeTime(matchIndex,value){
 await refreshSessionIfNeeded();
-
-const r=await fetch(
-SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_time",
-{
-method:"POST",
-headers:headers(),
+const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_time",{
+method:"POST",headers:headers(),
 body:JSON.stringify({
 p_round_no:currentRound,
 p_match_no:matchIndex+1,
 p_tee_time:value||null
 })
-}
-);
-
-if(!r.ok){
-console.error(await r.text());
-throw new Error("Tee time save failed");
-}
+});
+if(!r.ok){console.error(await r.text());throw new Error("Tee time save failed")}
 }
 
 async function saveTeeStartHole(matchIndex,value){
 await refreshSessionIfNeeded();
-
-const r=await fetch(
-SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_start_hole",
-{
-method:"POST",
-headers:headers(),
+const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/set_duffers_tee_start_hole",{
+method:"POST",headers:headers(),
 body:JSON.stringify({
 p_round_no:currentRound,
 p_match_no:matchIndex+1,
 p_tee_start_hole:value?Number(value):null
 })
-}
-);
-
-if(!r.ok){
-console.error(await r.text());
-throw new Error("Starting hole save failed");
-}
+});
+if(!r.ok){console.error(await r.text());throw new Error("Starting hole save failed")}
 }
 
 async function setTeeTime(i,value){
 if(!isOwner())return;
-
 const match=data.matchups[currentRound]?.[i];
 if(!match)return;
-
 const old=match.teeTime||"";
 match.teeTime=value||"";
 render();
-
-try{
-await saveTeeTime(i,value);
-}catch(e){
-console.error(e);
-match.teeTime=old;
-render();
+try{await saveTeeTime(i,value)}
+catch(e){
+console.error(e);match.teeTime=old;render();
 alert("Tee time could not be saved.");
 }
 }
 
 async function setTeeStartHole(i,value){
 if(!isOwner())return;
-
 const match=data.matchups[currentRound]?.[i];
 if(!match)return;
-
 const old=match.teeStartHole||"";
 match.teeStartHole=value?Number(value):"";
 render();
-
-try{
-await saveTeeStartHole(i,value);
-}catch(e){
-console.error(e);
-match.teeStartHole=old;
-render();
+try{await saveTeeStartHole(i,value)}
+catch(e){
+console.error(e);match.teeStartHole=old;render();
 alert("Starting hole could not be saved.");
 }
 }
 
 async function setFoursomeTeeTime(firstMatchIndex,value){
 if(!isOwner())return;
-
 const a=data.matchups[currentRound]?.[firstMatchIndex];
 const b=data.matchups[currentRound]?.[firstMatchIndex+1];
-
 if(!a||!b)return;
 
-const oldA=a.teeTime||"";
-const oldB=b.teeTime||"";
-
+const oldA=a.teeTime||"",oldB=b.teeTime||"";
 a.teeTime=value||"";
 b.teeTime=value||"";
 render();
@@ -1998,24 +1796,18 @@ await saveTeeTime(firstMatchIndex,value);
 await saveTeeTime(firstMatchIndex+1,value);
 }catch(e){
 console.error(e);
-a.teeTime=oldA;
-b.teeTime=oldB;
-render();
+a.teeTime=oldA;b.teeTime=oldB;render();
 alert("Tee time could not be saved.");
 }
 }
 
 async function setFoursomeStartHole(firstMatchIndex,value){
 if(!isOwner())return;
-
 const a=data.matchups[currentRound]?.[firstMatchIndex];
 const b=data.matchups[currentRound]?.[firstMatchIndex+1];
-
 if(!a||!b)return;
 
-const oldA=a.teeStartHole||"";
-const oldB=b.teeStartHole||"";
-
+const oldA=a.teeStartHole||"",oldB=b.teeStartHole||"";
 a.teeStartHole=value?Number(value):"";
 b.teeStartHole=value?Number(value):"";
 render();
@@ -2025,9 +1817,7 @@ await saveTeeStartHole(firstMatchIndex,value);
 await saveTeeStartHole(firstMatchIndex+1,value);
 }catch(e){
 console.error(e);
-a.teeStartHole=oldA;
-b.teeStartHole=oldB;
-render();
+a.teeStartHole=oldA;b.teeStartHole=oldB;render();
 alert("Starting hole could not be saved.");
 }
 }
@@ -2041,7 +1831,6 @@ const oldValue=match[side][slot];
 if(playerId){
 const duplicate=(data.matchups[currentRound]||[]).some((m,matchIndex)=>{
 if(!m)return false;
-
 return ["hackers","shankers"].some(checkSide=>
 (m[checkSide]||[]).some((id,checkSlot)=>{
 if(matchIndex===i&&checkSide===side&&checkSlot===slot)return false;
@@ -2062,10 +1851,8 @@ render();
 
 try{
 await refreshSessionIfNeeded();
-
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/set_duffers_matchup_slot",{
-method:"POST",
-headers:headers(),
+method:"POST",headers:headers(),
 body:JSON.stringify({
 p_round_no:currentRound,
 p_match_no:i+1,
@@ -2079,7 +1866,6 @@ if(!r.ok){
 console.error(await r.text());
 throw new Error("Matchup save failed");
 }
-
 }catch(e){
 console.error(e);
 match[side][slot]=oldValue;
@@ -2090,7 +1876,6 @@ alert("Matchup could not be saved.");
 
 function validateRound(){
 if(!isOwner())return;
-
 const r=roundInfo();
 const m=setupMatches();
 const used=new Set();
@@ -2099,10 +1884,8 @@ for(let i=0;i<m.length;i++){
 const match=m[i];
 const required=r.type==="singles"?1:2;
 
-if(
-match.hackers.filter(Boolean).length!==required||
-match.shankers.filter(Boolean).length!==required
-){
+if(match.hackers.filter(Boolean).length!==required||
+match.shankers.filter(Boolean).length!==required){
 alert("Match "+(i+1)+" is incomplete.");
 return;
 }
@@ -2120,7 +1903,6 @@ if(used.size!==32){
 alert("All 32 players must appear exactly once.");
 return;
 }
-
 alert("Round "+currentRound+" matchups are ready!");
 }
 
@@ -2128,32 +1910,24 @@ function getScore(id){
 if(!data.scores[id]){
 data.scores[id]={holes:Array.from({length:18},()=>({}))};
 }
-
 while(data.scores[id].holes.length<18)data.scores[id].holes.push({});
-
 return data.scores[id];
 }
 
 function enteredNine(score,id,start){
 let total=0;
-
 for(let h=start;h<start+9;h++){
 const v=Number((score.holes[h]||{})[id]);
-
 if(!(v>0))return"—";
-
 total+=v;
 }
-
 return total;
 }
 
 function enteredTotal(score,id){
 const out=enteredNine(score,id,0);
 const inn=enteredNine(score,id,9);
-
 if(out==="—"||inn==="—")return"—";
-
 return out+inn;
 }
 
@@ -2170,51 +1944,31 @@ ${Array.from({length:9},(_,i)=>`<th>${i+1}</th>`).join("")}
 ${Array.from({length:9},(_,i)=>`<th>${i+10}</th>`).join("")}
 <th>IN</th>
 <th>TOTAL</th>
-</tr>
-`;
+</tr>`;
 }
 
 function scoreReferenceRow(values,label,showTotals=false){
 return`
 <tr class="${label==="PAR"?"coursePar":"courseHcp"}">
-
 <td>${label}</td>
-
 ${values.slice(0,9).map(v=>`<td>${v}</td>`).join("")}
-
 <td class="summaryCell">${showTotals?nineTotal(values,0):""}</td>
-
 ${values.slice(9).map(v=>`<td>${v}</td>`).join("")}
-
 <td class="summaryCell">${showTotals?nineTotal(values,9):""}</td>
-
 <td class="summaryCell">${showTotals?values.reduce((a,b)=>a+b,0):""}</td>
-
-</tr>
-`;
+</tr>`;
 }
 
 let scoreAdvanceTimer=null;
 
 function selectScoreInput(el){
 if(!el||el.disabled)return;
-
 clearTimeout(scoreAdvanceTimer);
-
-setTimeout(()=>{
-try{el.select()}catch(e){}
-},0);
+setTimeout(()=>{try{el.select()}catch(e){}},0);
 }
 
 function handleScoreKeydown(event,el){
-if(
-event.key!=="Enter"&&
-event.key!=="Next"&&
-event.key!=="Done"
-){
-return;
-}
-
+if(event.key!=="Enter"&&event.key!=="Next"&&event.key!=="Done")return;
 event.preventDefault();
 clearTimeout(scoreAdvanceTimer);
 advanceScoreInput(el);
@@ -2224,15 +1978,12 @@ function handleScoreInput(round,matchNo,matchId,holeIndex,scorer,el){
 if(!canScoreRound(round)||!el)return;
 
 queueScore(round,matchNo,matchId,holeIndex,scorer,el.value);
-
 clearTimeout(scoreAdvanceTimer);
 
 const raw=String(el.value??"").trim();
-
 if(raw==="")return;
 
 const n=Number(raw);
-
 if(!Number.isFinite(n)||n<1||n>20)return;
 
 const delay=raw==="1"?450:200;
@@ -2245,31 +1996,17 @@ advanceScoreInput(el);
 
 function advanceScoreInput(el){
 if(!el)return;
-
 const table=el.closest(".scoretable");
 if(!table)return;
 
-const inputs=Array.from(
-table.querySelectorAll("input.scoreInput:not(:disabled)")
-);
-
+const inputs=Array.from(table.querySelectorAll("input.scoreInput:not(:disabled)"));
 const currentIndex=inputs.indexOf(el);
-
 if(currentIndex<0)return;
 
 const next=inputs[currentIndex+1];
+if(!next){el.blur();return}
 
-if(!next){
-el.blur();
-return;
-}
-
-try{
-next.focus({preventScroll:true});
-}catch(e){
-next.focus();
-}
-
+try{next.focus({preventScroll:true})}catch(e){next.focus()}
 try{next.select()}catch(e){}
 
 const wrapper=next.closest(".tablewrap");
@@ -2278,95 +2015,59 @@ const cell=next.closest("td");
 if(wrapper&&cell){
 const wrapperRect=wrapper.getBoundingClientRect();
 const cellRect=cell.getBoundingClientRect();
-
 const stickyWidth=155;
 const leftLimit=wrapperRect.left+stickyWidth+8;
 const rightLimit=wrapperRect.right-8;
 
-if(
-cellRect.left<leftLimit||
-cellRect.right>rightLimit
-){
+if(cellRect.left<leftLimit||cellRect.right>rightLimit){
 const desiredLeft=
 wrapper.scrollLeft+
 (cellRect.left-wrapperRect.left)-
 (wrapper.clientWidth/2)+
 (cellRect.width/2);
 
-wrapper.scrollTo({
-left:Math.max(0,desiredLeft),
-behavior:"smooth"
-});
+wrapper.scrollTo({left:Math.max(0,desiredLeft),behavior:"smooth"});
 }
 }
 }
 
 function playerScoreRow(p,score,round,matchNo,matchId){
 const cls=p.team==="Hackers"?"hackerScoreRow":"shankerScoreRow";
-
 let cells="";
 
 for(let h=0;h<9;h++){
 const value=(score.holes[h]||{})[p.id]??"";
-
 cells+=`
-<td>
-<input
-class="scoreInput"
-type="number"
-inputmode="numeric"
-pattern="[0-9]*"
-enterkeyhint="next"
-min="1"
-max="20"
+<td><input class="scoreInput" type="number" inputmode="numeric"
+pattern="[0-9]*" enterkeyhint="next" min="1" max="20"
 ${canScoreRound(round)?"":"disabled"}
 value="${value}"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
-</td>
-`;
+</td>`;
 }
 
-cells+=`
-<td class="summaryCell" id="out-${matchId}-${p.id}">
-${enteredNine(score,p.id,0)}
-</td>
-`;
+cells+=`<td class="summaryCell" id="out-${matchId}-${p.id}">${enteredNine(score,p.id,0)}</td>`;
 
 for(let h=9;h<18;h++){
 const value=(score.holes[h]||{})[p.id]??"";
-
 cells+=`
-<td>
-<input
-class="scoreInput"
-type="number"
-inputmode="numeric"
-pattern="[0-9]*"
-enterkeyhint="next"
-min="1"
-max="20"
+<td><input class="scoreInput" type="number" inputmode="numeric"
+pattern="[0-9]*" enterkeyhint="next" min="1" max="20"
 ${canScoreRound(round)?"":"disabled"}
 value="${value}"
 onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
-</td>
-`;
+</td>`;
 }
 
 cells+=`
-<td class="summaryCell" id="in-${matchId}-${p.id}">
-${enteredNine(score,p.id,9)}
-</td>
-
-<td class="summaryCell" id="total-${matchId}-${p.id}">
-${enteredTotal(score,p.id)}
-</td>
-`;
+<td class="summaryCell" id="in-${matchId}-${p.id}">${enteredNine(score,p.id,9)}</td>
+<td class="summaryCell" id="total-${matchId}-${p.id}">${enteredTotal(score,p.id)}</td>`;
 
 const playerHandicap=
 round===1||round===2||round===4
@@ -2375,23 +2076,16 @@ round===1||round===2||round===4
 
 return`
 <tr class="${cls}">
-<td>
-${escapeHtml(p.name)}
-<br>
-<span class="muted">${escapeHtml(playerHandicap)}</span>
-</td>
+<td>${escapeHtml(p.name)}<br><span class="muted">${escapeHtml(playerHandicap)}</span></td>
 ${cells}
-</tr>
-`;
+</tr>`;
 }
 
 function updateScoreTotals(matchId,playerId){
 const score=getScore(matchId);
-
 const out=document.getElementById("out-"+matchId+"-"+playerId);
 const inn=document.getElementById("in-"+matchId+"-"+playerId);
 const total=document.getElementById("total-"+matchId+"-"+playerId);
-
 if(out)out.textContent=enteredNine(score,playerId,0);
 if(inn)inn.textContent=enteredNine(score,playerId,9);
 if(total)total.textContent=enteredTotal(score,playerId);
@@ -2402,87 +2096,55 @@ if(!isOwner())return"";
 
 return`
 <div class="scoringAccessPanel">
-
 <h3>Scoring Access</h3>
-
 <div class="muted" style="margin-bottom:6px">
 Open or lock scoring separately for each round.
 </div>
 
 ${ROUNDS.map(r=>{
 const open=isScoringOpen(r.id);
-
 return`
 <div class="scoringAccessRow">
-
-<div>
-<div class="scoringAccessName">
-Round ${r.id} — ${r.course}
-</div>
-</div>
-
+<div><div class="scoringAccessName">Round ${r.id} — ${r.course}</div></div>
 <div class="scoringAccessActions">
-
-<span class="${open?"scoringOpenBadge":"scoringLockedBadge"}">
-${open?"OPEN":"LOCKED"}
-</span>
-
-<button
-class="${open?"danger":"good"}"
+<span class="${open?"scoringOpenBadge":"scoringLockedBadge"}">${open?"OPEN":"LOCKED"}</span>
+<button class="${open?"danger":"good"}"
 onclick="setRoundScoring(${r.id},${open?"false":"true"})">
 ${open?"Lock":"Open"}
 </button>
-
 </div>
-</div>
-`;
+</div>`;
 }).join("")}
 
 <div class="resetArea">
 <div style="font-weight:900;color:#991b1b;margin-bottom:4px">
 Testing / Tournament Reset
 </div>
-
 <div class="muted" style="font-size:13px;margin-bottom:10px">
 Clears every entered score and official match result. Players, handicaps, teams, groups, matchups and permissions stay unchanged.
 </div>
-
-<button class="resetButton" onclick="resetAllScores()">
-Reset All Scores & Results
-</button>
+<button class="resetButton" onclick="resetAllScores()">Reset All Scores & Results</button>
 </div>
-
-</div>
-`;
+</div>`;
 }
 
 async function setRoundScoring(roundId,open){
 if(!isOwner())return;
-
 const action=open?"OPEN":"LOCK";
 const course=ROUNDS.find(r=>r.id===Number(roundId))?.course||"this round";
 
-if(!confirm(action+" scoring for Round "+roundId+" — "+course+"?")){
-return;
-}
+if(!confirm(action+" scoring for Round "+roundId+" — "+course+"?"))return;
 
 try{
-
-await upsert(
-"tournament_round_settings",
-{
+await upsert("tournament_round_settings",{
 tournament_id:TOURNAMENT_ID,
 round_no:Number(roundId),
 scoring_open:!!open,
 updated_at:new Date().toISOString()
-},
-"tournament_id,round_no"
-);
+},"tournament_id,round_no");
 
 roundSettings[Number(roundId)]=!!open;
-
 render();
-
 }catch(e){
 console.error(e);
 alert("Scoring access could not be changed.");
@@ -2504,28 +2166,19 @@ const first=confirm(
 
 if(!first)return;
 
-const typed=prompt(
-"Final confirmation.\n\nType RESET to erase all scores and results."
-);
+const typed=prompt("Final confirmation.\n\nType RESET to erase all scores and results.");
 
 if(typed!=="RESET"){
-if(typed!==null){
-alert("Reset cancelled. You must type RESET exactly.");
-}
+if(typed!==null)alert("Reset cancelled. You must type RESET exactly.");
 return;
 }
 
 try{
 await refreshSessionIfNeeded();
 
-const r=await fetch(
-SUPABASE_URL+"/rest/v1/rpc/reset_duffers_scores",
-{
-method:"POST",
-headers:headers(),
-body:"{}"
-}
-);
+const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/reset_duffers_scores",{
+method:"POST",headers:headers(),body:"{}"
+});
 
 if(!r.ok){
 const message=await r.text();
@@ -2533,10 +2186,7 @@ console.error(message);
 throw new Error("Reset failed");
 }
 
-Object.keys(saveTimers).forEach(k=>{
-clearTimeout(saveTimers[k]);
-});
-
+Object.keys(saveTimers).forEach(k=>clearTimeout(saveTimers[k]));
 clearTimeout(scoreAdvanceTimer);
 saveTimers={};
 data.scores={};
@@ -2545,22 +2195,15 @@ data.results={};
 await loadSharedData(false);
 render();
 
-alert(
-"Reset complete.\n\nAll scores and match results have been cleared."
-);
-
+alert("Reset complete.\n\nAll scores and match results have been cleared.");
 }catch(e){
 console.error(e);
-
-alert(
-"Reset could not be completed. No other tournament settings were changed."
-);
+alert("Reset could not be completed. No other tournament settings were changed.");
 }
 }
 
 function resultControls(match,i){
 const saved=data.results[match.id]?data.results[match.id].winner:"";
-
 let banner="";
 
 if(saved==="Hackers"){
@@ -2571,26 +2214,20 @@ banner=`<div class="resultBanner resultShankers">SHANKERS WIN — 1 POINT</div>`
 banner=`<div class="resultBanner resultHalved">MATCH HALVED — ½ POINT EACH</div>`;
 }
 
-const controls=canScoreRound(currentRound)
-?`
+const controls=canScoreRound(currentRound)?`
 <div style="margin-top:15px">
-
 <label>Official Match Result</label>
-
 <select id="result-${match.id}">
 <option value="">Select Result</option>
 <option value="Hackers" ${saved==="Hackers"?"selected":""}>Hackers</option>
 <option value="Shankers" ${saved==="Shankers"?"selected":""}>Shankers</option>
 <option value="Halved" ${saved==="Halved"?"selected":""}>Halved</option>
 </select>
-
 </div>
-
-<button class="good" style="margin-top:10px" onclick="saveMatchResult(${currentRound},${i+1},'${match.id}')">
+<button class="good" style="margin-top:10px"
+onclick="saveMatchResult(${currentRound},${i+1},'${match.id}')">
 Save / Reset Match Result
-</button>
-`
-:"";
+</button>`:"";
 
 return controls+banner;
 }
@@ -2601,54 +2238,37 @@ const m=setupMatches();
 
 return`
 <div class="card">
-
 <div class="roundnav">
-
 <div>
 <h2>Round ${r.id} Scoring</h2>
 <div class="muted">${r.course} • ${r.format}</div>
 </div>
-
 <div class="roundbuttons">
 <button onclick="currentRound=Math.max(1,currentRound-1);render();">←</button>
 <button onclick="currentRound=Math.min(4,currentRound+1);render();">→</button>
 </div>
-
 </div>
 
 ${scoringAccessControls()}
 
 ${isScoringOpen(r.id)
 ?`<div class="scoringOpenNotice">🟢 ROUND ${r.id} SCORING IS OPEN</div>`
-:`<div class="scoringLockedNotice">🔒 ROUND ${r.id} SCORING IS LOCKED — scores and match results are read-only.</div>`
-}
+:`<div class="scoringLockedNotice">🔒 ROUND ${r.id} SCORING IS LOCKED — scores and match results are read-only.</div>`}
 
-${!canScore()
-?`<div class="viewer">Scores are read-only for your account.</div>`
-:""
-}
+${!canScore()?`<div class="viewer">Scores are read-only for your account.</div>`:""}
 
-${r.id===3
-?`
+${r.id===3?`
 <div class="notice">
 Talamore is result-only.
 Select Hackers, Shankers or Halved for each match.
-</div>
-`
-:""
-}
+</div>`:""}
 
 ${m.map((match,i)=>scoreCard(r,match,i)).join("")}
-
-</div>
-`;
+</div>`;
 }
 
 function scoreCard(r,match,i){
-const players=[...match.hackers,...match.shankers]
-.map(getPlayer)
-.filter(Boolean);
-
+const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
 const required=r.type==="singles"?2:4;
 
 if(players.length<required){
@@ -2656,18 +2276,14 @@ return`
 <div class="match">
 <h3>Match ${i+1}</h3>
 <div class="notice">Matchup not set.</div>
-</div>
-`;
+</div>`;
 }
 
 if(r.id===3){
 return`
 <div class="match resultOnly">
-
 <h3>Match ${i+1}</h3>
-
 <div class="players">
-
 <div>
 <div class="hackerLabel">HACKERS</div>
 ${match.hackers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
@@ -2681,13 +2297,9 @@ ${match.shankers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
 <div class="pill">${escapeHtml(p.name)} • HCP ${escapeHtml(p.handicap)}</div>
 `).join("<br>")}
 </div>
-
 </div>
-
 ${resultControls(match,i)}
-
-</div>
-`;
+</div>`;
 }
 
 const score=getScore(match.id);
@@ -2695,87 +2307,50 @@ const course=COURSE_CARDS[r.id];
 
 return`
 <div class="match">
-
 <h3>Match ${i+1}</h3>
-
 <div class="tablewrap">
-
 <table class="scoretable">
-
 ${scoreHeader()}
-
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
-
 ${scoreReferenceRow(course.par,"PAR",true)}
-
-${players.map(p=>
-playerScoreRow(
-p,
-score,
-currentRound,
-i+1,
-match.id
-)
-).join("")}
-
+${players.map(p=>playerScoreRow(p,score,currentRound,i+1,match.id)).join("")}
 </table>
-
 </div>
-
 ${resultControls(match,i)}
-
-</div>
-`;
+</div>`;
 }
 
 function queueScore(round,matchNo,matchId,holeIndex,scorer,value){
 if(!canScoreRound(round))return;
-
 const score=getScore(matchId);
-
 score.holes[holeIndex][scorer]=value===""?"":Number(value);
-
 updateScoreTotals(matchId,scorer);
 
 const key=round+"-"+matchNo+"-"+holeIndex+"-"+scorer;
-
 clearTimeout(saveTimers[key]);
-
 saveTimers[key]=setTimeout(
-()=>saveScoreOnline(round,matchNo,holeIndex+1,scorer,value),
-350
+()=>saveScoreOnline(round,matchNo,holeIndex+1,scorer,value),350
 );
 }
 
 async function saveScoreDirect(round,matchNo,hole,scorer,value){
-await upsert(
-"tournament_scores",
-{
+await upsert("tournament_scores",{
 tournament_id:TOURNAMENT_ID,
 round_no:round,
 match_no:matchNo,
 hole,
 scorer_key:String(scorer),
 score:Number(value)
-},
-"tournament_id,round_no,match_no,hole,scorer_key"
-);
+},"tournament_id,round_no,match_no,hole,scorer_key");
 }
 
 async function saveScoreOnline(round,matchNo,hole,scorer,value){
 if(!canScoreRound(round))return;
-
 try{
 if(value===""){
-await deleteRows(
-"tournament_scores",
-{
-round_no:round,
-match_no:matchNo,
-hole,
-scorer_key:scorer
-}
-);
+await deleteRows("tournament_scores",{
+round_no:round,match_no:matchNo,hole,scorer_key:scorer
+});
 }else{
 await saveScoreDirect(round,matchNo,hole,scorer,Number(value));
 }
@@ -2786,50 +2361,30 @@ await loadSharedData(false);
 }
 
 async function saveMatchResult(round,matchNo,matchId){
-if(!canScore()){
-alert("Scoring access required.");
-return;
-}
-
-if(!isScoringOpen(round)){
-alert("Round "+round+" scoring is locked.");
-return;
-}
+if(!canScore()){alert("Scoring access required.");return}
+if(!isScoringOpen(round)){alert("Round "+round+" scoring is locked.");return}
 
 const box=document.getElementById("result-"+matchId);
 if(!box)return;
-
 const winner=box.value;
 
 try{
 if(winner===""){
-await deleteRows(
-"tournament_results",
-{
-round_no:round,
-match_no:matchNo
-}
-);
-
+await deleteRows("tournament_results",{round_no:round,match_no:matchNo});
 delete data.results[matchId];
 render();
 return;
 }
 
-await upsert(
-"tournament_results",
-{
+await upsert("tournament_results",{
 tournament_id:TOURNAMENT_ID,
 round_no:round,
 match_no:matchNo,
 winner
-},
-"tournament_id,round_no,match_no"
-);
+},"tournament_id,round_no,match_no");
 
 data.results[matchId]={winner};
 render();
-
 }catch(e){
 console.error(e);
 alert("Match result could not be saved or reset.");
@@ -2840,7 +2395,6 @@ render();
 
 function getScatResults(roundId,group){
 const r=ROUNDS.find(x=>x.id===roundId);
-
 if(!r||!r.scats)return[];
 
 const matches=data.matchups[roundId]||[];
@@ -2851,29 +2405,15 @@ const entered=[];
 
 matches.forEach(match=>{
 if(!match)return;
-
 const sd=data.scores[match.id];
 if(!sd)return;
-
 const s=sd.holes[h]||{};
 
-[
-...(match.hackers||[]),
-...(match.shankers||[])
-].forEach(id=>{
+[...(match.hackers||[]),...(match.shankers||[])].forEach(id=>{
 const p=getPlayer(id);
-
 if(!p||p.group!==group)return;
-
 const v=Number(s[p.id]);
-
-if(v>0){
-entered.push({
-id:p.id,
-name:p.name,
-score:v
-});
-}
+if(v>0)entered.push({id:p.id,name:p.name,score:v});
 });
 });
 
@@ -2887,44 +2427,21 @@ const winners=entered.filter(x=>x.score===low);
 
 results.push(
 winners.length===1
-?{
-hole:h+1,
-status:"scat",
-winner:winners[0],
-score:low,
-entered:entered.length
-}
-:{
-hole:h+1,
-status:"tie",
-score:low,
-winners,
-entered:entered.length
-}
+?{hole:h+1,status:"scat",winner:winners[0],score:low,entered:entered.length}
+:{hole:h+1,status:"tie",score:low,winners,entered:entered.length}
 );
 }
-
 return results;
 }
 
 function scatSummary(roundId,group){
 const counts={};
-
 getScatResults(roundId,group).forEach(r=>{
 if(r.status!=="scat")return;
-
 const id=String(r.winner.id);
-
-if(!counts[id]){
-counts[id]={
-name:r.winner.name,
-count:0
-};
-}
-
+if(!counts[id])counts[id]={name:r.winner.name,count:0};
 counts[id].count++;
 });
-
 return Object.values(counts).sort((a,b)=>b.count-a.count);
 }
 
@@ -2935,78 +2452,50 @@ const won=results.filter(r=>r.status==="scat").length;
 
 return`
 <div class="card">
-
 <h2>Group ${group}</h2>
-
 <div class="scatCount">${won} scats won</div>
 
-${summary.length
-?`
+${summary.length?`
 <h3>Scat Leaders</h3>
-
 ${summary.map(x=>`
-<span class="pill">
-<b>${escapeHtml(x.name)}</b> —
-${x.count} ${x.count===1?"scat":"scats"}
-</span>
-`).join("")}
-`
-:""}
+<span class="pill"><b>${escapeHtml(x.name)}</b> —
+${x.count} ${x.count===1?"scat":"scats"}</span>
+`).join("")}`:""}
 
 <h3>Hole-by-Hole</h3>
 
 ${results.map(r=>
-r.status==="scat"
-?`
+r.status==="scat"?`
 <div class="scatWinner">
 <b>Hole ${r.hole} — SCAT</b><br>
 ${escapeHtml(r.winner.name)} — ${r.score}<br>
-<span class="muted">
-${r.entered} entered score${r.entered===1?"":"s"}
-</span>
-</div>
-`
-:r.status==="tie"
-?`
+<span class="muted">${r.entered} entered score${r.entered===1?"":"s"}</span>
+</div>`
+:r.status==="tie"?`
 <div class="scatTie">
 <b>Hole ${r.hole} — NO SCAT</b><br>
 Tie at ${r.score}<br>
 ${r.winners.map(p=>escapeHtml(p.name)).join(", ")}
-</div>
-`
+</div>`
 :`
 <div class="scatNone">
 <b>Hole ${r.hole}</b> — No scores entered
-</div>
-`
+</div>`
 ).join("")}
-
-</div>
-`;
+</div>`;
 }
 
 function allScatWinners(){
 const players={};
 
-ROUNDS
-.filter(r=>r.scats)
-.forEach(r=>{
-
+ROUNDS.filter(r=>r.scats).forEach(r=>{
 ["A","B"].forEach(group=>{
-
 getScatResults(r.id,group).forEach(result=>{
-
 if(result.status!=="scat")return;
-
 const id=String(result.winner.id);
 
 if(!players[id]){
-players[id]={
-id,
-name:result.winner.name,
-group,
-wins:[]
-};
+players[id]={id,name:result.winner.name,group,wins:[]};
 }
 
 players[id].wins.push({
@@ -3016,25 +2505,14 @@ hole:result.hole,
 score:result.score,
 group
 });
-
 });
-
 });
-
 });
 
 const sorted=Object.values(players)
-.map(p=>({
-...p,
-wins:p.wins.sort((a,b)=>{
-if(a.round!==b.round)return a.round-b.round;
-return a.hole-b.hole;
-})
-}))
+.map(p=>({...p,wins:p.wins.sort((a,b)=>a.round!==b.round?a.round-b.round:a.hole-b.hole)}))
 .sort((a,b)=>{
-if(b.wins.length!==a.wins.length){
-return b.wins.length-a.wins.length;
-}
+if(b.wins.length!==a.wins.length)return b.wins.length-a.wins.length;
 return String(a.name).localeCompare(String(b.name));
 });
 
@@ -3043,37 +2521,24 @@ return`
 <div class="card">
 <h2>All Scat Winners</h2>
 <div class="muted">No scats have been won yet.</div>
-</div>
-`;
+</div>`;
 }
 
 return`
 <div class="card">
-
 <h2>All Scat Winners</h2>
-
 ${sorted.map(p=>`
 <div class="allScatPlayer">
-
-<div class="allScatPlayerName">
-${escapeHtml(p.name)}
-</div>
-
+<div class="allScatPlayerName">${escapeHtml(p.name)}</div>
 <div class="allScatTotal">
 ${p.wins.length} ${p.wins.length===1?"scat":"scats"} • Group ${escapeHtml(p.group)}
 </div>
-
 ${p.wins.map(w=>`
 <div class="allScatWin">
 <b>${escapeHtml(w.course)}</b> • Hole ${w.hole} • Score ${w.score}
-</div>
-`).join("")}
-
-</div>
-`).join("")}
-
-</div>
-`;
+</div>`).join("")}
+</div>`).join("")}
+</div>`;
 }
 
 function scatsPage(){
@@ -3082,7 +2547,6 @@ const rounds=ROUNDS.filter(r=>r.scats);
 return`
 <div class="card">
 <h2>Scats</h2>
-
 <div class="muted">
 Gross scores • lowest unique score wins a scat • ties = no scat • no carryovers
 </div>
@@ -3095,11 +2559,9 @@ ${rounds.map(r=>`
 <h2>Round ${r.id} — ${r.course}</h2>
 <div class="muted">${r.format}</div>
 </div>
-
 ${scatGroupCard(r,"A")}
 ${scatGroupCard(r,"B")}
-`).join("")}
-`;
+`).join("")}`;
 }
 
 /* HISTORY PAGE */
@@ -3110,8 +2572,7 @@ return list.map((item,index)=>`
 <div class="historyPlace">${index+1}.</div>
 <div class="historyPlayer">${escapeHtml(item.name)}</div>
 <div class="historyScore">${escapeHtml(item.score)}</div>
-</div>
-`).join("");
+</div>`).join("");
 }
 
 function historyPage(){
@@ -3132,24 +2593,17 @@ DELCO DUFFERS
 </div>
 
 <div class="historyChampion">
-
-<div class="historyChampionTitle">
-🏆 Winning Team
-</div>
-
+<div class="historyChampionTitle">🏆 Winning Team</div>
 <div class="historyChampionTeam">
 ${escapeHtml(year.winner)} • ${escapeHtml(year.score)}
 </div>
-
 <div class="historyRoster">
 <b>Winning Team:</b>
 ${year.roster.map(name=>escapeHtml(name)).join(", ")}
 </div>
-
 </div>
 
 <div class="historyGrid">
-
 <div class="historySection">
 <h3>🏌️ Low Gross</h3>
 ${historyResults(year.lowGross)}
@@ -3161,25 +2615,17 @@ ${historyResults(year.lowNet)}
 </div>
 
 <div class="historySection historyCtp">
-
 <h3>🎯 Closest to the Pin</h3>
-
 <div class="historyCtpList">
-
 ${year.ctp.map(item=>`
 <div class="historyCtpPlayer">
 ${escapeHtml(item.name)}
 ${item.wins>1?` ×${item.wins}`:""}
-</div>
-`).join("")}
-
+</div>`).join("")}
 </div>
 </div>
-
 </div>
-</div>
-`).join("")}
-`;
+</div>`).join("")}`;
 }
 
 async function loadTournamentUsers(){
@@ -3187,7 +2633,6 @@ if(!isOwner()){
 tournamentUsers=[];
 return;
 }
-
 try{
 tournamentUsers=await apiGet("tournament_users");
 }catch(e){
@@ -3198,113 +2643,59 @@ tournamentUsers=[];
 
 function accessLabel(u){
 if(u.role==="owner")return"Owner";
-
-if(u.role==="captain"){
-return u.team?u.team+" Captain":"Captain";
-}
-
+if(u.role==="captain")return u.team?u.team+" Captain":"Captain";
 if(u.role==="scorer")return"Scorer";
-
 return"View Only";
 }
 
 function usersPage(){
-if(!isOwner()){
-return`<div class="viewer">Owner access required.</div>`;
-}
+if(!isOwner())return`<div class="viewer">Owner access required.</div>`;
 
 return`
 <div class="card">
-
 <div class="roundnav">
-
 <div>
 <h2>Users & Access</h2>
 <div class="muted">Anyone who creates an account will appear here.</div>
 </div>
-
 <button class="blue" onclick="refreshUsers()">Refresh</button>
-
 </div>
 
 <div class="tablewrap">
-
 <table>
+<tr><th>Email</th><th>Current Access</th><th>Change Access</th></tr>
 
-<tr>
-<th>Email</th>
-<th>Current Access</th>
-<th>Change Access</th>
-</tr>
-
-${tournamentUsers
-.slice()
+${tournamentUsers.slice()
 .sort((a,b)=>String(a.email||"").localeCompare(String(b.email||"")))
 .map(u=>{
-
 const owner=String(u.email||"").toLowerCase()===OWNER_EMAIL;
-
 let selected="viewer";
 
 if(u.role==="scorer")selected="scorer";
-
-if(u.role==="captain"&&u.team==="Hackers"){
-selected="captain_hackers";
-}
-
-if(u.role==="captain"&&u.team==="Shankers"){
-selected="captain_shankers";
-}
+if(u.role==="captain"&&u.team==="Hackers")selected="captain_hackers";
+if(u.role==="captain"&&u.team==="Shankers")selected="captain_shankers";
 
 return`
 <tr>
-
 <td><b>${escapeHtml(u.email||"")}</b></td>
-
 <td>${escapeHtml(accessLabel(u))}</td>
-
 <td>
-
-${owner
-?`<b>Owner</b>`
-:`
+${owner?`<b>Owner</b>`:`
 <select id="access-${u.user_id}">
-
-<option value="viewer" ${selected==="viewer"?"selected":""}>
-No Access / View Only
-</option>
-
-<option value="scorer" ${selected==="scorer"?"selected":""}>
-Scorer
-</option>
-
-<option value="captain_hackers" ${selected==="captain_hackers"?"selected":""}>
-Hackers Captain
-</option>
-
-<option value="captain_shankers" ${selected==="captain_shankers"?"selected":""}>
-Shankers Captain
-</option>
-
+<option value="viewer" ${selected==="viewer"?"selected":""}>No Access / View Only</option>
+<option value="scorer" ${selected==="scorer"?"selected":""}>Scorer</option>
+<option value="captain_hackers" ${selected==="captain_hackers"?"selected":""}>Hackers Captain</option>
+<option value="captain_shankers" ${selected==="captain_shankers"?"selected":""}>Shankers Captain</option>
 </select>
-
 <button class="good" style="margin-top:6px" onclick="saveUserAccess('${u.user_id}')">
 Save
-</button>
-`
-}
-
+</button>`}
 </td>
-
-</tr>
-`;
+</tr>`;
 }).join("")}
-
 </table>
-
 </div>
-</div>
-`;
+</div>`;
 }
 
 async function refreshUsers(){
@@ -3314,43 +2705,29 @@ render();
 
 async function saveUserAccess(userId){
 if(!isOwner())return;
-
 const box=document.getElementById("access-"+userId);
 if(!box)return;
 
 const choice=box.value;
-
 let role="viewer";
 let team=null;
 
-if(choice==="scorer"){
-role="scorer";
-}else if(choice==="captain_hackers"){
-role="captain";
-team="Hackers";
-}else if(choice==="captain_shankers"){
-role="captain";
-team="Shankers";
-}
+if(choice==="scorer")role="scorer";
+else if(choice==="captain_hackers"){role="captain";team="Hackers"}
+else if(choice==="captain_shankers"){role="captain";team="Shankers"}
 
 try{
 await refreshSessionIfNeeded();
 
-const url=
-SUPABASE_URL+
+const url=SUPABASE_URL+
 "/rest/v1/tournament_users?tournament_id=eq."+
 encodeURIComponent(TOURNAMENT_ID)+
-"&user_id=eq."+
-encodeURIComponent(userId);
+"&user_id=eq."+encodeURIComponent(userId);
 
 const r=await fetch(url,{
 method:"PATCH",
 headers:headers({Prefer:"return=minimal"}),
-body:JSON.stringify({
-role,
-team,
-updated_at:new Date().toISOString()
-})
+body:JSON.stringify({role,team,updated_at:new Date().toISOString()})
 });
 
 if(!r.ok){
@@ -3360,7 +2737,6 @@ throw new Error("Permission save failed");
 
 await loadTournamentUsers();
 render();
-
 }catch(e){
 console.error(e);
 alert("User permissions could not be saved.");
@@ -3374,10 +2750,8 @@ let description="";
 if(isOwner()){
 description="You have full tournament access.";
 }else if(isCaptain()){
-description=
-"You can enter all scores and results and change the "+
-escapeHtml(userTeam)+
-" side of the matchups.";
+description="You can enter all scores and results and change the "+
+escapeHtml(userTeam)+" side of the matchups.";
 }else if(isScorer()){
 description="You can enter and change any score or match result.";
 }else{
@@ -3386,25 +2760,18 @@ description="Your account is currently view-only. Rocco can give you access.";
 
 return`
 <div class="card loginBox">
-
 <h2>Account</h2>
-
 <div class="admin">
 <b>${escapeHtml(currentUser.email)}</b><br>
 ${description}
 </div>
-
 <button class="danger" onclick="accountLogout()">Sign Out</button>
-
-</div>
-`;
+</div>`;
 }
 
 return`
 <div class="card loginBox">
-
 <h2>Sign In</h2>
-
 <p>Sign in to use your tournament access.</p>
 
 <div class="field">
@@ -3417,21 +2784,14 @@ return`
 <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password">
 </div>
 
-<button class="primary" style="margin-top:12px" onclick="accountLogin()">
-Sign In
-</button>
-
-<button class="blue" style="margin-top:12px" onclick="createAccount()">
-Create Account
-</button>
+<button class="primary" style="margin-top:12px" onclick="accountLogin()">Sign In</button>
+<button class="blue" style="margin-top:12px" onclick="createAccount()">Create Account</button>
 
 <p class="muted">
 New accounts start with view-only access.
 Rocco can assign Scorer or Captain access after you register.
 </p>
-
-</div>
-`;
+</div>`;
 }
 
 async function accountLogin(){
@@ -3446,26 +2806,17 @@ return;
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{
 method:"POST",
-headers:{
-apikey:SUPABASE_KEY,
-"Content-Type":"application/json"
-},
+headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({email,password})
 });
 
 const x=await r.json();
 
 if(!r.ok){
-throw new Error(
-x.error_description||
-x.msg||
-x.message||
-"Login failed."
-);
+throw new Error(x.error_description||x.msg||x.message||"Login failed.");
 }
 
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
-
 storeSession(x);
 
 await loadCurrentUser();
@@ -3476,7 +2827,6 @@ if(isOwner())await loadTournamentUsers();
 
 page="dashboard";
 render();
-
 }catch(e){
 alert(e.message);
 }
@@ -3486,11 +2836,7 @@ async function createAccount(){
 const email=document.getElementById("loginEmail").value.trim();
 const password=document.getElementById("loginPassword").value;
 
-if(!email){
-alert("Enter your email.");
-return;
-}
-
+if(!email){alert("Enter your email.");return}
 if(!password||password.length<8){
 alert("Choose a password with at least 8 characters.");
 return;
@@ -3499,41 +2845,26 @@ return;
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/signup",{
 method:"POST",
-headers:{
-apikey:SUPABASE_KEY,
-"Content-Type":"application/json"
-},
+headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({email,password})
 });
 
 const x=await r.json();
 
-if(!r.ok){
-throw new Error(
-x.msg||
-x.message||
-"Could not create account."
-);
-}
+if(!r.ok)throw new Error(x.msg||x.message||"Could not create account.");
 
 if(x.access_token){
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
-
 storeSession(x);
-
 await loadCurrentUser();
 await loadMyPermissions();
 await loadSharedData(false);
-
 page="dashboard";
 render();
 return;
 }
 
-alert(
-"Account created. Check your email for the confirmation message, then come back and sign in."
-);
-
+alert("Account created. Check your email for the confirmation message, then come back and sign in.");
 }catch(e){
 alert(e.message);
 }
@@ -3544,16 +2875,12 @@ try{
 if(session&&session.access_token){
 await fetch(SUPABASE_URL+"/auth/v1/logout",{
 method:"POST",
-headers:{
-apikey:SUPABASE_KEY,
-Authorization:"Bearer "+session.access_token
-}
+headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}
 });
 }
 }catch{}
 
 storeSession(null);
-
 currentUser=null;
 userRole="viewer";
 userTeam=null;
@@ -3566,9 +2893,7 @@ render();
 }
 
 function render(){
-if(page==="users"&&!isOwner()){
-page="dashboard";
-}
+if(page==="users"&&!isOwner())page="dashboard";
 
 drawNav();
 drawConnectionStatus();
@@ -3579,6 +2904,8 @@ if(page==="dashboard"){
 html=dashboard();
 }else if(page==="scats"){
 html=scatsPage();
+}else if(page==="par3"){
+html=par3Page();
 }else if(page==="players"){
 html=playersPage();
 }else if(page==="matchups"){
