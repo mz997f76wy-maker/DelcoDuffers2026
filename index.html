@@ -108,22 +108,9 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
 
-.teeSection{
-margin-top:14px;
-padding-top:13px;
-border-top:1px solid #e5e7eb
-}
-.teeSectionTitle{
-font-size:13px;
-font-weight:900;
-margin-bottom:8px
-}
-.teeList{
-font-size:11px;
-line-height:1.5;
-color:#6b7280;
-white-space:nowrap
-}
+.teeSection{margin-top:14px;padding-top:13px;border-top:1px solid #e5e7eb}
+.teeSectionTitle{font-size:13px;font-weight:900;margin-bottom:8px}
+.teeList{font-size:11px;line-height:1.5;color:#6b7280;white-space:nowrap}
 
 .matchupSelectRow{display:flex;align-items:center;gap:7px;margin-bottom:8px}
 .matchupSelectRow select{flex:1;min-width:0;margin-bottom:0}
@@ -136,7 +123,6 @@ white-space:nowrap
 .liveRoundControl label{font-size:13px}
 .liveRoundControl select{font-weight:800}
 
-/* LIGHT GRAY LIVE BOARD */
 .liveBoard{background:#e5e7eb;padding:14px}
 
 .liveTitle{
@@ -189,7 +175,7 @@ color:#111827
 display:grid;
 grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);
 min-height:66px;
-border-bottom:3px solid #e7e5df
+border-bottom:4px solid #d1d5db
 }
 
 .liveMatchRow:last-child{border-bottom:0}
@@ -224,9 +210,7 @@ color:#111827
 .liveHalved .liveSide{background:#f3f4f6}
 .liveEmpty{color:#9ca3af;font-weight:700}
 
-.livePlayerName{
-display:block;
-}
+.livePlayerName{display:block}
 
 .livePlayerHcp{
 display:block;
@@ -251,6 +235,119 @@ background:white
 .liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
 .liveFoursome .liveMatchRow:last-child{border-bottom:0}
 
+/* HISTORY */
+.historyHero{
+background:#111827;
+color:white;
+border-radius:16px;
+padding:20px;
+margin-bottom:14px;
+text-align:center
+}
+
+.historyHero h2{margin:0 0 6px;font-size:28px}
+.historyHero p{margin:0;opacity:.8;font-size:14px}
+
+.historyYear{
+background:white;
+border-radius:16px;
+overflow:hidden;
+margin-bottom:16px;
+box-shadow:0 2px 10px #00000010;
+border:1px solid #d1d5db
+}
+
+.historyYearHeader{
+background:#111827;
+color:white;
+padding:15px 18px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px
+}
+
+.historyYearHeader h2{margin:0;font-size:28px}
+
+.historyChampion{
+padding:18px;
+background:#eff6ff;
+border-bottom:1px solid #d1d5db
+}
+
+.historyChampionTitle{
+font-size:12px;
+font-weight:900;
+color:#1d4ed8;
+text-transform:uppercase;
+letter-spacing:.8px;
+margin-bottom:5px
+}
+
+.historyChampionTeam{
+font-size:23px;
+font-weight:1000;
+color:#111827
+}
+
+.historyRoster{
+font-size:13px;
+line-height:1.55;
+color:#4b5563;
+margin-top:8px
+}
+
+.historyGrid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+padding:14px
+}
+
+.historySection{
+border:1px solid #e5e7eb;
+border-radius:12px;
+padding:14px;
+background:#fff
+}
+
+.historySection h3{
+margin:0 0 10px;
+font-size:17px
+}
+
+.historyResult{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+padding:8px 0;
+border-bottom:1px solid #f3f4f6;
+font-size:14px
+}
+
+.historyResult:last-child{border-bottom:0}
+.historyPlace{font-weight:900;min-width:22px}
+.historyPlayer{flex:1;font-weight:800}
+.historyScore{font-weight:900;white-space:nowrap}
+
+.historyCtp{grid-column:1/-1}
+
+.historyCtpList{
+display:flex;
+flex-wrap:wrap;
+gap:7px
+}
+
+.historyCtpPlayer{
+background:#f3f4f6;
+border:1px solid #e5e7eb;
+border-radius:99px;
+padding:7px 10px;
+font-size:13px;
+font-weight:800
+}
+
 @media(max-width:650px){
 .players{grid-template-columns:1fr}
 .logoBox{width:240px;height:78px}
@@ -267,16 +364,16 @@ header h1{font-size:25px}
 .liveMatchRow{grid-template-columns:minmax(0,1fr) 43px minmax(0,1fr);min-height:57px;border-bottom:4px solid #d1d5db}
 .liveSide{font-size:14px;padding:6px 5px}
 .liveCenter{font-size:10px}
-.livePlayerHcp{
-font-size:.65em;
-margin-left:0;
-margin-top:2px;
-}
+.livePlayerHcp{font-size:.65em;margin-left:0;margin-top:2px}
 .liveFoursome{margin:8px 3px;border-width:1px}
 .liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
 .scoringAccessRow{align-items:flex-start}
 .scoringAccessActions{flex-shrink:0}
 .matchupHcp{font-size:10px}
+.historyGrid{grid-template-columns:1fr;padding:9px}
+.historyCtp{grid-column:auto}
+.historyYearHeader h2{font-size:25px}
+.historyChampionTeam{font-size:20px}
 }
 </style>
 </head>
@@ -363,6 +460,96 @@ tees:{
 }
 };
 
+const HISTORY=[
+{
+year:2025,
+winner:"PARSONS / SHANKERS",
+score:"19.5–15.5",
+roster:[
+"Steve Parsons",
+"Rocco Pace",
+"Ken Travetti",
+"Tony Borsuk",
+"John Schneider",
+"Ed Maul / Jack Kelly",
+"Cole Parsons",
+"Rob Sladek",
+"Jake Cislo",
+"Bob Pace",
+"Jim Capitanos",
+"George Sweeney",
+"Joe Pace",
+"John Blair"
+],
+lowGross:[
+{name:"Tom Breslin",score:"237 (+24)"},
+{name:"Brian “Mookie” Moyer",score:"242 (+29)"},
+{name:"John Schneider",score:"245 (+32)"},
+{name:"Justin Stroh",score:"245 (+32)"}
+],
+lowNet:[
+{name:"John Schneider",score:"207 (-6)"},
+{name:"Jim Capitanos",score:"216 (+3)"},
+{name:"Ken Travetti",score:"221 (+8)"}
+],
+ctp:[
+{name:"Brian Moyer",wins:3},
+{name:"John DiDonato",wins:2},
+{name:"Rocco Pace",wins:2},
+{name:"Justin Stroh",wins:2},
+{name:"Joe Garrison",wins:1},
+{name:"Steve Howells",wins:1},
+{name:"George Sweeney",wins:1},
+{name:"Jack Kelly",wins:1},
+{name:"Bob Pace",wins:1},
+{name:"Jake Cislo",wins:1},
+{name:"Cole Parsons",wins:1},
+{name:"John Schneider",wins:1},
+{name:"Tony Borsuk",wins:1}
+]
+},
+{
+year:2024,
+winner:"SHANKERS",
+score:"17–11",
+roster:[
+"John Blair",
+"Joe Pace",
+"Zach Prettyman",
+"Jim Capitanos",
+"Steve Parsons",
+"Rob Sladek",
+"Jeff Blair",
+"Bob Pace",
+"Ken Travetti",
+"Rocco Pace"
+],
+lowGross:[
+{name:"Justin Stroh",score:"241 (+27)"},
+{name:"John DiDonato",score:"247 (+33)"},
+{name:"Rocco Pace",score:"265 (+51)"}
+],
+lowNet:[
+{name:"John DiDonato",score:"217 (+3)"},
+{name:"Jeff Blair",score:"220 (+6)"},
+{name:"Justin Stroh",score:"224 (+10)"}
+],
+ctp:[
+{name:"Ken Travetti",wins:4},
+{name:"Bob Pace",wins:2},
+{name:"Joe Pace",wins:2},
+{name:"Hutch",wins:2},
+{name:"Rocco Pace",wins:1},
+{name:"Zach Prettyman",wins:1},
+{name:"John Blair",wins:1},
+{name:"Justin Stroh",wins:1},
+{name:"Ryan Gamble",wins:1},
+{name:"John DiDonato",wins:1},
+{name:"Jack Kelly",wins:1}
+]
+}
+];
+
 let data={players:[],matchups:{},scores:{},results:{}};
 let session=null;
 let currentUser=null;
@@ -387,17 +574,13 @@ return String(value??"")
 
 function playerTee(player,roundId){
 if(!player)return"";
-
 const course=COURSE_HANDICAP_DATA[Number(roundId)];
-
 if(!course)return"";
-
 return player[course.teeField]||course.defaultTee;
 }
 
 function courseHandicap(player,roundId){
 if(!player)return"";
-
 const index=Number(player.handicap);
 
 if(!Number.isFinite(index)){
@@ -740,7 +923,8 @@ const tabs=[
 ["scats","Scats"],
 ["players","Players"],
 ["matchups","Matchups"],
-["scoring","Scoring"]
+["scoring","Scoring"],
+["history","History"]
 ];
 
 if(isOwner())tabs.push(["users","Users & Access"]);
@@ -2918,6 +3102,86 @@ ${scatGroupCard(r,"B")}
 `;
 }
 
+/* HISTORY PAGE */
+
+function historyResults(list){
+return list.map((item,index)=>`
+<div class="historyResult">
+<div class="historyPlace">${index+1}.</div>
+<div class="historyPlayer">${escapeHtml(item.name)}</div>
+<div class="historyScore">${escapeHtml(item.score)}</div>
+</div>
+`).join("");
+}
+
+function historyPage(){
+return`
+<div class="historyHero">
+<h2>Delco Duffers History</h2>
+<p>Past champions, low gross, low net and closest-to-the-pin winners</p>
+</div>
+
+${HISTORY.map(year=>`
+<div class="historyYear">
+
+<div class="historyYearHeader">
+<h2>${year.year}</h2>
+<div style="font-size:12px;font-weight:900;letter-spacing:.8px">
+DELCO DUFFERS
+</div>
+</div>
+
+<div class="historyChampion">
+
+<div class="historyChampionTitle">
+🏆 Winning Team
+</div>
+
+<div class="historyChampionTeam">
+${escapeHtml(year.winner)} • ${escapeHtml(year.score)}
+</div>
+
+<div class="historyRoster">
+<b>Winning Team:</b>
+${year.roster.map(name=>escapeHtml(name)).join(", ")}
+</div>
+
+</div>
+
+<div class="historyGrid">
+
+<div class="historySection">
+<h3>🏌️ Low Gross</h3>
+${historyResults(year.lowGross)}
+</div>
+
+<div class="historySection">
+<h3>⛳ Low Net</h3>
+${historyResults(year.lowNet)}
+</div>
+
+<div class="historySection historyCtp">
+
+<h3>🎯 Closest to the Pin</h3>
+
+<div class="historyCtpList">
+
+${year.ctp.map(item=>`
+<div class="historyCtpPlayer">
+${escapeHtml(item.name)}
+${item.wins>1?` ×${item.wins}`:""}
+</div>
+`).join("")}
+
+</div>
+</div>
+
+</div>
+</div>
+`).join("")}
+`;
+}
+
 async function loadTournamentUsers(){
 if(!isOwner()){
 tournamentUsers=[];
@@ -3321,6 +3585,8 @@ html=playersPage();
 html=matchupPage();
 }else if(page==="scoring"){
 html=scoringPage();
+}else if(page==="history"){
+html=historyPage();
 }else if(page==="users"){
 html=usersPage();
 }else{
