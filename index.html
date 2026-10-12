@@ -2320,5 +2320,84 @@ render();
 
 start();
 </script>
+<style>
+.scheduleDetails{
+  gap:6px;
+  margin:8px 0 0;
+}
+.scheduleDetails.noBreakfast{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.scheduleDetail{
+  border-radius:8px;
+  padding:7px 9px;
+}
+.scheduleDetails dt{
+  font-size:11px;
+  margin:0 0 3px;
+}
+.scheduleDetails dd{
+  font-size:14px;
+  line-height:1.3;
+}
+.scheduleNote{
+  font-size:12px;
+  margin:6px 0 0;
+}
+.match:has(.scheduleDetails){
+  padding:10px;
+  margin:8px 0;
+  font-size:14px;
+}
+.card:has(.scheduleDetails)>h2{
+  font-size:20px;
+  margin:0 0 10px;
+}
+@media(max-width:600px){
+  .scheduleDetails,
+  .scheduleDetails.noBreakfast{
+    grid-template-columns:1fr;
+  }
+  .scheduleDetail{
+    padding:6px 9px;
+  }
+}
+</style>
+
+<script>
+function scheduleDetails(roundId){
+  const schedule=TOURNAMENT_SCHEDULE[roundId];
+  if(!schedule)return "";
+
+  const showBreakfast=Number(roundId)!==3&&!!schedule.breakfast;
+
+  return `
+    <dl class="scheduleDetails${showBreakfast?"":" noBreakfast"}">
+      ${showBreakfast?`
+        <div class="scheduleDetail">
+          <dt>Breakfast delivery</dt>
+          <dd>${escapeHtml(schedule.breakfast)}</dd>
+        </div>
+      `:""}
+
+      <div class="scheduleDetail">
+        <dt>Leave time</dt>
+        <dd>${escapeHtml(schedule.leave)}</dd>
+      </div>
+
+      <div class="scheduleDetail">
+        <dt>${escapeHtml(schedule.driveFrom)}</dt>
+        <dd>${escapeHtml(schedule.drive)}</dd>
+      </div>
+    </dl>
+
+    ${schedule.note?`
+      <p class="scheduleNote">${escapeHtml(schedule.note)}</p>
+    `:""}
+  `;
+}
+
+render();
+</script>
 </body>
 </html>
