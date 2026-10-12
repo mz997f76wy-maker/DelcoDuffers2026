@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
 <title>Delco Duffers 2026</title>
-
 <style>
 *{box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
@@ -16,23 +15,11 @@ header h1{margin:0 0 5px;font-size:28px}
 .headerMeta{font-size:18px}
 .captains{font-size:14px;margin-top:5px;opacity:.9}
 main{max-width:1100px;margin:auto;padding:12px}
-
 .navWrap{position:relative;margin-bottom:12px}
-.nav{
-display:flex;
-gap:7px;
-overflow-x:auto;
--webkit-overflow-scrolling:touch;
-scrollbar-width:none;
-padding:2px 46px 4px 0;
-margin-bottom:0
-}
+.nav{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 46px 4px 0;margin-bottom:0}
 .nav::-webkit-scrollbar{display:none}
 .nav button{flex:0 0 auto}
-.navScrollCue{
-display:none;
-}
-
+.navScrollCue{display:none}
 button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:15px;cursor:pointer}
 .primary{background:#111827;color:white}
 .good{background:#d1fae5;color:#065f46}
@@ -53,6 +40,12 @@ input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
 .shankers{background:#2563eb}
 .big{font-size:38px;font-weight:900}
 .muted{color:#6b7280}
+.scheduleDetails{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 0}
+.scheduleDetail{background:#f9fafb;border-radius:10px;padding:11px 12px;min-width:0}
+.scheduleDetails dt{color:#6b7280;font-size:12px;font-weight:800;margin:0 0 5px}
+.scheduleDetails dd{font-size:16px;font-weight:700;line-height:1.4;margin:0;overflow-wrap:anywhere}
+.scheduleNote{font-size:13px;color:#6b7280;margin:9px 0 0}
+@media(max-width:600px){.scheduleDetails{grid-template-columns:1fr}.scheduleDetail{padding:10px 12px}}
 .notice{background:#fffbeb;color:#92400e;border:1px solid #fde68a;padding:11px;border-radius:9px;margin:10px 0}
 .viewer{background:#eff6ff;color:#1e40af;border:1px solid #93c5fd;padding:10px;border-radius:9px;margin-bottom:12px}
 .admin{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin-bottom:12px}
@@ -62,7 +55,6 @@ input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #e5e7eb}
-
 .scoretable{min-width:1280px}
 .scoretable th,.scoretable td{text-align:center;border:1px solid #d1d5db;padding:5px;white-space:nowrap}
 .scoretable th:first-child,.scoretable td:first-child{position:sticky;left:0;background:white;z-index:3;min-width:155px;text-align:left}
@@ -75,7 +67,6 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .hackerScoreRow td:first-child{background:#fee2e2;color:#991b1b;font-weight:900}
 .shankerScoreRow td:first-child{background:#dbeafe;color:#1d4ed8;font-weight:900}
 .summaryCell{font-weight:900;background:#f3f4f6}
-
 .scoringAccessPanel{background:#f9fafb;border:1px solid #d1d5db;border-radius:12px;padding:14px;margin:14px 0}
 .scoringAccessPanel h3{margin:0 0 8px}
 .scoringAccessRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid #e5e7eb}
@@ -88,7 +79,6 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .scoringLockedNotice{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:10px;border-radius:9px;margin:10px 0;font-weight:900}
 .resetArea{margin-top:16px;padding-top:16px;border-top:2px solid #e5e7eb}
 .resetButton{width:100%;background:#991b1b;color:white;font-size:16px;padding:14px}
-
 .resultOnly{max-width:650px;margin:14px auto}
 .roundnav{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .roundbuttons{display:flex;gap:6px}
@@ -96,7 +86,6 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .resultHackers{background:#fee2e2;color:#b91c1c}
 .resultShankers{background:#dbeafe;color:#1d4ed8}
 .resultHalved{background:#e5e7eb;color:#374151}
-
 .scatWinner{background:#ecfdf5;border:1px solid #6ee7b7;padding:10px;border-radius:9px;margin:6px 0}
 .scatTie{background:#fff7ed;border:1px solid #fdba74;padding:10px;border-radius:9px;margin:6px 0}
 .scatNone{background:#f9fafb;border:1px solid #e5e7eb;padding:10px;border-radius:9px;margin:6px 0;color:#6b7280}
@@ -106,77 +95,23 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .allScatTotal{font-size:14px;font-weight:900;color:#065f46;margin-top:2px}
 .allScatWin{padding:8px 0;border-top:1px solid #e5e7eb;margin-top:8px}
 .allScatWin:first-of-type{margin-top:10px}
-
-/* PAR 3 CLOSEST TO THE PIN */
-.par3Hero{
-background:#111827;
-color:white;
-border-radius:16px;
-padding:20px;
-margin-bottom:14px;
-text-align:center
-}
+.par3Hero{background:#111827;color:white;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center}
 .par3Hero h2{margin:0 0 5px;font-size:28px}
 .par3Hero p{margin:0;color:#d1d5db;font-size:14px}
-.par3Round{
-background:white;
-border-radius:16px;
-overflow:hidden;
-margin-bottom:15px;
-box-shadow:0 2px 10px #00000010;
-border:1px solid #d1d5db
-}
-.par3RoundHeader{
-background:#111827;
-color:white;
-padding:14px 16px
-}
+.par3Round{background:white;border-radius:16px;overflow:hidden;margin-bottom:15px;box-shadow:0 2px 10px #00000010;border:1px solid #d1d5db}
+.par3RoundHeader{background:#111827;color:white;padding:14px 16px}
 .par3RoundHeader h2{margin:0;font-size:21px}
 .par3RoundHeader div{font-size:13px;margin-top:3px;opacity:.8}
-.par3Hole{
-display:grid;
-grid-template-columns:85px minmax(0,1fr);
-align-items:center;
-gap:12px;
-padding:14px 16px;
-border-bottom:2px solid #e5e7eb
-}
+.par3Hole{display:grid;grid-template-columns:85px minmax(0,1fr);align-items:center;gap:12px;padding:14px 16px;border-bottom:2px solid #e5e7eb}
 .par3Hole:last-child{border-bottom:0}
-.par3HoleNumber{
-width:70px;
-height:54px;
-background:#f3f4f6;
-border:1px solid #d1d5db;
-border-radius:12px;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-font-weight:1000
-}
+.par3HoleNumber{width:70px;height:54px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:1000}
 .par3HoleNumber span:first-child{font-size:11px;color:#6b7280;text-transform:uppercase}
 .par3HoleNumber span:last-child{font-size:22px}
-.par3WinnerLabel{
-font-size:11px;
-font-weight:900;
-text-transform:uppercase;
-letter-spacing:.5px;
-color:#6b7280;
-margin-bottom:5px
-}
-.par3WinnerName{
-font-size:18px;
-font-weight:900
-}
+.par3WinnerLabel{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;margin-bottom:5px}
+.par3WinnerName{font-size:18px;font-weight:900}
 .par3WinnerPending{color:#9ca3af;font-weight:800}
 .par3Select{font-weight:800}
-.par3Saved{
-font-size:12px;
-font-weight:900;
-color:#065f46;
-margin-top:5px
-}
-
+.par3Saved{font-size:12px;font-weight:900;color:#065f46;margin-top:5px}
 .loginBox{max-width:500px;margin:auto}
 .loading{text-align:center;padding:40px;font-size:18px;font-weight:bold}
 .editBox{background:#f9fafb;border:1px solid #d1d5db;padding:14px;border-radius:12px;margin-bottom:15px}
@@ -193,244 +128,65 @@ margin-top:5px
 .hackerLabel{font-weight:900;color:#dc2626;margin-bottom:6px}
 .shankerLabel{font-weight:900;color:#2563eb;margin-bottom:6px}
 .teamSelects select{margin-bottom:8px}
-
 .teeSection{margin-top:14px;padding-top:13px;border-top:1px solid #e5e7eb}
 .teeSectionTitle{font-size:13px;font-weight:900;margin-bottom:8px}
 .teeList{font-size:11px;line-height:1.5;color:#6b7280;white-space:nowrap}
-
 .matchupSelectRow{display:flex;align-items:center;gap:7px;margin-bottom:8px}
 .matchupSelectRow select{flex:1;min-width:0;margin-bottom:0}
 .matchupHcp{font-size:11px;font-weight:700;color:#6b7280;white-space:nowrap}
 .matchupPlayer{font-weight:800}
 .matchupPlayer .matchupHcp{margin-left:4px}
-
 .liveCard{padding:0;overflow:hidden}
 .liveRoundControl{padding:14px 16px;background:white}
 .liveRoundControl label{font-size:13px}
 .liveRoundControl select{font-weight:800}
-
 .liveBoard{background:#e5e7eb;padding:14px}
-
-.liveTitle{
-background:#e5e7eb;
-color:#111827;
-font-size:28px;
-font-weight:1000;
-letter-spacing:1px;
-padding:15px 18px;
-margin-bottom:14px;
-text-transform:uppercase;
-border:1px solid #d1d5db
-}
-
+.liveTitle{background:#e5e7eb;color:#111827;font-size:28px;font-weight:1000;letter-spacing:1px;padding:15px 18px;margin-bottom:14px;text-transform:uppercase;border:1px solid #d1d5db}
 .liveSubtitle{font-size:13px;font-weight:800;margin-top:4px}
-
-.liveScoreHeader{
-display:grid;
-grid-template-columns:1fr 72px 72px 1fr;
-gap:6px;
-margin-bottom:12px
-}
-
-.liveTeamName{
-font-size:22px;
-font-weight:1000;
-padding:13px;
-color:white;
-display:flex;
-align-items:center
-}
-
+.liveScoreHeader{display:grid;grid-template-columns:1fr 72px 72px 1fr;gap:6px;margin-bottom:12px}
+.liveTeamName{font-size:22px;font-weight:1000;padding:13px;color:white;display:flex;align-items:center}
 .liveTeamName.h{background:#dc2626}
 .liveTeamName.s{background:#2563eb;justify-content:flex-end;text-align:right}
-
-.livePoints{
-background:#e5e7eb;
-border:1px solid #d1d5db;
-font-size:27px;
-font-weight:1000;
-display:flex;
-align-items:center;
-justify-content:center;
-color:#111827
-}
-
+.livePoints{background:#e5e7eb;border:1px solid #d1d5db;font-size:27px;font-weight:1000;display:flex;align-items:center;justify-content:center;color:#111827}
 .liveRows{background:white}
-
-.liveMatchRow{
-display:grid;
-grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);
-min-height:66px;
-border-bottom:4px solid #d1d5db
-}
-
+.liveMatchRow{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);min-height:66px;border-bottom:4px solid #d1d5db}
 .liveMatchRow:last-child{border-bottom:0}
-
-.liveSide{
-display:flex;
-align-items:center;
-padding:8px 14px;
-font-size:20px;
-font-weight:900;
-line-height:1.15
-}
-
+.liveSide{display:flex;align-items:center;padding:8px 14px;font-size:20px;font-weight:900;line-height:1.15}
 .liveSide.left{justify-content:flex-end;text-align:right}
 .liveSide.right{justify-content:flex-start;text-align:left}
-
-.liveCenter{
-display:flex;
-align-items:center;
-justify-content:center;
-background:#e5e7eb;
-border-left:1px solid #d1d5db;
-border-right:1px solid #d1d5db;
-font-weight:1000;
-font-size:13px;
-text-align:center;
-color:#111827
-}
-
+.liveCenter{display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-left:1px solid #d1d5db;border-right:1px solid #d1d5db;font-weight:1000;font-size:13px;text-align:center;color:#111827}
 .liveWinHackers .liveSide.left{background:#dc2626;color:white}
 .liveWinShankers .liveSide.right{background:#2563eb;color:white}
 .liveHalved .liveSide{background:#f3f4f6}
 .liveEmpty{color:#9ca3af;font-weight:700}
-
 .livePlayerName{display:block}
-
-.livePlayerHcp{
-display:block;
-font-size:.62em;
-font-weight:700;
-opacity:.72;
-white-space:nowrap;
-margin-left:0;
-margin-top:2px;
-}
-
-.liveFoursome{
-border:1px solid #9ca3af;
-border-radius:8px;
-margin:9px 5px;
-overflow:hidden;
-background:white
-}
-
+.livePlayerHcp{display:block;font-size:.62em;font-weight:700;opacity:.72;white-space:nowrap;margin-left:0;margin-top:2px}
+.liveFoursome{border:1px solid #9ca3af;border-radius:8px;margin:9px 5px;overflow:hidden;background:white}
 .liveFoursome:first-child{margin-top:5px}
 .liveFoursome:last-child{margin-bottom:5px}
 .liveFoursome .liveMatchRow{border-bottom:1px solid #e5e7eb}
 .liveFoursome .liveMatchRow:last-child{border-bottom:0}
-
-/* HISTORY */
-.historyHero{
-background:#111827;
-color:white;
-border-radius:16px;
-padding:20px;
-margin-bottom:14px;
-text-align:center
-}
-
+.historyHero{background:#111827;color:white;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center}
 .historyHero h2{margin:0 0 6px;font-size:28px}
 .historyHero p{margin:0;opacity:.8;font-size:14px}
-
-.historyYear{
-background:white;
-border-radius:16px;
-overflow:hidden;
-margin-bottom:16px;
-box-shadow:0 2px 10px #00000010;
-border:1px solid #d1d5db
-}
-
-.historyYearHeader{
-background:#111827;
-color:white;
-padding:15px 18px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px
-}
-
+.historyYear{background:white;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 10px #00000010;border:1px solid #d1d5db}
+.historyYearHeader{background:#111827;color:white;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .historyYearHeader h2{margin:0;font-size:28px}
-
-.historyChampion{
-padding:18px;
-background:#eff6ff;
-border-bottom:1px solid #d1d5db
-}
-
-.historyChampionTitle{
-font-size:12px;
-font-weight:900;
-color:#1d4ed8;
-text-transform:uppercase;
-letter-spacing:.8px;
-margin-bottom:5px
-}
-
-.historyChampionTeam{
-font-size:23px;
-font-weight:1000;
-color:#111827
-}
-
-.historyRoster{
-font-size:13px;
-line-height:1.55;
-color:#4b5563;
-margin-top:8px
-}
-
-.historyGrid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
-padding:14px
-}
-
-.historySection{
-border:1px solid #e5e7eb;
-border-radius:12px;
-padding:14px;
-background:#fff
-}
-
+.historyChampion{padding:18px;background:#eff6ff;border-bottom:1px solid #d1d5db}
+.historyChampionTitle{font-size:12px;font-weight:900;color:#1d4ed8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.historyChampionTeam{font-size:23px;font-weight:1000;color:#111827}
+.historyRoster{font-size:13px;line-height:1.55;color:#4b5563;margin-top:8px}
+.historyGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.historySection{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}
 .historySection h3{margin:0 0 10px;font-size:17px}
-
-.historyResult{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:10px;
-padding:8px 0;
-border-bottom:1px solid #f3f4f6;
-font-size:14px
-}
-
+.historyResult{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
 .historyResult:last-child{border-bottom:0}
 .historyPlace{font-weight:900;min-width:22px}
 .historyPlayer{flex:1;font-weight:800}
 .historyScore{font-weight:900;white-space:nowrap}
-
 .historyCtp{grid-column:1/-1}
-
-.historyCtpList{
-display:flex;
-flex-wrap:wrap;
-gap:7px
-}
-
-.historyCtpPlayer{
-background:#f3f4f6;
-border:1px solid #e5e7eb;
-border-radius:99px;
-padding:7px 10px;
-font-size:13px;
-font-weight:800
-}
-
+.historyCtpList{display:flex;flex-wrap:wrap;gap:7px}
+.historyCtpPlayer{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:99px;padding:7px 10px;font-size:13px;font-weight:800}
 @media(max-width:650px){
 .players{grid-template-columns:1fr}
 .logoBox{width:240px;height:78px}
@@ -438,35 +194,10 @@ header h1{font-size:25px}
 .headerMeta{font-size:16px}
 .captains{font-size:13px}
 .big{font-size:32px}
-
-.navWrap{
-background:#fff;
-border:2px solid #d1d5db;
-border-radius:13px;
-padding:5px 5px 28px;
-box-shadow:0 2px 8px #00000012
-}
+.navWrap{background:#fff;border:2px solid #d1d5db;border-radius:13px;padding:5px 5px 28px;box-shadow:0 2px 8px #00000012}
 .nav{padding:1px 44px 2px 1px}
-.navScrollCue{
-display:block;
-position:absolute;
-right:5px;
-bottom:4px;
-font-size:11px;
-font-weight:1000;
-letter-spacing:.5px;
-color:#1d4ed8;
-background:#dbeafe;
-padding:4px 8px;
-border-radius:99px;
-pointer-events:none;
-animation:cueMove 1.2s ease-in-out infinite alternate
-}
-@keyframes cueMove{
-from{transform:translateX(-4px)}
-to{transform:translateX(2px)}
-}
-
+.navScrollCue{display:block;position:absolute;right:5px;bottom:4px;font-size:11px;font-weight:1000;letter-spacing:.5px;color:#1d4ed8;background:#dbeafe;padding:4px 8px;border-radius:99px;pointer-events:none;animation:cueMove 1.2s ease-in-out infinite alternate}
+@keyframes cueMove{from{transform:translateX(-4px)}to{transform:translateX(2px)}}
 .liveBoard{padding:7px}
 .liveTitle{font-size:21px;padding:12px 10px;margin-bottom:8px}
 .liveSubtitle{font-size:11px}
@@ -492,26 +223,19 @@ to{transform:translateX(2px)}
 }
 </style>
 </head>
-
 <body>
-
 <header>
-<div class="logoBox">
-<img src="IMG_5029.jpeg" alt="Delco Duffers" class="logo">
-</div>
+<div class="logoBox"><img src="IMG_5029.jpeg" alt="Delco Duffers" class="logo"></div>
 <h1>Delco Duffers 2026</h1>
 <div class="headerMeta">32 Players • 40 Points • First to 20.5</div>
 <div class="captains">Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers</div>
 </header>
-
 <main>
 <div id="connectionStatus"></div>
-
 <div class="navWrap">
 <div class="nav" id="nav"></div>
 <div class="navScrollCue">SWIPE FOR MORE →</div>
 </div>
-
 <div id="app"><div class="loading">Loading tournament…</div></div>
 </main>
 
@@ -528,6 +252,34 @@ const ROUNDS=[
 {id:3,course:"Talamore",format:"2-Man Scramble",matches:8,type:"scramble",scats:false},
 {id:4,course:"Legacy",format:"1v1 Match Play",matches:16,type:"singles",scats:true}
 ];
+
+const TOURNAMENT_SCHEDULE={
+1:{
+breakfast:"7:00–7:30 AM",
+leave:"8:00 AM",
+drive:"35–40 minutes",
+driveFrom:"Drive from villas"
+},
+2:{
+breakfast:"6:00–6:30 AM",
+leave:"7:00 AM",
+drive:"5–10 minutes",
+driveFrom:"Drive from villas"
+},
+3:{
+breakfast:"No breakfast",
+leave:"Immediately after the Mid South round",
+drive:"5–10 minutes",
+driveFrom:"Drive from Mid South",
+note:"Afternoon round, following Mid South."
+},
+4:{
+breakfast:"6:30–7:00 AM",
+leave:"7:45 AM",
+drive:"15–20 minutes",
+driveFrom:"Drive from villas"
+}
+};
 
 const PAR3_HOLES=[
 {round:1,course:"Tobacco Road",holes:[3,6,8,14,17]},
@@ -553,10 +305,7 @@ hcp:[5,13,9,1,15,11,3,7,17,4,10,12,14,6,16,2,18,8]
 
 const COURSE_HANDICAP_DATA={
 1:{
-course:"Tobacco Road",
-par:71,
-teeField:"tobaccoTee",
-defaultTee:"Disc",
+course:"Tobacco Road",par:71,teeField:"tobaccoTee",defaultTee:"Disc",
 tees:{
 "Ripper":{rating:72.5,slope:145},
 "Disc":{rating:71.3,slope:143},
@@ -564,10 +313,7 @@ tees:{
 }
 },
 2:{
-course:"Mid South",
-par:71,
-teeField:"midsouthTee",
-defaultTee:"White",
+course:"Mid South",par:71,teeField:"midsouthTee",defaultTee:"White",
 tees:{
 "Blue":{rating:72.1,slope:139},
 "White":{rating:70.0,slope:132},
@@ -575,10 +321,7 @@ tees:{
 }
 },
 4:{
-course:"Legacy",
-par:72,
-teeField:"legacyTee",
-defaultTee:"White",
+course:"Legacy",par:72,teeField:"legacyTee",defaultTee:"White",
 tees:{
 "Blue":{rating:72.2,slope:134},
 "White":{rating:69.6,slope:130},
@@ -745,7 +488,6 @@ if(!session||!session.refresh_token)return;
 const expiresAt=Number(session.expires_at||0);
 const now=Math.floor(Date.now()/1000);
 if(expiresAt&&expiresAt-now>120)return;
-
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
 method:"POST",
@@ -791,14 +533,12 @@ userRole="viewer";
 userTeam=null;
 if(!isSignedIn())return;
 await registerCurrentUser();
-
 try{
 const url=SUPABASE_URL+
 "/rest/v1/tournament_users?tournament_id=eq."+
 encodeURIComponent(TOURNAMENT_ID)+
 "&user_id=eq."+encodeURIComponent(currentUser.id)+
 "&select=*";
-
 const r=await fetch(url,{headers:headers()});
 if(r.ok){
 const rows=await r.json();
@@ -809,7 +549,6 @@ return;
 }
 }
 }catch(e){console.error(e)}
-
 if(String(currentUser.email||"").toLowerCase()===OWNER_EMAIL){
 userRole="owner";
 userTeam=null;
@@ -853,11 +592,9 @@ async function deleteRows(table,filters){
 await refreshSessionIfNeeded();
 let url=SUPABASE_URL+"/rest/v1/"+table+
 "?tournament_id=eq."+encodeURIComponent(TOURNAMENT_ID);
-
 Object.entries(filters).forEach(([k,v])=>{
 url+="&"+k+"=eq."+encodeURIComponent(v);
 });
-
 const r=await fetch(url,{method:"DELETE",headers:headers()});
 if(!r.ok){
 console.error(await r.text());
@@ -875,18 +612,13 @@ apiGet("tournament_results"),
 apiGet("tournament_round_settings"),
 apiGet("tournament_par3_results")
 ]);
-
 data.players=players.map(r=>({
-id:r.id,
-name:r.name,
-handicap:r.handicap,
-team:r.team,
+id:r.id,name:r.name,handicap:r.handicap,team:r.team,
 group:r.group_name,
 tobaccoTee:r.tobacco_tee||"Disc",
 midsouthTee:r.midsouth_tee||"White",
 legacyTee:r.legacy_tee||"White"
 }));
-
 data.matchups={};
 matchups.forEach(r=>{
 if(!data.matchups[r.round_no])data.matchups[r.round_no]=[];
@@ -899,7 +631,6 @@ teeTime:r.tee_time||"",
 teeStartHole:r.tee_start_hole||""
 };
 });
-
 data.scores={};
 scores.forEach(r=>{
 const id="R"+r.round_no+"M"+r.match_no;
@@ -908,26 +639,21 @@ data.scores[id]={holes:Array.from({length:18},()=>({}))};
 }
 data.scores[id].holes[r.hole-1][r.scorer_key]=r.score;
 });
-
 data.results={};
 results.forEach(r=>{
 data.results["R"+r.round_no+"M"+r.match_no]={winner:r.winner};
 });
-
 data.par3Results={};
 par3.forEach(r=>{
 data.par3Results["R"+r.round_no+"H"+r.hole]=r.player_id||"";
 });
-
 roundSettings={1:true,2:true,3:true,4:true};
 settings.forEach(r=>{
 roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
-
 connected=true;
 drawConnectionStatus();
 if(rerender)render();
-
 }catch(e){
 console.error(e);
 connected=false;
@@ -938,7 +664,6 @@ drawConnectionStatus();
 function drawConnectionStatus(){
 const box=document.getElementById("connectionStatus");
 if(!box)return;
-
 if(!connected){
 box.innerHTML=`<div class="offline">⚠️ Unable to reach shared tournament database</div>`;
 return;
@@ -972,16 +697,12 @@ const tabs=[
 ["scoring","Scoring"],
 ["history","History"]
 ];
-
 if(isOwner())tabs.push(["users","Users & Access"]);
 tabs.push(["login",isSignedIn()?"Account ✓":"Sign In"]);
-
-document.getElementById("nav").innerHTML=
-tabs.map(t=>`
+document.getElementById("nav").innerHTML=tabs.map(t=>`
 <button class="${page===t[0]?"primary":""}" onclick="page='${t[0]}';render();">
 ${t[1]}
-</button>
-`).join("");
+</button>`).join("");
 }
 
 function getPlayer(id){
@@ -1029,21 +750,16 @@ return players.map(p=>`
 <span class="livePlayerName">
 ${escapeHtml(p.name)}
 <span class="livePlayerHcp">${escapeHtml(handicapDisplay(p,dashboardRound))}</span>
-</span>
-`).join("");
+</span>`).join("");
 }
 
 function renderLiveMatchRow(match){
 const result=data.results[match.id]?.winner||"";
-let rowClass="";
-let center="—";
-
+let rowClass="",center="—";
 if(result==="Hackers"){rowClass="liveWinHackers";center="FINAL"}
 else if(result==="Shankers"){rowClass="liveWinShankers";center="FINAL"}
 else if(result==="Halved"){rowClass="liveHalved";center="A/S"}
-
 const showStartHole=(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
-
 return`
 <div class="liveMatchRow ${rowClass}">
 <div class="liveSide left"><div>${livePlayerNames(match.hackers)}</div></div>
@@ -1053,60 +769,48 @@ ${showStartHole?"Hole "+match.teeStartHole+"<br>":""}
 ${center}
 </div></div>
 <div class="liveSide right"><div>${livePlayerNames(match.shankers)}</div></div>
-</div>
-`;
+</div>`;
 }
 
 function liveMatchBoard(){
 const r=ROUNDS[dashboardRound-1];
 const rawMatches=data.matchups[dashboardRound]||[];
-
 const matches=Array.from({length:r.matches},(_,i)=>rawMatches[i]||{
 id:"R"+r.id+"M"+(i+1),
 matchNo:i+1,hackers:[],shankers:[],teeTime:"",teeStartHole:""
 }).sort((a,b)=>{
-const at=a.teeTime||"99:99";
-const bt=b.teeTime||"99:99";
+const at=a.teeTime||"99:99",bt=b.teeTime||"99:99";
 const timeCompare=at.localeCompare(bt);
 if(timeCompare)return timeCompare;
 if(dashboardRound===2||dashboardRound===3){
-const ah=Number(a.teeStartHole||99);
-const bh=Number(b.teeStartHole||99);
+const ah=Number(a.teeStartHole||99),bh=Number(b.teeStartHole||99);
 if(ah!==bh)return ah-bh;
 }
 return a.matchNo-b.matchNo;
 });
-
 const totals=teamPoints();
 let liveRowsHtml="";
-
 if(dashboardRound===4){
 const foursomes=Array.from({length:8},(_,f)=>{
-const firstMatch=f*2+1;
-const secondMatch=f*2+2;
+const firstMatch=f*2+1,secondMatch=f*2+2;
 const pair=matches.filter(m=>m.matchNo===firstMatch||m.matchNo===secondMatch)
 .sort((a,b)=>a.matchNo-b.matchNo);
 const teeTime=pair.find(m=>m.teeTime)?.teeTime||"";
 return{foursomeNo:f+1,teeTime,pair};
 });
-
 foursomes.sort((a,b)=>{
-const at=a.teeTime||"99:99";
-const bt=b.teeTime||"99:99";
+const at=a.teeTime||"99:99",bt=b.teeTime||"99:99";
 const timeCompare=at.localeCompare(bt);
 if(timeCompare)return timeCompare;
 return a.foursomeNo-b.foursomeNo;
 });
-
 liveRowsHtml=foursomes.map(f=>`
 <div class="liveFoursome">
 ${f.pair.map(renderLiveMatchRow).join("")}
-</div>
-`).join("");
+</div>`).join("");
 }else{
 liveRowsHtml=matches.map(renderLiveMatchRow).join("");
 }
-
 return`
 <div class="card liveCard">
 <div class="liveRoundControl">
@@ -1118,20 +822,17 @@ Round ${x.id} — ${x.course}
 </option>`).join("")}
 </select>
 </div>
-
 <div class="liveBoard">
 <div class="liveTitle">
 ROUND ${r.id} — ${r.course}
 <div class="liveSubtitle">${r.format}</div>
 </div>
-
 <div class="liveScoreHeader">
 <div class="liveTeamName h">HACKERS</div>
 <div class="livePoints">${totals.hackers}</div>
 <div class="livePoints">${totals.shankers}</div>
 <div class="liveTeamName s">SHANKERS</div>
 </div>
-
 <div class="liveRows">${liveRowsHtml}</div>
 </div>
 </div>`;
@@ -1155,20 +856,35 @@ return`
 </div>
 <p><b>${40-p.completed}</b> matches remaining</p>
 </div>
-
 ${liveMatchBoard()}
-
 <div class="card">
 <h2>Tournament Schedule</h2>
 ${ROUNDS.map(r=>`
 <div class="match">
 <b>Round ${r.id} — ${r.course}</b><br>
 <span class="muted">${r.format} • ${r.matches} points • ${r.scats?"Scats":"No Scats"}</span>
+${scheduleDetails(r.id)}
 </div>`).join("")}
 </div>`;
 }
 
-/* PAR 3 PAGE */
+function scheduleDetails(roundId){
+const schedule=TOURNAMENT_SCHEDULE[roundId];
+if(!schedule)return"";
+return`
+<dl class="scheduleDetails">
+<div class="scheduleDetail">
+<dt>Breakfast delivery</dt><dd>${escapeHtml(schedule.breakfast)}</dd>
+</div>
+<div class="scheduleDetail">
+<dt>Leave time</dt><dd>${escapeHtml(schedule.leave)}</dd>
+</div>
+<div class="scheduleDetail">
+<dt>${escapeHtml(schedule.driveFrom)}</dt><dd>${escapeHtml(schedule.drive)}</dd>
+</div>
+</dl>
+${schedule.note?`<p class="scheduleNote">${escapeHtml(schedule.note)}</p>`:""}`;
+}
 
 function par3PlayerOptions(current){
 const sorted=data.players.slice().sort((a,b)=>a.name.localeCompare(b.name));
@@ -1177,8 +893,7 @@ return`
 ${sorted.map(p=>`
 <option value="${p.id}" ${String(current)===String(p.id)?"selected":""}>
 ${escapeHtml(p.name)}
-</option>`).join("")}
-`;
+</option>`).join("")}`;
 }
 
 function par3Page(){
@@ -1187,89 +902,57 @@ return`
 <h2>🎯 Par 3’s</h2>
 <p>Closest to the Pin • All 17 Par 3 contests</p>
 </div>
-
 ${PAR3_HOLES.map(r=>`
 <div class="par3Round">
 <div class="par3RoundHeader">
 <h2>Round ${r.round} — ${escapeHtml(r.course)}</h2>
 <div>${r.holes.length} Closest-to-the-Pin Holes</div>
 </div>
-
 ${r.holes.map(hole=>{
 const key="R"+r.round+"H"+hole;
 const playerId=data.par3Results[key]||"";
 const winner=getPlayer(playerId);
-
 return`
 <div class="par3Hole">
-<div class="par3HoleNumber">
-<span>Hole</span>
-<span>${hole}</span>
-</div>
-
+<div class="par3HoleNumber"><span>Hole</span><span>${hole}</span></div>
 <div>
 <div class="par3WinnerLabel">Closest to the Pin Winner</div>
-
-${canEditPar3(r.round)
-?`
-<select class="par3Select"
-onchange="savePar3Winner(${r.round},${hole},this.value)">
+${canEditPar3(r.round)?`
+<select class="par3Select" onchange="savePar3Winner(${r.round},${hole},this.value)">
 ${par3PlayerOptions(playerId)}
 </select>
 ${winner?`<div class="par3Saved">✓ ${escapeHtml(winner.name)}</div>`:""}
-`
-:winner
-?`<div class="par3WinnerName">${escapeHtml(winner.name)}</div>`
-:`<div class="par3WinnerPending">Winner not selected yet</div>`
-}
+`:winner?`<div class="par3WinnerName">${escapeHtml(winner.name)}</div>`
+:`<div class="par3WinnerPending">Winner not selected yet</div>`}
 </div>
-</div>
-`;
+</div>`;
 }).join("")}
-
-</div>
-`).join("")}
-`;
+</div>`).join("")}`;
 }
 
 async function savePar3Winner(round,hole,playerId){
 if(!canEditPar3(round)){
 alert("You do not have access to change this result.");
-render();
-return;
+render();return;
 }
-
 const key="R"+round+"H"+hole;
 const old=data.par3Results[key]||"";
-
 data.par3Results[key]=playerId||"";
 render();
-
 try{
 if(!playerId){
-await deleteRows("tournament_par3_results",{
-round_no:round,
-hole:hole
-});
+await deleteRows("tournament_par3_results",{round_no:round,hole:hole});
 delete data.par3Results[key];
 }else{
-await upsert(
-"tournament_par3_results",
-{
+await upsert("tournament_par3_results",{
 tournament_id:TOURNAMENT_ID,
-round_no:Number(round),
-hole:Number(hole),
-player_id:String(playerId),
-updated_at:new Date().toISOString()
-},
-"tournament_id,round_no,hole"
-);
+round_no:Number(round),hole:Number(hole),
+player_id:String(playerId),updated_at:new Date().toISOString()
+},"tournament_id,round_no,hole");
 }
 render();
 }catch(e){
-console.error(e);
-data.par3Results[key]=old;
-render();
+console.error(e);data.par3Results[key]=old;render();
 alert("Closest-to-the-pin winner could not be saved.");
 }
 }
@@ -1288,25 +971,21 @@ ${escapeHtml(name)} — ${tee.rating}/${tee.slope}
 
 function playersPage(){
 let edit="";
-
 if(canEditPlayers()&&editingPlayerId){
 const p=getPlayer(editingPlayerId);
 if(p){
 edit=`
 <div class="card editBox">
 <h2>Edit Player</h2>
-
 <div class="row">
 <div class="field">
 <label>Player Name</label>
 <input id="editName" value="${escapeHtml(p.name)}">
 </div>
-
 <div class="field">
 <label>Handicap Index</label>
 <input id="editHcp" type="number" step=".1" inputmode="decimal" value="${escapeHtml(p.handicap)}">
 </div>
-
 <div class="field">
 <label>Team</label>
 <select id="editTeam">
@@ -1314,7 +993,6 @@ edit=`
 <option value="Shankers" ${p.team==="Shankers"?"selected":""}>Shankers</option>
 </select>
 </div>
-
 <div class="field">
 <label>Scats Group</label>
 <select id="editGroup">
@@ -1323,7 +1001,6 @@ edit=`
 </select>
 </div>
 </div>
-
 <div class="teeSection">
 <div class="teeSectionTitle">Player Tees</div>
 <div class="row">
@@ -1344,7 +1021,6 @@ edit=`
 Course handicaps are calculated automatically from the player's Handicap Index and selected tee.
 </div>
 </div>
-
 <div style="margin-top:14px">
 <button class="good" onclick="savePlayerEdit()">Save Player</button>
 <button onclick="editingPlayerId=null;render();">Cancel</button>
@@ -1352,18 +1028,15 @@ Course handicaps are calculated automatically from the player's Handicap Index a
 </div>`;
 }
 }
-
 const add=canEditPlayers()?`
 <div class="card">
 <h2>Add Player</h2>
 <div class="row">
 <div class="field">
-<label>Player Name</label>
-<input id="name" placeholder="Player name">
+<label>Player Name</label><input id="name" placeholder="Player name">
 </div>
 <div class="field">
-<label>Handicap Index</label>
-<input id="hcp" type="number" step=".1" inputmode="decimal">
+<label>Handicap Index</label><input id="hcp" type="number" step=".1" inputmode="decimal">
 </div>
 <div class="field">
 <label>Team</label>
@@ -1374,7 +1047,6 @@ const add=canEditPlayers()?`
 <select id="group"><option value="A">Group A</option><option value="B">Group B</option></select>
 </div>
 </div>
-
 <div class="teeSection">
 <div class="teeSectionTitle">Player Tees</div>
 <div class="row">
@@ -1384,20 +1056,17 @@ const add=canEditPlayers()?`
 </div>
 </div>
 <button class="primary" style="margin-top:14px" onclick="addPlayer()">Add Player</button>
-</div>
-`:`<div class="viewer">Roster is read-only.</div>`;
+</div>`:`<div class="viewer">Roster is read-only.</div>`;
 
 function section(team,group){
 const list=data.players.filter(p=>p.team===team&&p.group===group);
 const h=team==="Hackers";
-
 return`
 <div class="card playerGroupCard ${h?"hackerGroup":"shankerGroup"}">
 <div class="playerTeamHeader ${h?"hackerHeader":"shankerHeader"}">
 <h2>${team} — Group ${group}</h2>
 <div style="margin-top:4px;font-weight:700;">${list.length} players</div>
 </div>
-
 <div class="tablewrap">
 <table>
 <tr><th>Name</th><th>Index</th><th>Tees</th>${canEditPlayers()?"<th></th>":""}</tr>
@@ -1420,12 +1089,8 @@ ${canEditPlayers()?`
 </div>
 </div>`;
 }
-
-return edit+add+
-section("Hackers","A")+
-section("Hackers","B")+
-section("Shankers","A")+
-section("Shankers","B");
+return edit+add+section("Hackers","A")+section("Hackers","B")+
+section("Shankers","A")+section("Shankers","B");
 }
 
 function startPlayerEdit(id){
@@ -1439,7 +1104,6 @@ async function savePlayerEdit(){
 if(!canEditPlayers()||!editingPlayerId)return;
 const p=getPlayer(editingPlayerId);
 if(!p)return;
-
 const name=document.getElementById("editName").value.trim();
 const handicap=document.getElementById("editHcp").value||0;
 const team=document.getElementById("editTeam").value;
@@ -1447,29 +1111,24 @@ const group=document.getElementById("editGroup").value;
 const tobaccoTee=document.getElementById("editTobaccoTee").value;
 const midsouthTee=document.getElementById("editMidsouthTee").value;
 const legacyTee=document.getElementById("editLegacyTee").value;
-
 if(!name){alert("Enter a player name.");return}
-
 if(team!==p.team&&data.players.filter(x=>x.team===team&&String(x.id)!==String(p.id)).length>=16){
 alert(team+" already has 16 players.");return;
 }
 if(group!==p.group&&data.players.filter(x=>x.group===group&&String(x.id)!==String(p.id)).length>=16){
 alert("Group "+group+" already has 16 players.");return;
 }
-
 try{
 await upsert("tournament_players",{
 tournament_id:TOURNAMENT_ID,id:p.id,name,
 handicap:String(handicap),team,group_name:group,
 tobacco_tee:tobaccoTee,midsouth_tee:midsouthTee,legacy_tee:legacyTee
 },"tournament_id,id");
-
 Object.assign(p,{name,handicap:String(handicap),team,group,tobaccoTee,midsouthTee,legacyTee});
 editingPlayerId=null;
 render();
 }catch(e){
-console.error(e);
-alert("Player changes could not be saved.");
+console.error(e);alert("Player changes could not be saved.");
 }
 }
 
@@ -1482,17 +1141,14 @@ const group=document.getElementById("group").value;
 const tobaccoTee=document.getElementById("tobaccoTee").value;
 const midsouthTee=document.getElementById("midsouthTee").value;
 const legacyTee=document.getElementById("legacyTee").value;
-
 if(!name){alert("Enter a player name.");return}
 if(data.players.length>=32){alert("Roster is full.");return}
 if(data.players.filter(p=>p.team===team).length>=16){alert(team+" already has 16 players.");return}
 if(data.players.filter(p=>p.group===group).length>=16){alert("Group "+group+" already has 16 players.");return}
-
 const p={
 id:"p"+Date.now()+Math.random().toString(36).slice(2),
 name,handicap:String(handicap),team,group,tobaccoTee,midsouthTee,legacyTee
 };
-
 try{
 await upsert("tournament_players",{
 tournament_id:TOURNAMENT_ID,id:p.id,name:p.name,
@@ -1501,10 +1157,7 @@ tobacco_tee:p.tobaccoTee,midsouth_tee:p.midsouthTee,legacy_tee:p.legacyTee
 },"tournament_id,id");
 data.players.push(p);
 render();
-}catch(e){
-console.error(e);
-alert("Player could not be saved.");
-}
+}catch(e){console.error(e);alert("Player could not be saved.")}
 }
 
 async function deletePlayer(id){
@@ -1513,15 +1166,12 @@ try{
 await deleteRows("tournament_players",{id});
 data.players=data.players.filter(p=>String(p.id)!==String(id));
 render();
-}catch{
-alert("Player could not be deleted.");
-}
+}catch{alert("Player could not be deleted.")}
 }
 
 function setupMatches(){
 const r=roundInfo();
 if(!data.matchups[currentRound])data.matchups[currentRound]=[];
-
 while(data.matchups[currentRound].length<r.matches){
 const i=data.matchups[currentRound].length;
 data.matchups[currentRound][i]={
@@ -1557,9 +1207,7 @@ ${escapeHtml(p.name)} — Group ${escapeHtml(p.group)}
 }
 
 function matchupPage(){
-const r=roundInfo();
-const m=setupMatches();
-
+const r=roundInfo(),m=setupMatches();
 return`
 <div class="card">
 <div class="roundnav">
@@ -1574,15 +1222,9 @@ ${r.id===4?"1v1 Match Play • 16 Individual Points • 8 Foursomes":`${r.format
 <button onclick="currentRound=Math.min(4,currentRound+1);render();">→</button>
 </div>
 </div>
-
-${userRole==="viewer"||userRole==="scorer"
-?`<div class="viewer">Matchups are read-only for your account.</div>`:""}
-
-${isCaptain()
-?`<div class="captainMode">Captain mode — You can change the ${escapeHtml(userTeam)} side of each matchup.</div>`:""}
-
-${currentRound===4
-?Array.from({length:8},(_,f)=>{
+${userRole==="viewer"||userRole==="scorer"?`<div class="viewer">Matchups are read-only for your account.</div>`:""}
+${isCaptain()?`<div class="captainMode">Captain mode — You can change the ${escapeHtml(userTeam)} side of each matchup.</div>`:""}
+${currentRound===4?Array.from({length:8},(_,f)=>{
 const a=f*2,b=a+1;
 return`
 <div class="foursomeCard">
@@ -1592,9 +1234,7 @@ ${teeTimeControl(a,m[a]?.teeTime||"",m[a]?.teeStartHole||"",true)}
 ${round4SinglesMatch(m[a],a)}
 ${round4SinglesMatch(m[b],b)}
 </div>`;
-}).join("")
-:m.map((match,i)=>standardFoursomeCard(r,match,i)).join("")}
-
+}).join(""):m.map((match,i)=>standardFoursomeCard(r,match,i)).join("")}
 ${isOwner()?`<button class="primary" onclick="validateRound()">Validate Matchups</button>`:""}
 </div>`;
 }
@@ -1602,17 +1242,14 @@ ${isOwner()?`<button class="primary" onclick="validateRound()">Validate Matchups
 function standardFoursomeCard(r,match,i){
 while(match.hackers.length<2)match.hackers.push("");
 while(match.shankers.length<2)match.shankers.push("");
-
 return`
 <div class="foursomeCard">
 <h2>Foursome ${i+1}</h2>
 <div class="muted">Match ${i+1}</div>
 ${teeTimeControl(i,match.teeTime||"",match.teeStartHole||"",false)}
-
 <div class="innerMatch">
 <h3>Match ${i+1}</h3>
 <div class="players">
-
 <div class="teamSelects">
 <div class="hackerLabel">HACKERS</div>
 ${canEditMatchupSide("hackers")?`
@@ -1625,13 +1262,11 @@ ${playerOptions("Hackers",match.hackers[0])}
 <select onchange="setMatchPlayer(${i},'hackers',1,this.value)">
 ${playerOptions("Hackers",match.hackers[1])}
 </select>${matchupHcp(match.hackers[1])}
-</div>`
-:match.hackers.map(id=>{
+</div>`:match.hackers.map(id=>{
 const p=getPlayer(id);
 return p?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`;
 }).join("<br>")}
 </div>
-
 <div class="teamSelects">
 <div class="shankerLabel">SHANKERS</div>
 ${canEditMatchupSide("shankers")?`
@@ -1644,13 +1279,11 @@ ${playerOptions("Shankers",match.shankers[0])}
 <select onchange="setMatchPlayer(${i},'shankers',1,this.value)">
 ${playerOptions("Shankers",match.shankers[1])}
 </select>${matchupHcp(match.shankers[1])}
-</div>`
-:match.shankers.map(id=>{
+</div>`:match.shankers.map(id=>{
 const p=getPlayer(id);
 return p?`<div class="pill matchupPlayer">${escapeHtml(p.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(p,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`;
 }).join("<br>")}
 </div>
-
 </div>
 </div>
 </div>`;
@@ -1660,10 +1293,7 @@ function round4SinglesMatch(match,i){
 if(!match)return"";
 while(match.hackers.length<1)match.hackers.push("");
 while(match.shankers.length<1)match.shankers.push("");
-
-const h=getPlayer(match.hackers[0]);
-const s=getPlayer(match.shankers[0]);
-
+const h=getPlayer(match.hackers[0]),s=getPlayer(match.shankers[0]);
 return`
 <div class="innerMatch">
 <h3>Match ${i+1}</h3>
@@ -1675,10 +1305,8 @@ ${canEditMatchupSide("hackers")?`
 <select onchange="setMatchPlayer(${i},'hackers',0,this.value)">
 ${playerOptions("Hackers",match.hackers[0])}
 </select>${matchupHcp(match.hackers[0])}
-</div>`
-:h?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(h,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
+</div>`:h?`<div class="pill matchupPlayer">${escapeHtml(h.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(h,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
 </div>
-
 <div>
 <div class="shankerLabel">SHANKER</div>
 ${canEditMatchupSide("shankers")?`
@@ -1686,8 +1314,7 @@ ${canEditMatchupSide("shankers")?`
 <select onchange="setMatchPlayer(${i},'shankers',0,this.value)">
 ${playerOptions("Shankers",match.shankers[0])}
 </select>${matchupHcp(match.shankers[0])}
-</div>`
-:s?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(s,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
+</div>`:s?`<div class="pill matchupPlayer">${escapeHtml(s.name)} <span class="matchupHcp">${escapeHtml(handicapDisplay(s,currentRound))}</span></div>`:`<div class="pill">Not Set</div>`}
 </div>
 </div>
 </div>`;
@@ -1697,14 +1324,12 @@ function teeTimeControl(i,value,startHole,isRound4Foursome){
 const label=value?formatTeeTime(value):"Not set";
 const showStartHole=currentRound===2||currentRound===3;
 const holeLabel=startHole?"Hole "+startHole:"Start hole not set";
-
 if(!isOwner()){
 return`<div class="pill">
 Tee Time: ${escapeHtml(label)}
 ${showStartHole?" • "+escapeHtml(holeLabel):""}
 </div>`;
 }
-
 return`
 <div class="row" style="margin:10px 0">
 <div class="field" style="max-width:220px">
@@ -1713,7 +1338,6 @@ return`
 value="${escapeHtml(String(value||"").slice(0,5))}"
 onchange="${isRound4Foursome?`setFoursomeTeeTime(${i},this.value)`:`setTeeTime(${i},this.value)`}">
 </div>
-
 ${showStartHole?`
 <div class="field" style="max-width:220px">
 <label>STARTING HOLE</label>
@@ -1757,8 +1381,7 @@ if(!isOwner())return;
 const match=data.matchups[currentRound]?.[i];
 if(!match)return;
 const old=match.teeTime||"";
-match.teeTime=value||"";
-render();
+match.teeTime=value||"";render();
 try{await saveTeeTime(i,value)}
 catch(e){
 console.error(e);match.teeTime=old;render();
@@ -1771,8 +1394,7 @@ if(!isOwner())return;
 const match=data.matchups[currentRound]?.[i];
 if(!match)return;
 const old=match.teeStartHole||"";
-match.teeStartHole=value?Number(value):"";
-render();
+match.teeStartHole=value?Number(value):"";render();
 try{await saveTeeStartHole(i,value)}
 catch(e){
 console.error(e);match.teeStartHole=old;render();
@@ -1785,18 +1407,13 @@ if(!isOwner())return;
 const a=data.matchups[currentRound]?.[firstMatchIndex];
 const b=data.matchups[currentRound]?.[firstMatchIndex+1];
 if(!a||!b)return;
-
 const oldA=a.teeTime||"",oldB=b.teeTime||"";
-a.teeTime=value||"";
-b.teeTime=value||"";
-render();
-
+a.teeTime=value||"";b.teeTime=value||"";render();
 try{
 await saveTeeTime(firstMatchIndex,value);
 await saveTeeTime(firstMatchIndex+1,value);
 }catch(e){
-console.error(e);
-a.teeTime=oldA;b.teeTime=oldB;render();
+console.error(e);a.teeTime=oldA;b.teeTime=oldB;render();
 alert("Tee time could not be saved.");
 }
 }
@@ -1806,28 +1423,23 @@ if(!isOwner())return;
 const a=data.matchups[currentRound]?.[firstMatchIndex];
 const b=data.matchups[currentRound]?.[firstMatchIndex+1];
 if(!a||!b)return;
-
 const oldA=a.teeStartHole||"",oldB=b.teeStartHole||"";
 a.teeStartHole=value?Number(value):"";
 b.teeStartHole=value?Number(value):"";
 render();
-
 try{
 await saveTeeStartHole(firstMatchIndex,value);
 await saveTeeStartHole(firstMatchIndex+1,value);
 }catch(e){
-console.error(e);
-a.teeStartHole=oldA;b.teeStartHole=oldB;render();
+console.error(e);a.teeStartHole=oldA;b.teeStartHole=oldB;render();
 alert("Starting hole could not be saved.");
 }
 }
 
 async function setMatchPlayer(i,side,slot,playerId){
 if(!canEditMatchupSide(side))return;
-
 const match=data.matchups[currentRound][i];
 const oldValue=match[side][slot];
-
 if(playerId){
 const duplicate=(data.matchups[currentRound]||[]).some((m,matchIndex)=>{
 if(!m)return false;
@@ -1838,17 +1450,11 @@ return String(id)===String(playerId);
 })
 );
 });
-
 if(duplicate){
-alert("That player is already selected in this round.");
-render();
-return;
+alert("That player is already selected in this round.");render();return;
 }
 }
-
-match[side][slot]=playerId;
-render();
-
+match[side][slot]=playerId;render();
 try{
 await refreshSessionIfNeeded();
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/set_duffers_matchup_slot",{
@@ -1861,47 +1467,33 @@ p_slot:slot,
 p_player_id:playerId||""
 })
 });
-
 if(!r.ok){
-console.error(await r.text());
-throw new Error("Matchup save failed");
+console.error(await r.text());throw new Error("Matchup save failed");
 }
 }catch(e){
-console.error(e);
-match[side][slot]=oldValue;
-render();
+console.error(e);match[side][slot]=oldValue;render();
 alert("Matchup could not be saved.");
 }
 }
 
 function validateRound(){
 if(!isOwner())return;
-const r=roundInfo();
-const m=setupMatches();
-const used=new Set();
-
+const r=roundInfo(),m=setupMatches(),used=new Set();
 for(let i=0;i<m.length;i++){
-const match=m[i];
-const required=r.type==="singles"?1:2;
-
+const match=m[i],required=r.type==="singles"?1:2;
 if(match.hackers.filter(Boolean).length!==required||
 match.shankers.filter(Boolean).length!==required){
-alert("Match "+(i+1)+" is incomplete.");
-return;
+alert("Match "+(i+1)+" is incomplete.");return;
 }
-
 for(const id of [...match.hackers,...match.shankers]){
 if(used.has(String(id))){
-alert("A player is used more than once in this round.");
-return;
+alert("A player is used more than once in this round.");return;
 }
 used.add(String(id));
 }
 }
-
 if(used.size!==32){
-alert("All 32 players must appear exactly once.");
-return;
+alert("All 32 players must appear exactly once.");return;
 }
 alert("Round "+currentRound+" matchups are ready!");
 }
@@ -1925,8 +1517,7 @@ return total;
 }
 
 function enteredTotal(score,id){
-const out=enteredNine(score,id,0);
-const inn=enteredNine(score,id,9);
+const out=enteredNine(score,id,0),inn=enteredNine(score,id,9);
 if(out==="—"||inn==="—")return"—";
 return out+inn;
 }
@@ -1942,8 +1533,7 @@ return`
 ${Array.from({length:9},(_,i)=>`<th>${i+1}</th>`).join("")}
 <th>OUT</th>
 ${Array.from({length:9},(_,i)=>`<th>${i+10}</th>`).join("")}
-<th>IN</th>
-<th>TOTAL</th>
+<th>IN</th><th>TOTAL</th>
 </tr>`;
 }
 
@@ -1976,18 +1566,13 @@ advanceScoreInput(el);
 
 function handleScoreInput(round,matchNo,matchId,holeIndex,scorer,el){
 if(!canScoreRound(round)||!el)return;
-
 queueScore(round,matchNo,matchId,holeIndex,scorer,el.value);
 clearTimeout(scoreAdvanceTimer);
-
 const raw=String(el.value??"").trim();
 if(raw==="")return;
-
 const n=Number(raw);
 if(!Number.isFinite(n)||n<1||n>20)return;
-
 const delay=raw==="1"?450:200;
-
 scoreAdvanceTimer=setTimeout(()=>{
 if(document.activeElement!==el)return;
 advanceScoreInput(el);
@@ -1998,34 +1583,22 @@ function advanceScoreInput(el){
 if(!el)return;
 const table=el.closest(".scoretable");
 if(!table)return;
-
 const inputs=Array.from(table.querySelectorAll("input.scoreInput:not(:disabled)"));
 const currentIndex=inputs.indexOf(el);
 if(currentIndex<0)return;
-
 const next=inputs[currentIndex+1];
 if(!next){el.blur();return}
-
 try{next.focus({preventScroll:true})}catch(e){next.focus()}
 try{next.select()}catch(e){}
-
-const wrapper=next.closest(".tablewrap");
-const cell=next.closest("td");
-
+const wrapper=next.closest(".tablewrap"),cell=next.closest("td");
 if(wrapper&&cell){
 const wrapperRect=wrapper.getBoundingClientRect();
 const cellRect=cell.getBoundingClientRect();
 const stickyWidth=155;
-const leftLimit=wrapperRect.left+stickyWidth+8;
-const rightLimit=wrapperRect.right-8;
-
+const leftLimit=wrapperRect.left+stickyWidth+8,rightLimit=wrapperRect.right-8;
 if(cellRect.left<leftLimit||cellRect.right>rightLimit){
-const desiredLeft=
-wrapper.scrollLeft+
-(cellRect.left-wrapperRect.left)-
-(wrapper.clientWidth/2)+
-(cellRect.width/2);
-
+const desiredLeft=wrapper.scrollLeft+(cellRect.left-wrapperRect.left)-
+(wrapper.clientWidth/2)+(cellRect.width/2);
 wrapper.scrollTo({left:Math.max(0,desiredLeft),behavior:"smooth"});
 }
 }
@@ -2034,7 +1607,6 @@ wrapper.scrollTo({left:Math.max(0,desiredLeft),behavior:"smooth"});
 function playerScoreRow(p,score,round,matchNo,matchId){
 const cls=p.team==="Hackers"?"hackerScoreRow":"shankerScoreRow";
 let cells="";
-
 for(let h=0;h<9;h++){
 const value=(score.holes[h]||{})[p.id]??"";
 cells+=`
@@ -2048,9 +1620,7 @@ onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
 </td>`;
 }
-
 cells+=`<td class="summaryCell" id="out-${matchId}-${p.id}">${enteredNine(score,p.id,0)}</td>`;
-
 for(let h=9;h<18;h++){
 const value=(score.holes[h]||{})[p.id]??"";
 cells+=`
@@ -2064,16 +1634,11 @@ onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
 </td>`;
 }
-
 cells+=`
 <td class="summaryCell" id="in-${matchId}-${p.id}">${enteredNine(score,p.id,9)}</td>
 <td class="summaryCell" id="total-${matchId}-${p.id}">${enteredTotal(score,p.id)}</td>`;
-
-const playerHandicap=
-round===1||round===2||round===4
-?handicapDisplay(p,round)
-:`HCP ${p.handicap} • Group ${p.group}`;
-
+const playerHandicap=round===1||round===2||round===4?
+handicapDisplay(p,round):`HCP ${p.handicap} • Group ${p.group}`;
 return`
 <tr class="${cls}">
 <td>${escapeHtml(p.name)}<br><span class="muted">${escapeHtml(playerHandicap)}</span></td>
@@ -2093,14 +1658,12 @@ if(total)total.textContent=enteredTotal(score,playerId);
 
 function scoringAccessControls(){
 if(!isOwner())return"";
-
 return`
 <div class="scoringAccessPanel">
 <h3>Scoring Access</h3>
 <div class="muted" style="margin-bottom:6px">
 Open or lock scoring separately for each round.
 </div>
-
 ${ROUNDS.map(r=>{
 const open=isScoringOpen(r.id);
 return`
@@ -2108,14 +1671,12 @@ return`
 <div><div class="scoringAccessName">Round ${r.id} — ${r.course}</div></div>
 <div class="scoringAccessActions">
 <span class="${open?"scoringOpenBadge":"scoringLockedBadge"}">${open?"OPEN":"LOCKED"}</span>
-<button class="${open?"danger":"good"}"
-onclick="setRoundScoring(${r.id},${open?"false":"true"})">
+<button class="${open?"danger":"good"}" onclick="setRoundScoring(${r.id},${open?"false":"true"})">
 ${open?"Lock":"Open"}
 </button>
 </div>
 </div>`;
 }).join("")}
-
 <div class="resetArea">
 <div style="font-weight:900;color:#991b1b;margin-bottom:4px">
 Testing / Tournament Reset
@@ -2132,28 +1693,20 @@ async function setRoundScoring(roundId,open){
 if(!isOwner())return;
 const action=open?"OPEN":"LOCK";
 const course=ROUNDS.find(r=>r.id===Number(roundId))?.course||"this round";
-
 if(!confirm(action+" scoring for Round "+roundId+" — "+course+"?"))return;
-
 try{
 await upsert("tournament_round_settings",{
 tournament_id:TOURNAMENT_ID,
-round_no:Number(roundId),
-scoring_open:!!open,
+round_no:Number(roundId),scoring_open:!!open,
 updated_at:new Date().toISOString()
 },"tournament_id,round_no");
-
 roundSettings[Number(roundId)]=!!open;
 render();
-}catch(e){
-console.error(e);
-alert("Scoring access could not be changed.");
-}
+}catch(e){console.error(e);alert("Scoring access could not be changed.")}
 }
 
 async function resetAllScores(){
 if(!isOwner())return;
-
 const first=confirm(
 "RESET ALL SCORES & RESULTS?\n\n"+
 "This will permanently erase:\n"+
@@ -2163,38 +1716,24 @@ const first=confirm(
 "• The current Ryder Cup points\n\n"+
 "Players, handicaps, teams, groups, matchups and permissions will NOT be changed."
 );
-
 if(!first)return;
-
 const typed=prompt("Final confirmation.\n\nType RESET to erase all scores and results.");
-
 if(typed!=="RESET"){
 if(typed!==null)alert("Reset cancelled. You must type RESET exactly.");
 return;
 }
-
 try{
 await refreshSessionIfNeeded();
-
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/reset_duffers_scores",{
 method:"POST",headers:headers(),body:"{}"
 });
-
 if(!r.ok){
-const message=await r.text();
-console.error(message);
-throw new Error("Reset failed");
+const message=await r.text();console.error(message);throw new Error("Reset failed");
 }
-
 Object.keys(saveTimers).forEach(k=>clearTimeout(saveTimers[k]));
 clearTimeout(scoreAdvanceTimer);
-saveTimers={};
-data.scores={};
-data.results={};
-
-await loadSharedData(false);
-render();
-
+saveTimers={};data.scores={};data.results={};
+await loadSharedData(false);render();
 alert("Reset complete.\n\nAll scores and match results have been cleared.");
 }catch(e){
 console.error(e);
@@ -2205,7 +1744,6 @@ alert("Reset could not be completed. No other tournament settings were changed."
 function resultControls(match,i){
 const saved=data.results[match.id]?data.results[match.id].winner:"";
 let banner="";
-
 if(saved==="Hackers"){
 banner=`<div class="resultBanner resultHackers">HACKERS WIN — 1 POINT</div>`;
 }else if(saved==="Shankers"){
@@ -2213,7 +1751,6 @@ banner=`<div class="resultBanner resultShankers">SHANKERS WIN — 1 POINT</div>`
 }else if(saved==="Halved"){
 banner=`<div class="resultBanner resultHalved">MATCH HALVED — ½ POINT EACH</div>`;
 }
-
 const controls=canScoreRound(currentRound)?`
 <div style="margin-top:15px">
 <label>Official Match Result</label>
@@ -2228,14 +1765,11 @@ const controls=canScoreRound(currentRound)?`
 onclick="saveMatchResult(${currentRound},${i+1},'${match.id}')">
 Save / Reset Match Result
 </button>`:"";
-
 return controls+banner;
 }
 
 function scoringPage(){
-const r=roundInfo();
-const m=setupMatches();
-
+const r=roundInfo(),m=setupMatches();
 return`
 <div class="card">
 <div class="roundnav">
@@ -2248,21 +1782,16 @@ return`
 <button onclick="currentRound=Math.min(4,currentRound+1);render();">→</button>
 </div>
 </div>
-
 ${scoringAccessControls()}
-
-${isScoringOpen(r.id)
-?`<div class="scoringOpenNotice">🟢 ROUND ${r.id} SCORING IS OPEN</div>`
-:`<div class="scoringLockedNotice">🔒 ROUND ${r.id} SCORING IS LOCKED — scores and match results are read-only.</div>`}
-
+${isScoringOpen(r.id)?
+`<div class="scoringOpenNotice">🟢 ROUND ${r.id} SCORING IS OPEN</div>`:
+`<div class="scoringLockedNotice">🔒 ROUND ${r.id} SCORING IS LOCKED — scores and match results are read-only.</div>`}
 ${!canScore()?`<div class="viewer">Scores are read-only for your account.</div>`:""}
-
 ${r.id===3?`
 <div class="notice">
 Talamore is result-only.
 Select Hackers, Shankers or Halved for each match.
 </div>`:""}
-
 ${m.map((match,i)=>scoreCard(r,match,i)).join("")}
 </div>`;
 }
@@ -2270,7 +1799,6 @@ ${m.map((match,i)=>scoreCard(r,match,i)).join("")}
 function scoreCard(r,match,i){
 const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
 const required=r.type==="singles"?2:4;
-
 if(players.length<required){
 return`
 <div class="match">
@@ -2278,7 +1806,6 @@ return`
 <div class="notice">Matchup not set.</div>
 </div>`;
 }
-
 if(r.id===3){
 return`
 <div class="match resultOnly">
@@ -2290,7 +1817,6 @@ ${match.hackers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
 <div class="pill">${escapeHtml(p.name)} • HCP ${escapeHtml(p.handicap)}</div>
 `).join("<br>")}
 </div>
-
 <div>
 <div class="shankerLabel">SHANKERS</div>
 ${match.shankers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
@@ -2301,10 +1827,7 @@ ${match.shankers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
 ${resultControls(match,i)}
 </div>`;
 }
-
-const score=getScore(match.id);
-const course=COURSE_CARDS[r.id];
-
+const score=getScore(match.id),course=COURSE_CARDS[r.id];
 return`
 <div class="match">
 <h3>Match ${i+1}</h3>
@@ -2325,7 +1848,6 @@ if(!canScoreRound(round))return;
 const score=getScore(matchId);
 score.holes[holeIndex][scorer]=value===""?"":Number(value);
 updateScoreTotals(matchId,scorer);
-
 const key=round+"-"+matchNo+"-"+holeIndex+"-"+scorer;
 clearTimeout(saveTimers[key]);
 saveTimers[key]=setTimeout(
@@ -2336,11 +1858,8 @@ saveTimers[key]=setTimeout(
 async function saveScoreDirect(round,matchNo,hole,scorer,value){
 await upsert("tournament_scores",{
 tournament_id:TOURNAMENT_ID,
-round_no:round,
-match_no:matchNo,
-hole,
-scorer_key:String(scorer),
-score:Number(value)
+round_no:round,match_no:matchNo,hole,
+scorer_key:String(scorer),score:Number(value)
 },"tournament_id,round_no,match_no,hole,scorer_key");
 }
 
@@ -2354,61 +1873,43 @@ round_no:round,match_no:matchNo,hole,scorer_key:scorer
 }else{
 await saveScoreDirect(round,matchNo,hole,scorer,Number(value));
 }
-}catch(e){
-console.error(e);
-await loadSharedData(false);
-}
+}catch(e){console.error(e);await loadSharedData(false)}
 }
 
 async function saveMatchResult(round,matchNo,matchId){
 if(!canScore()){alert("Scoring access required.");return}
 if(!isScoringOpen(round)){alert("Round "+round+" scoring is locked.");return}
-
 const box=document.getElementById("result-"+matchId);
 if(!box)return;
 const winner=box.value;
-
 try{
 if(winner===""){
 await deleteRows("tournament_results",{round_no:round,match_no:matchNo});
-delete data.results[matchId];
-render();
-return;
+delete data.results[matchId];render();return;
 }
-
 await upsert("tournament_results",{
 tournament_id:TOURNAMENT_ID,
-round_no:round,
-match_no:matchNo,
-winner
+round_no:round,match_no:matchNo,winner
 },"tournament_id,round_no,match_no");
-
-data.results[matchId]={winner};
-render();
+data.results[matchId]={winner};render();
 }catch(e){
 console.error(e);
 alert("Match result could not be saved or reset.");
-await loadSharedData(false);
-render();
+await loadSharedData(false);render();
 }
 }
 
 function getScatResults(roundId,group){
 const r=ROUNDS.find(x=>x.id===roundId);
 if(!r||!r.scats)return[];
-
-const matches=data.matchups[roundId]||[];
-const results=[];
-
+const matches=data.matchups[roundId]||[],results=[];
 for(let h=0;h<18;h++){
 const entered=[];
-
 matches.forEach(match=>{
 if(!match)return;
 const sd=data.scores[match.id];
 if(!sd)return;
 const s=sd.holes[h]||{};
-
 [...(match.hackers||[]),...(match.shankers||[])].forEach(id=>{
 const p=getPlayer(id);
 if(!p||p.group!==group)return;
@@ -2416,20 +1917,14 @@ const v=Number(s[p.id]);
 if(v>0)entered.push({id:p.id,name:p.name,score:v});
 });
 });
-
 if(!entered.length){
-results.push({hole:h+1,status:"none"});
-continue;
+results.push({hole:h+1,status:"none"});continue;
 }
-
 const low=Math.min(...entered.map(x=>x.score));
 const winners=entered.filter(x=>x.score===low);
-
-results.push(
-winners.length===1
-?{hole:h+1,status:"scat",winner:winners[0],score:low,entered:entered.length}
-:{hole:h+1,status:"tie",score:low,winners,entered:entered.length}
-);
+results.push(winners.length===1?
+{hole:h+1,status:"scat",winner:winners[0],score:low,entered:entered.length}:
+{hole:h+1,status:"tie",score:low,winners,entered:entered.length});
 }
 return results;
 }
@@ -2449,73 +1944,55 @@ function scatGroupCard(round,group){
 const results=getScatResults(round.id,group);
 const summary=scatSummary(round.id,group);
 const won=results.filter(r=>r.status==="scat").length;
-
 return`
 <div class="card">
 <h2>Group ${group}</h2>
 <div class="scatCount">${won} scats won</div>
-
 ${summary.length?`
 <h3>Scat Leaders</h3>
 ${summary.map(x=>`
 <span class="pill"><b>${escapeHtml(x.name)}</b> —
-${x.count} ${x.count===1?"scat":"scats"}</span>
-`).join("")}`:""}
-
+${x.count} ${x.count===1?"scat":"scats"}</span>`).join("")}`:""}
 <h3>Hole-by-Hole</h3>
-
-${results.map(r=>
-r.status==="scat"?`
+${results.map(r=>r.status==="scat"?`
 <div class="scatWinner">
 <b>Hole ${r.hole} — SCAT</b><br>
 ${escapeHtml(r.winner.name)} — ${r.score}<br>
 <span class="muted">${r.entered} entered score${r.entered===1?"":"s"}</span>
-</div>`
-:r.status==="tie"?`
+</div>`:r.status==="tie"?`
 <div class="scatTie">
 <b>Hole ${r.hole} — NO SCAT</b><br>
 Tie at ${r.score}<br>
 ${r.winners.map(p=>escapeHtml(p.name)).join(", ")}
-</div>`
-:`
+</div>`:`
 <div class="scatNone">
 <b>Hole ${r.hole}</b> — No scores entered
-</div>`
-).join("")}
+</div>`).join("")}
 </div>`;
 }
 
 function allScatWinners(){
 const players={};
-
 ROUNDS.filter(r=>r.scats).forEach(r=>{
 ["A","B"].forEach(group=>{
 getScatResults(r.id,group).forEach(result=>{
 if(result.status!=="scat")return;
 const id=String(result.winner.id);
-
 if(!players[id]){
 players[id]={id,name:result.winner.name,group,wins:[]};
 }
-
 players[id].wins.push({
-round:r.id,
-course:r.course,
-hole:result.hole,
-score:result.score,
-group
+round:r.id,course:r.course,hole:result.hole,score:result.score,group
 });
 });
 });
 });
-
 const sorted=Object.values(players)
 .map(p=>({...p,wins:p.wins.sort((a,b)=>a.round!==b.round?a.round-b.round:a.hole-b.hole)}))
 .sort((a,b)=>{
 if(b.wins.length!==a.wins.length)return b.wins.length-a.wins.length;
 return String(a.name).localeCompare(String(b.name));
 });
-
 if(!sorted.length){
 return`
 <div class="card">
@@ -2523,7 +2000,6 @@ return`
 <div class="muted">No scats have been won yet.</div>
 </div>`;
 }
-
 return`
 <div class="card">
 <h2>All Scat Winners</h2>
@@ -2543,7 +2019,6 @@ ${p.wins.map(w=>`
 
 function scatsPage(){
 const rounds=ROUNDS.filter(r=>r.scats);
-
 return`
 <div class="card">
 <h2>Scats</h2>
@@ -2551,9 +2026,7 @@ return`
 Gross scores • lowest unique score wins a scat • ties = no scat • no carryovers
 </div>
 </div>
-
 ${allScatWinners()}
-
 ${rounds.map(r=>`
 <div class="card">
 <h2>Round ${r.id} — ${r.course}</h2>
@@ -2563,8 +2036,6 @@ ${scatGroupCard(r,"A")}
 ${scatGroupCard(r,"B")}
 `).join("")}`;
 }
-
-/* HISTORY PAGE */
 
 function historyResults(list){
 return list.map((item,index)=>`
@@ -2581,17 +2052,12 @@ return`
 <h2>Delco Duffers History</h2>
 <p>Past champions, low gross, low net and closest-to-the-pin winners</p>
 </div>
-
 ${HISTORY.map(year=>`
 <div class="historyYear">
-
 <div class="historyYearHeader">
 <h2>${year.year}</h2>
-<div style="font-size:12px;font-weight:900;letter-spacing:.8px">
-DELCO DUFFERS
+<div style="font-size:12px;font-weight:900;letter-spacing:.8px">DELCO DUFFERS</div>
 </div>
-</div>
-
 <div class="historyChampion">
 <div class="historyChampionTitle">🏆 Winning Team</div>
 <div class="historyChampionTeam">
@@ -2602,18 +2068,13 @@ ${escapeHtml(year.winner)} • ${escapeHtml(year.score)}
 ${year.roster.map(name=>escapeHtml(name)).join(", ")}
 </div>
 </div>
-
 <div class="historyGrid">
 <div class="historySection">
-<h3>🏌️ Low Gross</h3>
-${historyResults(year.lowGross)}
+<h3>🏌️ Low Gross</h3>${historyResults(year.lowGross)}
 </div>
-
 <div class="historySection">
-<h3>⛳ Low Net</h3>
-${historyResults(year.lowNet)}
+<h3>⛳ Low Net</h3>${historyResults(year.lowNet)}
 </div>
-
 <div class="historySection historyCtp">
 <h3>🎯 Closest to the Pin</h3>
 <div class="historyCtpList">
@@ -2629,16 +2090,9 @@ ${item.wins>1?` ×${item.wins}`:""}
 }
 
 async function loadTournamentUsers(){
-if(!isOwner()){
-tournamentUsers=[];
-return;
-}
-try{
-tournamentUsers=await apiGet("tournament_users");
-}catch(e){
-console.error(e);
-tournamentUsers=[];
-}
+if(!isOwner()){tournamentUsers=[];return}
+try{tournamentUsers=await apiGet("tournament_users")}
+catch(e){console.error(e);tournamentUsers=[]}
 }
 
 function accessLabel(u){
@@ -2650,7 +2104,6 @@ return"View Only";
 
 function usersPage(){
 if(!isOwner())return`<div class="viewer">Owner access required.</div>`;
-
 return`
 <div class="card">
 <div class="roundnav">
@@ -2660,21 +2113,17 @@ return`
 </div>
 <button class="blue" onclick="refreshUsers()">Refresh</button>
 </div>
-
 <div class="tablewrap">
 <table>
 <tr><th>Email</th><th>Current Access</th><th>Change Access</th></tr>
-
 ${tournamentUsers.slice()
 .sort((a,b)=>String(a.email||"").localeCompare(String(b.email||"")))
 .map(u=>{
 const owner=String(u.email||"").toLowerCase()===OWNER_EMAIL;
 let selected="viewer";
-
 if(u.role==="scorer")selected="scorer";
 if(u.role==="captain"&&u.team==="Hackers")selected="captain_hackers";
 if(u.role==="captain"&&u.team==="Shankers")selected="captain_shankers";
-
 return`
 <tr>
 <td><b>${escapeHtml(u.email||"")}</b></td>
@@ -2687,9 +2136,7 @@ ${owner?`<b>Owner</b>`:`
 <option value="captain_hackers" ${selected==="captain_hackers"?"selected":""}>Hackers Captain</option>
 <option value="captain_shankers" ${selected==="captain_shankers"?"selected":""}>Shankers Captain</option>
 </select>
-<button class="good" style="margin-top:6px" onclick="saveUserAccess('${u.user_id}')">
-Save
-</button>`}
+<button class="good" style="margin-top:6px" onclick="saveUserAccess('${u.user_id}')">Save</button>`}
 </td>
 </tr>`;
 }).join("")}
@@ -2699,54 +2146,38 @@ Save
 }
 
 async function refreshUsers(){
-await loadTournamentUsers();
-render();
+await loadTournamentUsers();render();
 }
 
 async function saveUserAccess(userId){
 if(!isOwner())return;
 const box=document.getElementById("access-"+userId);
 if(!box)return;
-
 const choice=box.value;
-let role="viewer";
-let team=null;
-
+let role="viewer",team=null;
 if(choice==="scorer")role="scorer";
 else if(choice==="captain_hackers"){role="captain";team="Hackers"}
 else if(choice==="captain_shankers"){role="captain";team="Shankers"}
-
 try{
 await refreshSessionIfNeeded();
-
 const url=SUPABASE_URL+
 "/rest/v1/tournament_users?tournament_id=eq."+
 encodeURIComponent(TOURNAMENT_ID)+
 "&user_id=eq."+encodeURIComponent(userId);
-
 const r=await fetch(url,{
-method:"PATCH",
-headers:headers({Prefer:"return=minimal"}),
+method:"PATCH",headers:headers({Prefer:"return=minimal"}),
 body:JSON.stringify({role,team,updated_at:new Date().toISOString()})
 });
-
 if(!r.ok){
-console.error(await r.text());
-throw new Error("Permission save failed");
+console.error(await r.text());throw new Error("Permission save failed");
 }
-
-await loadTournamentUsers();
-render();
-}catch(e){
-console.error(e);
-alert("User permissions could not be saved.");
-}
+await loadTournamentUsers();render();
+}catch(e){console.error(e);alert("User permissions could not be saved.")}
 }
 
 function loginPage(){
 if(isSignedIn()){
 let description="";
-
 if(isOwner()){
 description="You have full tournament access.";
 }else if(isCaptain()){
@@ -2757,36 +2188,29 @@ description="You can enter and change any score or match result.";
 }else{
 description="Your account is currently view-only. Rocco can give you access.";
 }
-
 return`
 <div class="card loginBox">
 <h2>Account</h2>
 <div class="admin">
-<b>${escapeHtml(currentUser.email)}</b><br>
-${description}
+<b>${escapeHtml(currentUser.email)}</b><br>${description}
 </div>
 <button class="danger" onclick="accountLogout()">Sign Out</button>
 </div>`;
 }
-
 return`
 <div class="card loginBox">
 <h2>Sign In</h2>
 <p>Sign in to use your tournament access.</p>
-
 <div class="field">
 <label>Email</label>
 <input id="loginEmail" type="email" autocomplete="email" placeholder="Email">
 </div>
-
 <div class="field" style="margin-top:10px">
 <label>Password</label>
 <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password">
 </div>
-
 <button class="primary" style="margin-top:12px" onclick="accountLogin()">Sign In</button>
 <button class="blue" style="margin-top:12px" onclick="createAccount()">Create Account</button>
-
 <p class="muted">
 New accounts start with view-only access.
 Rocco can assign Scorer or Captain access after you register.
@@ -2797,77 +2221,50 @@ Rocco can assign Scorer or Captain access after you register.
 async function accountLogin(){
 const email=document.getElementById("loginEmail").value.trim();
 const password=document.getElementById("loginPassword").value;
-
-if(!email||!password){
-alert("Enter your email and password.");
-return;
-}
-
+if(!email||!password){alert("Enter your email and password.");return}
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{
 method:"POST",
 headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({email,password})
 });
-
 const x=await r.json();
-
-if(!r.ok){
-throw new Error(x.error_description||x.msg||x.message||"Login failed.");
-}
-
+if(!r.ok)throw new Error(x.error_description||x.msg||x.message||"Login failed.");
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
 storeSession(x);
-
 await loadCurrentUser();
 await loadMyPermissions();
 await loadSharedData(false);
-
 if(isOwner())await loadTournamentUsers();
-
-page="dashboard";
-render();
-}catch(e){
-alert(e.message);
-}
+page="dashboard";render();
+}catch(e){alert(e.message)}
 }
 
 async function createAccount(){
 const email=document.getElementById("loginEmail").value.trim();
 const password=document.getElementById("loginPassword").value;
-
 if(!email){alert("Enter your email.");return}
 if(!password||password.length<8){
-alert("Choose a password with at least 8 characters.");
-return;
+alert("Choose a password with at least 8 characters.");return;
 }
-
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/signup",{
 method:"POST",
 headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({email,password})
 });
-
 const x=await r.json();
-
 if(!r.ok)throw new Error(x.msg||x.message||"Could not create account.");
-
 if(x.access_token){
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
 storeSession(x);
 await loadCurrentUser();
 await loadMyPermissions();
 await loadSharedData(false);
-page="dashboard";
-render();
-return;
+page="dashboard";render();return;
 }
-
 alert("Account created. Check your email for the confirmation message, then come back and sign in.");
-}catch(e){
-alert(e.message);
-}
+}catch(e){alert(e.message)}
 }
 
 async function accountLogout(){
@@ -2879,91 +2276,49 @@ headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}
 });
 }
 }catch{}
-
 storeSession(null);
-currentUser=null;
-userRole="viewer";
-userTeam=null;
-tournamentUsers=[];
-editingPlayerId=null;
-page="dashboard";
-
-await loadSharedData(false);
-render();
+currentUser=null;userRole="viewer";userTeam=null;
+tournamentUsers=[];editingPlayerId=null;page="dashboard";
+await loadSharedData(false);render();
 }
 
 function render(){
 if(page==="users"&&!isOwner())page="dashboard";
-
-drawNav();
-drawConnectionStatus();
-
+drawNav();drawConnectionStatus();
 let html="";
-
-if(page==="dashboard"){
-html=dashboard();
-}else if(page==="scats"){
-html=scatsPage();
-}else if(page==="par3"){
-html=par3Page();
-}else if(page==="players"){
-html=playersPage();
-}else if(page==="matchups"){
-html=matchupPage();
-}else if(page==="scoring"){
-html=scoringPage();
-}else if(page==="history"){
-html=historyPage();
-}else if(page==="users"){
-html=usersPage();
-}else{
-html=loginPage();
-}
-
+if(page==="dashboard")html=dashboard();
+else if(page==="scats")html=scatsPage();
+else if(page==="par3")html=par3Page();
+else if(page==="players")html=playersPage();
+else if(page==="matchups")html=matchupPage();
+else if(page==="scoring")html=scoringPage();
+else if(page==="history")html=historyPage();
+else if(page==="users")html=usersPage();
+else html=loginPage();
 document.getElementById("app").innerHTML=html;
 }
 
 setInterval(async()=>{
 const a=document.activeElement;
-
-const editing=
-a&&(
-a.tagName==="INPUT"||
-a.tagName==="SELECT"
-);
-
+const editing=a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
 if(!editing){
 await loadSharedData(false);
-
-if(page==="users"&&isOwner()){
-await loadTournamentUsers();
-}
-
+if(page==="users"&&isOwner())await loadTournamentUsers();
 render();
 }
 },10000);
 
 async function start(){
 loadStoredSession();
-
 await refreshSessionIfNeeded();
 await loadCurrentUser();
-
-if(isSignedIn()){
-await loadMyPermissions();
-}
-
+if(isSignedIn())await loadMyPermissions();
 await loadSharedData(false);
-
-if(isOwner()){
-await loadTournamentUsers();
-}
-
+if(isOwner())await loadTournamentUsers();
 render();
 }
 
 start();
 </script>
-
 </body>
 </html>
