@@ -405,6 +405,11 @@ ctp:[
 ];
 
 let data={players:[],matchups:{},scores:{},results:{},par3Results:{}};
+let liveStatuses=[];
+let liveMatchNo=Number(localStorage.getItem("delcoLiveMatch")||1);
+let liveDraft=null;
+let liveSaving=false;
+let liveNotice="";
 let session=null;
 let currentUser=null;
 let userRole="viewer";
@@ -606,14 +611,16 @@ throw new Error("Database delete failed");
 let initialConnectionPending=true;
 async function loadSharedData(rerender=true){
 try{
-const [players,matchups,scores,results,settings,par3]=await Promise.all([
+const [players,matchups,scores,results,settings,par3,live]=await Promise.all([
 apiGet("tournament_players"),
 apiGet("tournament_matchups"),
 apiGet("tournament_scores"),
 apiGet("tournament_results"),
 apiGet("tournament_round_settings"),
-apiGet("tournament_par3_results")
+apiGet("tournament_par3_results"),
+apiGet("tournament_live_status")
 ]);
+liveStatuses=live.filter(r=>Number(r.round_no)===3);
 data.players=players.map(r=>({
 id:r.id,name:r.name,handicap:r.handicap,team:r.team,
 group:r.group_name,
@@ -698,6 +705,7 @@ box.innerHTML=`<div class="viewer">👀 VIEWER MODE — Read only</div>`;
 function drawNav(){
 const tabs=[
 ["dashboard","Dashboard"],
+["live","Live Scoring"],
 ["scats","Scats"],
 ["par3","Par 3’s"],
 ["players","Players"],
@@ -1780,6 +1788,110 @@ Save / Reset Match Result
 return controls+banner;
 }
 
+
+function talamoreMatches(){
+return Array.from({length:8},(_,i)=>data.matchups[3]?.[i]||{
+id:"R3M"+(i+1),matchNo:i+1,hackers:[],shankers:[]
+});
+}
+function liveNames(ids){
+return (ids||[]).map(getPlayer).filter(Boolean).map(p=>p.name).join(" & ")||"Players not assigned";
+}
+function liveHistory(matchNo){
+return liveStatuses.filter(r=>Number(r.match_no)===matchNo)
+.sort((a,b)=>b.holes_completed-a.holes_completed);
+}
+function liveStatusText(row){
+return row.leader==="All square"?"Tied (All Square)":row.leader+" "+row.margin+" UP";
+}
+function selectLiveMatch(value){
+liveMatchNo=Math.min(8,Math.max(1,Number(value)||1));
+localStorage.setItem("delcoLiveMatch",String(liveMatchNo));
+liveDraft=null;liveNotice="";render();
+}
+function liveHoleOrder(match){
+const start=Math.min(18,Math.max(1,parseInt(match.teeStartHole,10)||1));
+return Array.from({length:18},(_,i)=>({hole:(start-1+i)%18+1,completed:i+1}));
+}
+function editLiveHole(value){
+const hole=Number(value),saved=liveHistory(liveMatchNo).find(r=>Number(r.hole)===hole);
+liveDraft={matchNo:liveMatchNo,hole,value:saved?(saved.leader==="All square"?0:(saved.leader==="Hackers"?1:-1)*saved.margin):0};
+liveNotice="";render();
+}
+function liveScoringPage(){
+const matches=talamoreMatches();
+if(!(liveMatchNo>=1&&liveMatchNo<=8))liveMatchNo=1;
+const match=matches[liveMatchNo-1],history=liveHistory(liveMatchNo),latest=history[0];
+const order=liveHoleOrder(match);
+const next=order[Math.min(17,latest?Number(latest.holes_completed):0)];
+const draft=liveDraft?.matchNo===liveMatchNo?liveDraft:{matchNo:liveMatchNo,hole:next.hole,value:0};
+const completed=order.find(x=>x.hole===draft.hole).completed;
+const ready=match.hackers.length===2&&match.shankers.length===2;
+const editable=canScoreRound(3)&&ready&&!liveSaving;
+const option=(value,label)=>`<option value="${value}" ${Number(draft.value)===value?"selected":""}>${label}</option>`;
+return `
+<div class="card">
+<h2 style="margin-top:0">Talamore Live Scoring</h2>
+<p class="muted">Update your match status after each hole.</p>
+<label for="liveMatchSelect">Choose your matchup</label>
+<select id="liveMatchSelect" onchange="selectLiveMatch(this.value)" ${liveSaving?"disabled":""}>
+${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>Match ${i+1}: ${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</option>`).join("")}
+</select>
+<p class="muted" style="font-size:12px">Your matchup selection is remembered on this device.</p>
+<div class="players">
+<div><div class="hackerLabel">HACKERS</div><b>${escapeHtml(liveNames(match.hackers))}</b></div>
+<div><div class="shankerLabel">SHANKERS</div><b>${escapeHtml(liveNames(match.shankers))}</b></div>
+</div>
+<div class="resultBanner ${latest?.leader==="Hackers"?"resultHackers":latest?.leader==="Shankers"?"resultShankers":"resultHalved"}">
+${latest?escapeHtml(liveStatusText(latest))+`<div style="font-size:13px;margin-top:5px">After hole ${latest.hole} • ${latest.holes_completed} holes played</div>`:"No update yet"}
+</div>
+${!ready?'<div class="notice">Set this matchup in the Matchups tab first.</div>':!canScore()?'<div class="viewer" style="margin-top:12px">Sign in with scoring access to update your match.</div>':!isScoringOpen(3)?'<div class="scoringLockedNotice">Talamore scoring is locked.</div>':""}
+<div class="row" style="margin-top:16px">
+<div class="field"><label for="liveHole">Hole just completed</label>
+<select id="liveHole" onchange="editLiveHole(this.value)" ${!editable?"disabled":""}>
+${order.map(x=>`<option value="${x.hole}" ${draft.hole===x.hole?"selected":""}>Hole ${x.hole}${Number(match.teeStartHole)>1?` (${x.completed} played)`:""}</option>`).join("")}
+</select></div>
+<div class="field"><label for="liveStatus">Match status after this hole</label>
+<select id="liveStatus" onchange="liveDraft={matchNo:liveMatchNo,hole:Number(document.getElementById('liveHole').value),value:Number(this.value)}" ${!editable?"disabled":""}>
+${option(0,"Tied (All Square)")}
+${Array.from({length:completed},(_,i)=>option(i+1,"Hackers "+(i+1)+" UP")).join("")}
+${Array.from({length:completed},(_,i)=>option(-(i+1),"Shankers "+(i+1)+" UP")).join("")}
+</select></div></div>
+${editable?`<button class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
+${liveSaving?'<p role="status">Saving match status…</p>':""}
+${liveNotice?`<p role="status">${escapeHtml(liveNotice)}</p>`:""}
+<p class="muted" style="font-size:12px">Final match results are entered in the Scoring tab.</p>
+${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
+${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
+</div>
+<div class="card"><h2 style="margin-top:0">All Talamore Matches</h2>
+${matches.map((m,i)=>{
+const row=liveHistory(i+1)[0];
+return `<button style="display:block;width:100%;text-align:left;margin:8px 0;background:#f3f4f6;white-space:normal" onclick="selectLiveMatch(${i+1});document.getElementById('app').scrollIntoView({behavior:'smooth'})" ${liveSaving?"disabled":""}>
+Match ${i+1} • ${row?escapeHtml(liveStatusText(row))+` — after hole ${row.hole}`:"No update yet"}
+<span style="display:block;font-size:13px;font-weight:600;margin-top:5px">${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</span></button>`;
+}).join("")}</div>`;
+}
+async function saveLiveStatus(){
+if(liveSaving||!canScoreRound(3))return;
+const matchNo=liveMatchNo,match=talamoreMatches()[matchNo-1];
+if(match.hackers.length!==2||match.shankers.length!==2)return;
+const hole=Number(document.getElementById("liveHole").value);
+const value=Number(document.getElementById("liveStatus").value);
+const completed=liveHoleOrder(match).find(x=>x.hole===hole)?.completed;
+if(!completed||!Number.isInteger(value)||Math.abs(value)>completed)return;
+const row={tournament_id:TOURNAMENT_ID,round_no:3,match_no:matchNo,hole,
+holes_completed:completed,leader:value===0?"All square":value>0?"Hackers":"Shankers",
+margin:Math.abs(value),updated_at:new Date().toISOString()};
+liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";render();
+try{
+await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
+liveStatuses=liveStatuses.filter(r=>!(Number(r.match_no)===matchNo&&Number(r.hole)===hole));
+liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved.";
+}catch(e){console.error(e);liveNotice="Could not save. Please try again.";}
+finally{liveSaving=false;render();}
+}
+
 function scoringPage(){
 const r=roundInfo(),m=setupMatches();
 return`
@@ -2299,6 +2411,7 @@ if(page==="users"&&!isOwner())page="dashboard";
 drawNav();drawConnectionStatus();
 let html="";
 if(page==="dashboard")html=dashboard();
+else if(page==="live")html=liveScoringPage();
 else if(page==="scats")html=scatsPage();
 else if(page==="par3")html=par3Page();
 else if(page==="players")html=playersPage();
@@ -2313,7 +2426,7 @@ document.getElementById("app").innerHTML=html;
 setInterval(async()=>{
 const a=document.activeElement;
 const editing=a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
-if(!editing){
+if(!editing&&!liveSaving){
 await loadSharedData(false);
 if(page==="users"&&isOwner())await loadTournamentUsers();
 render();
