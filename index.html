@@ -406,7 +406,10 @@ ctp:[
 
 let data={players:[],matchups:{},scores:{},results:{},par3Results:{}};
 let liveStatuses=[];
-let liveMatchNo=Number(localStorage.getItem("delcoLiveMatch")||1);
+let liveRound=Number(localStorage.getItem("delcoLiveRound")||3);
+if(!ROUNDS.some(r=>r.id===liveRound))liveRound=3;
+function rememberedLiveMatch(round){return Number(localStorage.getItem("delcoLiveMatchR"+round)||(round===3?localStorage.getItem("delcoLiveMatch"):null)||1)}
+let liveMatchNo=rememberedLiveMatch(liveRound);
 let liveDraft=null;
 let liveSaving=false;
 let liveNotice="";
@@ -620,7 +623,7 @@ apiGet("tournament_round_settings"),
 apiGet("tournament_par3_results"),
 apiGet("tournament_live_status")
 ]);
-liveStatuses=live.filter(r=>Number(r.round_no)===3);
+liveStatuses=live;
 data.players=players.map(r=>({
 id:r.id,name:r.name,handicap:r.handicap,team:r.team,
 group:r.group_name,
@@ -1789,24 +1792,35 @@ return controls+banner;
 }
 
 
-function talamoreMatches(){
-return Array.from({length:8},(_,i)=>data.matchups[3]?.[i]||{
-id:"R3M"+(i+1),matchNo:i+1,hackers:[],shankers:[]
+function liveRoundInfo(){return ROUNDS.find(r=>r.id===liveRound)}
+function liveRoundMatches(){
+return Array.from({length:liveRoundInfo().matches},(_,i)=>data.matchups[liveRound]?.[i]||{
+id:"R"+liveRound+"M"+(i+1),matchNo:i+1,hackers:[],shankers:[]
 });
 }
 function liveNames(ids){
 return (ids||[]).map(getPlayer).filter(Boolean).map(p=>p.name).join(" & ")||"Players not assigned";
 }
 function liveHistory(matchNo){
-return liveStatuses.filter(r=>Number(r.match_no)===matchNo)
+return liveStatuses.filter(r=>Number(r.round_no)===liveRound&&Number(r.match_no)===matchNo)
 .sort((a,b)=>b.holes_completed-a.holes_completed);
 }
 function liveStatusText(row){
 return row.leader==="All square"?"Tied (All Square)":row.leader+" "+row.margin+" UP";
 }
+function selectLiveRound(value){
+if(liveSaving)return;
+const round=Number(value);
+if(!ROUNDS.some(r=>r.id===round))return;
+liveRound=round;
+localStorage.setItem("delcoLiveRound",String(round));
+liveMatchNo=Math.min(liveRoundInfo().matches,Math.max(1,rememberedLiveMatch(round)||1));
+liveDraft=null;liveNotice="";render();
+}
 function selectLiveMatch(value){
-liveMatchNo=Math.min(8,Math.max(1,Number(value)||1));
-localStorage.setItem("delcoLiveMatch",String(liveMatchNo));
+if(liveSaving)return;
+liveMatchNo=Math.min(liveRoundInfo().matches,Math.max(1,Number(value)||1));
+localStorage.setItem("delcoLiveMatchR"+liveRound,String(liveMatchNo));
 liveDraft=null;liveNotice="";render();
 }
 function liveHoleOrder(match){
@@ -1818,21 +1832,39 @@ const hole=Number(value),saved=liveHistory(liveMatchNo).find(r=>Number(r.hole)==
 liveDraft={matchNo:liveMatchNo,hole,value:saved?(saved.leader==="All square"?0:(saved.leader==="Hackers"?1:-1)*saved.margin):0};
 liveNotice="";render();
 }
+function liveHoleScores(round,match){
+if(round.id===3)return "";
+const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
+const score=getScore(match.id),course=COURSE_CARDS[round.id];
+return `<div style="margin-top:16px"><h3>Hole Scores</h3>
+<div class="tablewrap"><table class="scoretable">
+${scoreHeader()}
+${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
+${scoreReferenceRow(course.par,"PAR",true)}
+${players.map(p=>playerScoreRow(p,score,round.id,match.matchNo,match.id)).join("")}
+</table></div><p class="muted" style="font-size:12px">Scores save automatically. Update match status below after each hole.</p></div>`;
+}
 function liveScoringPage(){
-const matches=talamoreMatches();
-if(!(liveMatchNo>=1&&liveMatchNo<=8))liveMatchNo=1;
+const round=liveRoundInfo(),matches=liveRoundMatches();
+if(!(liveMatchNo>=1&&liveMatchNo<=round.matches))liveMatchNo=1;
 const match=matches[liveMatchNo-1],history=liveHistory(liveMatchNo),latest=history[0];
 const order=liveHoleOrder(match);
 const next=order[Math.min(17,latest?Number(latest.holes_completed):0)];
 const draft=liveDraft?.matchNo===liveMatchNo?liveDraft:{matchNo:liveMatchNo,hole:next.hole,value:0};
 const completed=order.find(x=>x.hole===draft.hole).completed;
-const ready=match.hackers.length===2&&match.shankers.length===2;
-const editable=canScoreRound(3)&&ready&&!liveSaving;
+const required=round.type==="singles"?1:2;
+const ready=match.hackers.length===required&&match.shankers.length===required;
+const editable=canScoreRound(liveRound)&&ready&&!liveSaving;
 const option=(value,label)=>`<option value="${value}" ${Number(draft.value)===value?"selected":""}>${label}</option>`;
 return `
 <div class="card">
-<h2 style="margin-top:0">Talamore Live Scoring</h2>
-<p class="muted">Update your match status after each hole.</p>
+<h2 style="margin-top:0">Live Scoring</h2>
+<label for="liveRoundSelect">Choose your round</label>
+<select id="liveRoundSelect" onchange="selectLiveRound(this.value)" ${liveSaving?"disabled":""}>
+${ROUNDS.map(r=>`<option value="${r.id}" ${r.id===liveRound?"selected":""}>Round ${r.id} — ${escapeHtml(r.course)}</option>`).join("")}
+</select>
+<p class="muted">${escapeHtml(round.course)} • ${escapeHtml(round.format)}</p>
+<p class="muted">${round.id===3?"Update your match status after each hole.":"Enter hole scores and update your match status after each hole."}</p>
 <label for="liveMatchSelect">Choose your matchup</label>
 <select id="liveMatchSelect" onchange="selectLiveMatch(this.value)" ${liveSaving?"disabled":""}>
 ${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>Match ${i+1}: ${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</option>`).join("")}
@@ -1845,7 +1877,8 @@ ${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>
 <div class="resultBanner ${latest?.leader==="Hackers"?"resultHackers":latest?.leader==="Shankers"?"resultShankers":"resultHalved"}">
 ${latest?escapeHtml(liveStatusText(latest))+`<div style="font-size:13px;margin-top:5px">After hole ${latest.hole} • ${latest.holes_completed} holes played</div>`:"No update yet"}
 </div>
-${!ready?'<div class="notice">Set this matchup in the Matchups tab first.</div>':!canScore()?'<div class="viewer" style="margin-top:12px">Sign in with scoring access to update your match.</div>':!isScoringOpen(3)?'<div class="scoringLockedNotice">Talamore scoring is locked.</div>':""}
+${ready?liveHoleScores(round,match):""}
+${!ready?'<div class="notice">Set this matchup in the Matchups tab first.</div>':!canScore()?'<div class="viewer" style="margin-top:12px">Sign in with scoring access to update your match.</div>':!isScoringOpen(liveRound)?`<div class="scoringLockedNotice">${escapeHtml(round.course)} scoring is locked.</div>`:""}
 <div class="row" style="margin-top:16px">
 <div class="field"><label for="liveHole">Hole just completed</label>
 <select id="liveHole" onchange="editLiveHole(this.value)" ${!editable?"disabled":""}>
@@ -1864,7 +1897,7 @@ ${liveNotice?`<p role="status">${escapeHtml(liveNotice)}</p>`:""}
 ${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
 ${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
 </div>
-<div class="card"><h2 style="margin-top:0">All Talamore Matches</h2>
+<div class="card"><h2 style="margin-top:0">All ${escapeHtml(round.course)} Matches</h2>
 ${matches.map((m,i)=>{
 const row=liveHistory(i+1)[0];
 return `<button style="display:block;width:100%;text-align:left;margin:8px 0;background:#f3f4f6;white-space:normal" onclick="selectLiveMatch(${i+1});document.getElementById('app').scrollIntoView({behavior:'smooth'})" ${liveSaving?"disabled":""}>
@@ -1873,20 +1906,21 @@ Match ${i+1} • ${row?escapeHtml(liveStatusText(row))+` — after hole ${row.ho
 }).join("")}</div>`;
 }
 async function saveLiveStatus(){
-if(liveSaving||!canScoreRound(3))return;
-const matchNo=liveMatchNo,match=talamoreMatches()[matchNo-1];
-if(match.hackers.length!==2||match.shankers.length!==2)return;
+if(liveSaving||!canScoreRound(liveRound))return;
+const roundNo=liveRound,matchNo=liveMatchNo,match=liveRoundMatches()[matchNo-1];
+const required=liveRoundInfo().type==="singles"?1:2;
+if(match.hackers.length!==required||match.shankers.length!==required)return;
 const hole=Number(document.getElementById("liveHole").value);
 const value=Number(document.getElementById("liveStatus").value);
 const completed=liveHoleOrder(match).find(x=>x.hole===hole)?.completed;
 if(!completed||!Number.isInteger(value)||Math.abs(value)>completed)return;
-const row={tournament_id:TOURNAMENT_ID,round_no:3,match_no:matchNo,hole,
+const row={tournament_id:TOURNAMENT_ID,round_no:roundNo,match_no:matchNo,hole,
 holes_completed:completed,leader:value===0?"All square":value>0?"Hackers":"Shankers",
 margin:Math.abs(value),updated_at:new Date().toISOString()};
 liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";render();
 try{
 await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
-liveStatuses=liveStatuses.filter(r=>!(Number(r.match_no)===matchNo&&Number(r.hole)===hole));
+liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.hole)===hole));
 liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved.";
 }catch(e){console.error(e);liveNotice="Could not save. Please try again.";}
 finally{liveSaving=false;render();}
