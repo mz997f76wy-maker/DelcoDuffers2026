@@ -603,6 +603,7 @@ throw new Error("Database delete failed");
 }
 }
 
+let initialConnectionPending=true;
 async function loadSharedData(rerender=true){
 try{
 const [players,matchups,scores,results,settings,par3]=await Promise.all([
@@ -653,11 +654,13 @@ settings.forEach(r=>{
 roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
 connected=true;
+initialConnectionPending=false;
 drawConnectionStatus();
 if(rerender)render();
 }catch(e){
 console.error(e);
 connected=false;
+initialConnectionPending=false;
 drawConnectionStatus();
 }
 }
@@ -665,6 +668,10 @@ drawConnectionStatus();
 function drawConnectionStatus(){
 const box=document.getElementById("connectionStatus");
 if(!box)return;
+if(!connected&&initialConnectionPending){
+box.innerHTML=`<div class="viewer">⏳ Loading tournament data…</div>`;
+return;
+}
 if(!connected){
 box.innerHTML=`<div class="offline">⚠️ Unable to reach shared tournament database</div>`;
 return;
