@@ -789,7 +789,7 @@ else if(leader==="Halved"||leader==="All square"){rowClass="liveHalved";centerCl
 const showStartHole=(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
 if(result){
 const finish=liveFinish(latest);
-center=`<span class="liveStatusMain">${finish?.winner===result?escapeHtml(finish.label):result==="Halved"?"TIED":"WIN"}</span><span class="liveStatusDetail">FINAL</span>`;
+center=`<span class="liveStatusMain">${finish?.winner===result?escapeHtml(finish.label):result==="Halved"?"TIED":"WIN"}</span>`;
 }else if(latest){
 center=`<span class="liveStatusMain">${leader==="All square"?"A/S":escapeHtml(latest.margin)+" UP"}</span><span class="liveStatusDetail">THRU ${escapeHtml(latest.holes_completed)}</span>`;
 }else{
@@ -1825,7 +1825,7 @@ if(!Number.isInteger(played)||played<1||played>18||!Number.isInteger(margin)||ma
 const remaining=18-played;
 if(row.leader==="All square"&&margin===0&&remaining===0)return{winner:"Halved",label:"TIED"};
 if((row.leader==="Hackers"||row.leader==="Shankers")&&margin>remaining){
-return{winner:row.leader,label:remaining?margin+"&"+remaining:margin+" UP"};
+return{winner:row.leader,label:remaining?margin+"&"+remaining:margin+"UP"};
 }
 return null;
 }
