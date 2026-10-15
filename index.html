@@ -1952,11 +1952,10 @@ const latest=liveStatuses.filter(r=>Number(r.round_no)===roundNo&&Number(r.match
 .sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
 const finish=liveFinish(latest);
 if(finish){
-await upsert("tournament_results",{tournament_id:TOURNAMENT_ID,round_no:roundNo,match_no:matchNo,winner:finish.winner},"tournament_id,round_no,match_no");
+// The live-status database trigger saves the result in the same transaction.
 data.results[match.id]={winner:finish.winner};
 liveNotice=finish.winner==="Halved"?"Match halved — half a point awarded to each team.":finish.winner+" win "+finish.label+" — 1 point awarded.";
 }else if(data.results[match.id]){
-await deleteRows("tournament_results",{round_no:roundNo,match_no:matchNo});
 delete data.results[match.id];
 liveNotice="Match status corrected — match is in progress and the final point was removed.";
 }
