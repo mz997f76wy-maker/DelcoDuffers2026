@@ -788,7 +788,8 @@ else if(leader==="Shankers"){rowClass="liveWinShankers";centerClass="liveLeaderS
 else if(leader==="Halved"||leader==="All square"){rowClass="liveHalved";centerClass="liveTied"}
 const showStartHole=(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
 if(result){
-center=`<span class="liveStatusMain">${result==="Halved"?"TIED":"WIN"}</span><span class="liveStatusDetail">FINAL</span>`;
+const finish=liveFinish(latest);
+center=`<span class="liveStatusMain">${finish?.winner===result?escapeHtml(finish.label):result==="Halved"?"TIED":"WIN"}</span><span class="liveStatusDetail">FINAL</span>`;
 }else if(latest){
 center=`<span class="liveStatusMain">${leader==="All square"?"A/S":escapeHtml(latest.margin)+" UP"}</span><span class="liveStatusDetail">THRU ${escapeHtml(latest.holes_completed)}</span>`;
 }else{
@@ -1817,7 +1818,20 @@ function liveHistory(matchNo){
 return liveStatuses.filter(r=>Number(r.round_no)===liveRound&&Number(r.match_no)===matchNo)
 .sort((a,b)=>b.holes_completed-a.holes_completed);
 }
+function liveFinish(row){
+if(!row)return null;
+const played=Number(row.holes_completed),margin=Number(row.margin);
+if(!Number.isInteger(played)||played<1||played>18||!Number.isInteger(margin)||margin<0||margin>played)return null;
+const remaining=18-played;
+if(row.leader==="All square"&&margin===0&&remaining===0)return{winner:"Halved",label:"TIED"};
+if((row.leader==="Hackers"||row.leader==="Shankers")&&margin>remaining){
+return{winner:row.leader,label:remaining?margin+"&"+remaining:margin+" UP"};
+}
+return null;
+}
 function liveStatusText(row){
+const finish=liveFinish(row);
+if(finish)return finish.winner==="Halved"?"Final — Tied":finish.winner+" win "+finish.label;
 return row.leader==="All square"?"Tied (All Square)":row.leader+" "+row.margin+" UP";
 }
 function selectLiveRound(value){
@@ -1905,7 +1919,7 @@ ${Array.from({length:completed},(_,i)=>option(-(i+1),"Shankers "+(i+1)+" UP")).j
 ${editable?`<button class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
 ${liveSaving?'<p role="status">Saving match status…</p>':""}
 ${liveNotice?`<p role="status">${escapeHtml(liveNotice)}</p>`:""}
-<p class="muted" style="font-size:12px">Final match results are entered in the Scoring tab.</p>
+<p class="muted" style="font-size:12px">Saving a lead greater than the holes remaining automatically records the win and team point. Tied finishes award half a point each.</p>
 ${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
 ${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
 </div>
@@ -1934,7 +1948,19 @@ try{
 await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
 liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.hole)===hole));
 liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved.";
-}catch(e){console.error(e);liveNotice="Could not save. Please try again.";}
+const latest=liveStatuses.filter(r=>Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo)
+.sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
+const finish=liveFinish(latest);
+if(finish){
+await upsert("tournament_results",{tournament_id:TOURNAMENT_ID,round_no:roundNo,match_no:matchNo,winner:finish.winner},"tournament_id,round_no,match_no");
+data.results[match.id]={winner:finish.winner};
+liveNotice=finish.winner==="Halved"?"Match halved — half a point awarded to each team.":finish.winner+" win "+finish.label+" — 1 point awarded.";
+}else if(data.results[match.id]){
+await deleteRows("tournament_results",{round_no:roundNo,match_no:matchNo});
+delete data.results[match.id];
+liveNotice="Match status corrected — match is in progress and the final point was removed.";
+}
+}catch(e){console.error(e);liveDraft={matchNo,hole,value};liveNotice="Could not finish saving the match status and result. Save this status again to retry.";}
 finally{liveSaving=false;render();}
 }
 
