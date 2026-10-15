@@ -1748,6 +1748,7 @@ const first=confirm(
 "This will permanently erase:\n"+
 "• Every hole score\n"+
 "• Every official match result\n"+
+"• All live match statuses and updates\n"+
 "• All current Scat results\n"+
 "• The current Ryder Cup points\n\n"+
 "Players, handicaps, teams, groups, matchups and permissions will NOT be changed."
@@ -1769,8 +1770,9 @@ const message=await r.text();console.error(message);throw new Error("Reset faile
 Object.keys(saveTimers).forEach(k=>clearTimeout(saveTimers[k]));
 clearTimeout(scoreAdvanceTimer);
 saveTimers={};data.scores={};data.results={};
+liveStatuses=[];liveDraft=null;liveNotice="";
 await loadSharedData(false);render();
-alert("Reset complete.\n\nAll scores and match results have been cleared.");
+alert("Reset complete.\n\nAll scores, match results and live match statuses have been cleared.");
 }catch(e){
 console.error(e);
 alert("Reset could not be completed. No other tournament settings were changed.");
