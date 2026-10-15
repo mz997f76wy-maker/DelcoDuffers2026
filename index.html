@@ -155,6 +155,11 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .liveSide.left{justify-content:flex-end;text-align:right}
 .liveSide.right{justify-content:flex-start;text-align:left}
 .liveCenter{display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-left:1px solid #d1d5db;border-right:1px solid #d1d5db;font-weight:1000;font-size:13px;text-align:center;color:#111827}
+.liveCenter.liveLeaderHackers{background:#dc2626;color:white}
+.liveCenter.liveLeaderShankers{background:#2563eb;color:white}
+.liveCenter.liveTied{background:#f3f4f6;color:#374151}
+.liveStatusMain{display:block;font-size:16px;line-height:1.2}
+.liveStatusDetail{display:block;font-size:10px;line-height:1.3;margin-top:4px}
 .liveWinHackers .liveSide.left{background:#dc2626;color:white}
 .liveWinShankers .liveSide.right{background:#2563eb;color:white}
 .liveHalved .liveSide{background:#f3f4f6}
@@ -204,7 +209,7 @@ header h1{font-size:25px}
 .liveScoreHeader{grid-template-columns:1fr 50px 50px 1fr;gap:3px;margin-bottom:7px}
 .liveTeamName{font-size:15px;padding:9px 6px}
 .livePoints{font-size:19px}
-.liveMatchRow{grid-template-columns:minmax(0,1fr) 43px minmax(0,1fr);min-height:57px;border-bottom:4px solid #d1d5db}
+.liveMatchRow{grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);min-height:57px;border-bottom:4px solid #d1d5db}
 .liveSide{font-size:14px;padding:6px 5px}
 .liveCenter{font-size:10px}
 .livePlayerHcp{font-size:.65em;margin-left:0;margin-top:2px}
@@ -774,19 +779,26 @@ ${escapeHtml(p.name)}
 
 function renderLiveMatchRow(match){
 const result=data.results[match.id]?.winner||"";
-let rowClass="",center="—";
-if(result==="Hackers"){rowClass="liveWinHackers";center="FINAL"}
-else if(result==="Shankers"){rowClass="liveWinShankers";center="FINAL"}
-else if(result==="Halved"){rowClass="liveHalved";center="A/S"}
+const latest=liveStatuses.filter(r=>Number(r.round_no)===dashboardRound&&Number(r.match_no)===Number(match.matchNo))
+.sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
+let rowClass="",centerClass="",center="";
+const leader=result||latest?.leader||"";
+if(leader==="Hackers"){rowClass="liveWinHackers";centerClass="liveLeaderHackers"}
+else if(leader==="Shankers"){rowClass="liveWinShankers";centerClass="liveLeaderShankers"}
+else if(leader==="Halved"||leader==="All square"){rowClass="liveHalved";centerClass="liveTied"}
 const showStartHole=(dashboardRound===2||dashboardRound===3)&&match.teeStartHole;
+if(result){
+center=`<span class="liveStatusMain">${result==="Halved"?"TIED":"WIN"}</span><span class="liveStatusDetail">FINAL</span>`;
+}else if(latest){
+center=`<span class="liveStatusMain">${leader==="All square"?"A/S":escapeHtml(latest.margin)+" UP"}</span><span class="liveStatusDetail">THRU ${escapeHtml(latest.holes_completed)}</span>`;
+}else{
+center=(match.teeTime?escapeHtml(formatTeeTime(match.teeTime))+"<br>":"")+
+(showStartHole?"Hole "+escapeHtml(match.teeStartHole)+"<br>":"")+"—";
+}
 return`
 <div class="liveMatchRow ${rowClass}">
 <div class="liveSide left"><div>${livePlayerNames(match.hackers)}</div></div>
-<div class="liveCenter"><div>
-${match.teeTime?formatTeeTime(match.teeTime)+"<br>":""}
-${showStartHole?"Hole "+match.teeStartHole+"<br>":""}
-${center}
-</div></div>
+<div class="liveCenter ${centerClass}"><div>${center}</div></div>
 <div class="liveSide right"><div>${livePlayerNames(match.shankers)}</div></div>
 </div>`;
 }
@@ -2560,3 +2572,4 @@ render();
 </script>
 </body>
 </html>
+
