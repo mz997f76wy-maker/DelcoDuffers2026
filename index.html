@@ -1853,9 +1853,22 @@ function liveHoleOrder(match){
 const start=Math.min(18,Math.max(1,parseInt(match.teeStartHole,10)||1));
 return Array.from({length:18},(_,i)=>({hole:(start-1+i)%18+1,completed:i+1}));
 }
+function liveStatusValue(row){
+return !row||row.leader==="All square"?0:(row.leader==="Hackers"?1:-1)*Number(row.margin);
+}
+function liveNextEntry(match,history){
+const latest=history[0],order=liveHoleOrder(match);
+const next=order[Math.min(17,latest?Number(latest.holes_completed):0)];
+return{matchNo:match.matchNo,hole:next.hole,value:liveStatusValue(latest)};
+}
 function editLiveHole(value){
-const hole=Number(value),saved=liveHistory(liveMatchNo).find(r=>Number(r.hole)===hole);
-liveDraft={matchNo:liveMatchNo,hole,value:saved?(saved.leader==="All square"?0:(saved.leader==="Hackers"?1:-1)*saved.margin):0};
+const hole=Number(value),history=liveHistory(liveMatchNo),saved=history.find(r=>Number(r.hole)===hole);
+const match=liveRoundMatches()[liveMatchNo-1];
+const completed=liveHoleOrder(match).find(x=>x.hole===hole)?.completed;
+if(!completed)return;
+const previous=liveDraft?.matchNo===liveMatchNo?Number(liveDraft.value):liveStatusValue(history[0]);
+const selected=saved?liveStatusValue(saved):previous;
+liveDraft={matchNo:liveMatchNo,hole,value:Math.sign(selected)*Math.min(Math.abs(selected),completed)};
 liveNotice="";render();
 }
 function liveHoleScores(round,match){
@@ -1875,8 +1888,7 @@ const round=liveRoundInfo(),matches=liveRoundMatches();
 if(!(liveMatchNo>=1&&liveMatchNo<=round.matches))liveMatchNo=1;
 const match=matches[liveMatchNo-1],history=liveHistory(liveMatchNo),latest=history[0];
 const order=liveHoleOrder(match);
-const next=order[Math.min(17,latest?Number(latest.holes_completed):0)];
-const draft=liveDraft?.matchNo===liveMatchNo?liveDraft:{matchNo:liveMatchNo,hole:next.hole,value:0};
+const draft=liveDraft?.matchNo===liveMatchNo?liveDraft:liveNextEntry(match,history);
 const completed=order.find(x=>x.hole===draft.hole).completed;
 const required=round.type==="singles"?1:2;
 const ready=match.hackers.length===required&&match.shankers.length===required;
