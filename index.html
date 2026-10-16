@@ -160,6 +160,8 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .augustaTable .augustaTotalLabel{width:44px;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.5px;writing-mode:vertical-rl;text-orientation:upright;position:sticky;left:0;z-index:3}
 .augustaTable .augustaStart{width:44px;background:#cbd6d4}
 .augustaTable th.augustaStart{font-family:Arial,sans-serif;font-size:10px}
+.augustaTable .augustaStrokeTotal{width:62px;background:#c4d0cf;border-left:2px solid #263b3c;font-weight:800}
+.augustaTable th.augustaStrokeTotal{font-family:Arial,sans-serif;font-size:11px}
 .augustaTable .augustaUnder{color:#ac2229}
 .augustaTable .augustaOver{color:#1b5840}
 .augustaTable .augustaEven{color:#17282b}
@@ -994,8 +996,9 @@ return{holes,match,handicapValid};
 function leaderboardRows(round,mode){
 const priorRounds=LEADERBOARD_ROUNDS.filter(id=>id<round);
 return data.players.map(player=>{
-let start=0,priorComplete=true,hasScores=false;
+let start=0,priorComplete=true,hasScores=false,countedPar=0;
 for(const prior of priorRounds){
+countedPar+=COURSE_CARDS[prior].par.reduce((sum,par)=>sum+par,0);
 const previous=leaderboardPlayerRound(player,prior);
 for(const hole of previous.holes){
 const value=hole[mode];
@@ -1010,11 +1013,11 @@ const startHole=Math.min(18,Math.max(1,parseInt(current.match?.teeStartHole,10)|
 for(let n=0;n<18;n++){
 const h=(startHole-1+n)%18,value=current.holes[h][mode];
 if(value===null)continue;
-played++;hasScores=true;
+played++;hasScores=true;countedPar+=COURSE_CARDS[round].par[h];
 if(running!==null){running+=value;cumulative[h]=running;}
 }
 const eligible=priorComplete&&(mode!=="net"||current.handicapValid);
-return{player,start:priorComplete?start:null,total:eligible&&hasScores?running:null,cumulative,played,eligible,hasScores};
+return{player,start:priorComplete?start:null,total:eligible&&hasScores?running:null,strokes:eligible&&hasScores?countedPar+running:null,cumulative,played,eligible,hasScores};
 }).filter(row=>row.eligible&&row.hasScores)
 .sort((a,b)=>a.total-b.total||b.played-a.played||String(a.player.name).localeCompare(String(b.player.name)))
 .slice(0,10);
@@ -1032,15 +1035,16 @@ return`<td class="${extra} ${color}">${leaderboardValue(value)}</td>`;
 function augustaLeaderboard(mode){
 const round=ROUNDS.find(r=>r.id===leaderboardRound),card=COURSE_CARDS[round.id];
 const rows=leaderboardRows(round.id,mode),carry=round.id!==1;
+const cumulativePar=LEADERBOARD_ROUNDS.filter(id=>id<=round.id).reduce((sum,id)=>sum+COURSE_CARDS[id].par.reduce((a,b)=>a+b,0),0);
 return`<section class="augustaBoard" aria-label="${mode} top ten leaderboard">
 <div class="augustaHeading"><h2>${mode.toUpperCase()} LEADERS</h2><p>ROUND ${round.id} · ${escapeHtml(round.course.toUpperCase())} · TOP 10</p></div>
 ${rows.length?`<div class="tablewrap" role="region" aria-label="${mode} scores by hole; swipe for later holes">
 <table class="augustaTable">
-<thead><tr><th class="augustaTotalLabel" scope="col" rowspan="2">TOTAL</th><th class="augustaName">HOLE</th>${carry?'<th class="augustaStart" scope="col" rowspan="2">START</th>':""}${card.par.map((_,i)=>`<th scope="col">${i+1}</th>`).join("")}</tr>
-<tr><th class="augustaName">PAR</th>${card.par.map(par=>`<th>${par}</th>`).join("")}</tr></thead>
-<tbody>${rows.map(row=>`<tr>${leaderboardCell(row.total,"augustaTotal")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${carry?leaderboardCell(row.start,"augustaStart"):""}${row.cumulative.map(value=>leaderboardCell(value)).join("")}</tr>`).join("")}</tbody>
+<thead><tr><th class="augustaTotalLabel" scope="col" rowspan="2">TOTAL</th><th class="augustaName">HOLE</th>${carry?'<th class="augustaStart" scope="col" rowspan="2">START</th>':""}${card.par.map((_,i)=>`<th scope="col">${i+1}</th>`).join("")}<th class="augustaStrokeTotal" scope="col">TOTAL</th></tr>
+<tr><th class="augustaName">PAR</th>${card.par.map(par=>`<th>${par}</th>`).join("")}<th class="augustaStrokeTotal">${cumulativePar}</th></tr></thead>
+<tbody>${rows.map(row=>`<tr>${leaderboardCell(row.total,"augustaTotal")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${carry?leaderboardCell(row.start,"augustaStart"):""}${row.cumulative.map(value=>leaderboardCell(value)).join("")}<td class="augustaStrokeTotal" aria-label="Cumulative ${mode} strokes">${row.strokes===null?"—":row.strokes}</td></tr>`).join("")}</tbody>
 </table></div>`:`<div class="augustaEmpty">${carry?"Standings appear once all earlier counting rounds have 18 holes entered for a player.":"Standings appear when scores are entered."}</div>`}
-<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>CUMULATIVE AFTER EACH SCORED HOLE</span></div>
+<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>TOTAL: CUMULATIVE STROKES · HOLES: SCORE TO PAR</span></div>
 </section>`;
 }
 
