@@ -147,27 +147,30 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .leadersRounds button[aria-pressed="true"]{background:#111827;border-color:#111827;color:white}
 .leadersRounds button span{display:block;font-size:11px;margin-bottom:4px}
 .leadersNote{font-size:12px;color:#4b5563;line-height:1.5;margin:10px 0 0}
-.augustaBoard{background:#154d3b;padding:0 6px 28px;margin-bottom:20px;border-radius:50% 50% 0 0 / 30px 30px 0 0;box-shadow:0 3px 9px #00000022;overflow:hidden}
-.augustaHeading{background:linear-gradient(#e3e9e8,#c5d0cf);color:#16282b;text-align:center;padding:18px 8px 8px;border-radius:50% 50% 0 0 / 28px 28px 0 0;border:1px solid #7f9291;border-bottom:0}
-.augustaHeading h2{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:1.8px;margin:0;line-height:1}
-.augustaHeading p{font-size:11px;margin:7px 0 0;letter-spacing:1px}
-.augustaTable{border-collapse:separate;border-spacing:0;width:100%;min-width:870px;background:#d4dedd;color:#17282b;table-layout:fixed;border-top:2px solid #263b3c;border-left:2px solid #263b3c}
-.augustaTable th,.augustaTable td{border-right:1.5px solid #34494a;border-bottom:1.5px solid #34494a;padding:2px;text-align:center;height:30px;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:700;font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2;background-image:linear-gradient(180deg,#ffffff18,#00000008);box-shadow:inset 0 1px 0 #ffffff60}
-.augustaTable thead th{background:#c4d0cf;color:#17282b;font-size:20px;height:28px}
-.augustaTable .augustaName{width:160px;text-align:left;padding-left:7px;position:sticky;left:44px;z-index:1;background:#d4dedd;text-transform:uppercase;font-size:17px;letter-spacing:.6px;box-shadow:2px 0 0 #263b3c;overflow:hidden;text-overflow:ellipsis}
-.augustaTable thead .augustaName{background:#c4d0cf;z-index:2;text-align:center;font-size:21px}
-.augustaTable .augustaTotal{background:#cbd6d4;font-size:20px;position:sticky;left:0;z-index:2;width:44px}
-.augustaTable .augustaTotalLabel{width:44px;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.5px;writing-mode:vertical-rl;text-orientation:upright;position:sticky;left:0;z-index:3}
-.augustaTable .augustaStart{width:44px;background:#cbd6d4}
-.augustaTable th.augustaStart{font-family:Arial,sans-serif;font-size:10px}
-.augustaTable .augustaStrokeTotal{width:62px;background:#c4d0cf;border-left:2px solid #263b3c;font-weight:800}
-.augustaTable th.augustaStrokeTotal{font-family:Arial,sans-serif;font-size:11px}
-.augustaTable .augustaUnder{color:#ac2229}
-.augustaTable .augustaOver{color:#1b5840}
-.augustaTable .augustaEven{color:#17282b}
-.augustaLegend{color:#e4eee5;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11px;padding:10px 4px 0;letter-spacing:.3px;line-height:1.5}
-.augustaEmpty{padding:25px 12px;background:#d4dedd;color:#17282b;text-align:center;font-size:14px}
-@media(max-width:480px){.augustaBoard{padding:0 4px 24px}.augustaHeading h2{font-size:29px}}
+/* Masters-style leaderboard: ordinary 1px rules, section dividers 5px. */
+.augustaBoard{--board-green:#07513d;background:#fff;color:#111;border:5px solid var(--board-green);margin-bottom:20px;overflow:hidden}
+.augustaHeading{background:#fff;color:var(--board-green);text-align:center;padding:12px 8px;border-bottom:3px solid var(--board-green)}
+.augustaHeading h2{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:36px;font-weight:800;letter-spacing:1px;margin:0;line-height:1}
+.augustaHeading p{font-size:11px;margin:6px 0 0;letter-spacing:1px}
+.augustaTable{border-collapse:separate;border-spacing:0;width:100%;min-width:1000px;background:#fff;color:#111;table-layout:fixed}
+.augustaTable th,.augustaTable td{border:0;border-right:1px solid var(--board-green);border-bottom:1px solid var(--board-green);padding:3px 2px;text-align:center;height:34px;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:700;font-size:21px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.15;background:#fff}
+.augustaTable thead th{color:var(--board-green);font-size:20px;height:30px}
+.augustaTable .augustaPrior{width:52px;position:sticky;left:0;z-index:2;background:#fff;border-right:5px solid var(--board-green)}
+.augustaTable thead .augustaPrior{font-size:17px;z-index:4}
+.augustaTable .augustaName{width:165px;text-align:left;padding-left:8px;position:sticky;left:52px;z-index:2;background:#fff;text-transform:uppercase;font-size:21px;letter-spacing:.3px;overflow:hidden;text-overflow:ellipsis;border-right:5px solid var(--board-green)}
+.augustaTable thead .augustaName{z-index:4;text-align:center}
+.augustaTable .augustaBackNine{border-left:4px solid var(--board-green)}
+.augustaTable .augustaFinish{width:65px;border-left:4px solid var(--board-green);border-right:0;font-weight:800}
+.augustaTable tbody tr:nth-child(3n+1)>*{border-bottom:5px solid var(--board-green)}
+.augustaTable tbody tr:last-child>*{border-bottom:0}
+.augustaTable .augustaUnder{color:#bd2026}
+.augustaTable .augustaOver,.augustaTable .augustaEven{color:#111}
+.augustaLegend{color:var(--board-green);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11px;padding:10px 8px;border-top:3px solid var(--board-green);line-height:1.5}
+.augustaEmpty{padding:25px 12px;background:#fff;color:#111;text-align:center;font-size:14px}
+.leadersRounds button{border-color:#07513d;background:#fff;color:#07513d;border-radius:3px}
+.leadersRounds button[aria-pressed="true"]{background:#07513d;border-color:#07513d;color:#fff}
+.leadersRounds button:focus-visible{outline:3px solid #07513d;outline-offset:3px}
+@media(max-width:480px){.augustaHeading h2{font-size:30px}}
 .dashboardRoundLabel{font-size:13px;font-weight:800;color:#6b7280;margin-bottom:8px}
 .dashboardRounds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .dashboardRoundButton{min-width:0;min-height:56px;padding:10px 4px;background:#f3f4f6;color:#374151;border:2px solid #d1d5db;font-size:13px;line-height:1.25}
@@ -1035,16 +1038,15 @@ return`<td class="${extra} ${color}">${leaderboardValue(value)}</td>`;
 function augustaLeaderboard(mode){
 const round=ROUNDS.find(r=>r.id===leaderboardRound),card=COURSE_CARDS[round.id];
 const rows=leaderboardRows(round.id,mode),carry=round.id!==1;
-const cumulativePar=LEADERBOARD_ROUNDS.filter(id=>id<=round.id).reduce((sum,id)=>sum+COURSE_CARDS[id].par.reduce((a,b)=>a+b,0),0);
 return`<section class="augustaBoard" aria-label="${mode} top ten leaderboard">
 <div class="augustaHeading"><h2>${mode.toUpperCase()} LEADERS</h2><p>ROUND ${round.id} · ${escapeHtml(round.course.toUpperCase())} · TOP 10</p></div>
-${rows.length?`<div class="tablewrap" role="region" aria-label="${mode} scores by hole; swipe for later holes">
+${rows.length?`<div class="tablewrap" role="region" tabindex="0" aria-label="${mode} scores by hole; swipe for later holes">
 <table class="augustaTable">
-<thead><tr><th class="augustaTotalLabel" scope="col" rowspan="2">TOTAL</th><th class="augustaName">HOLE</th>${carry?'<th class="augustaStart" scope="col" rowspan="2">START</th>':""}${card.par.map((_,i)=>`<th scope="col">${i+1}</th>`).join("")}<th class="augustaStrokeTotal" scope="col">TOTAL</th></tr>
-<tr><th class="augustaName">PAR</th>${card.par.map(par=>`<th>${par}</th>`).join("")}<th class="augustaStrokeTotal">${cumulativePar}</th></tr></thead>
-<tbody>${rows.map(row=>`<tr>${leaderboardCell(row.total,"augustaTotal")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${carry?leaderboardCell(row.start,"augustaStart"):""}${row.cumulative.map(value=>leaderboardCell(value)).join("")}<td class="augustaStrokeTotal" aria-label="Cumulative ${mode} strokes">${row.strokes===null?"—":row.strokes}</td></tr>`).join("")}</tbody>
+<thead><tr><th class="augustaPrior" scope="col" rowspan="2">PRIOR</th><th class="augustaName" scope="col" rowspan="2">PLAYER</th>${card.par.map((_,i)=>`<th scope="col"${i===9?' class="augustaBackNine"':""}>${i+1}</th>`).join("")}<th class="augustaFinish" scope="col" rowspan="2">TOTAL</th></tr>
+<tr>${card.par.map((par,i)=>`<th${i===9?' class="augustaBackNine"':""} aria-label="Hole ${i+1} par ${par}">${par}</th>`).join("")}</tr></thead>
+<tbody>${rows.map(row=>`<tr>${leaderboardCell(row.start,"augustaPrior")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${row.cumulative.map((value,i)=>leaderboardCell(value,i===9?"augustaBackNine":"")).join("")}${leaderboardCell(row.total,"augustaFinish")}</tr>`).join("")}</tbody>
 </table></div>`:`<div class="augustaEmpty">${carry?"Standings appear once all earlier counting rounds have 18 holes entered for a player.":"Standings appear when scores are entered."}</div>`}
-<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>TOTAL: CUMULATIVE STROKES · HOLES: SCORE TO PAR</span></div>
+<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>PRIOR: CARRIED SCORE · HOLES & TOTAL: CUMULATIVE TO PAR · SECOND HEADER ROW: PAR</span></div>
 </section>`;
 }
 
@@ -2745,5 +2747,6 @@ render();
 </script>
 </body>
 </html>
+
 
 
