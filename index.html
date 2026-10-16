@@ -996,9 +996,41 @@ return{gross:gross===null?null:gross-par,net:gross===null||strokes===null?null:g
 return{holes,match,handicapValid};
 }
 
+function leaderboardPlaceholderRows(round){
+const info=ROUNDS.find(r=>r.id===round);
+const raw=data.matchups[round]||[];
+let matches=Array.from({length:info.matches},(_,i)=>raw[i]||{
+matchNo:i+1,hackers:[],shankers:[],teeTime:"",teeStartHole:""
+});
+if(round===4){
+matches=Array.from({length:8},(_,f)=>{
+const pair=matches.filter(m=>m.matchNo===f*2+1||m.matchNo===f*2+2)
+.sort((a,b)=>a.matchNo-b.matchNo);
+return{foursomeNo:f+1,teeTime:pair.find(m=>m.teeTime)?.teeTime||"",pair};
+}).sort((a,b)=>(a.teeTime||"99:99").localeCompare(b.teeTime||"99:99")||a.foursomeNo-b.foursomeNo)
+.flatMap(f=>f.pair);
+}else{
+matches.sort((a,b)=>(a.teeTime||"99:99").localeCompare(b.teeTime||"99:99")||
+((round===2||round===3)?Number(a.teeStartHole||99)-Number(b.teeStartHole||99):0)||
+a.matchNo-b.matchNo);
+}
+const seen=new Set(),players=[];
+for(const match of matches){
+for(const id of [...(match.hackers||[]),...(match.shankers||[])]){
+const player=getPlayer(id),key=String(id);
+if(!player||seen.has(key))continue;
+seen.add(key);players.push(player);
+}
+}
+return players.slice(0,10).map(player=>({
+player,start:null,total:null,strokes:null,cumulative:Array(18).fill(null),
+played:0,eligible:false,hasScores:false
+}));
+}
+
 function leaderboardRows(round,mode){
 const priorRounds=LEADERBOARD_ROUNDS.filter(id=>id<round);
-return data.players.map(player=>{
+const ranked=data.players.map(player=>{
 let start=0,priorComplete=true,hasScores=false,countedPar=0;
 for(const prior of priorRounds){
 countedPar+=COURSE_CARDS[prior].par.reduce((sum,par)=>sum+par,0);
@@ -1024,10 +1056,11 @@ return{player,start:priorComplete?start:null,total:eligible&&hasScores?running:n
 }).filter(row=>row.eligible&&row.hasScores)
 .sort((a,b)=>a.total-b.total||b.played-a.played||String(a.player.name).localeCompare(String(b.player.name)))
 .slice(0,10);
+return ranked.length?ranked:leaderboardPlaceholderRows(round);
 }
 
 function leaderboardValue(value){
-return value===null?"—":value===0?"E":value>0?"+"+value:"−"+Math.abs(value);
+return value===null?"":value===0?"E":value>0?"+"+value:"−"+Math.abs(value);
 }
 
 function leaderboardCell(value,extra=""){
