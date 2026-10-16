@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
 <title>Delco Duffers 2026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
 <style>
 *{box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
@@ -140,6 +141,31 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .liveRoundControl{padding:14px 16px;background:white}
 .liveRoundControl label{font-size:13px}
 .liveRoundControl select{font-weight:800}
+.leadersControls{margin-bottom:14px}
+.leadersRounds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.leadersRounds button{min-height:54px;padding:9px 4px;font-size:13px;border:2px solid #d1d5db;background:#f3f4f6;color:#374151}
+.leadersRounds button[aria-pressed="true"]{background:#111827;border-color:#111827;color:white}
+.leadersRounds button span{display:block;font-size:11px;margin-bottom:4px}
+.leadersNote{font-size:12px;color:#4b5563;line-height:1.5;margin:10px 0 0}
+.augustaBoard{background:#154d3b;padding:0 6px 28px;margin-bottom:20px;border-radius:50% 50% 0 0 / 30px 30px 0 0;box-shadow:0 3px 9px #00000022;overflow:hidden}
+.augustaHeading{background:linear-gradient(#e3e9e8,#c5d0cf);color:#16282b;text-align:center;padding:18px 8px 8px;border-radius:50% 50% 0 0 / 28px 28px 0 0;border:1px solid #7f9291;border-bottom:0}
+.augustaHeading h2{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:1.8px;margin:0;line-height:1}
+.augustaHeading p{font-size:11px;margin:7px 0 0;letter-spacing:1px}
+.augustaTable{border-collapse:separate;border-spacing:0;width:100%;min-width:870px;background:#d4dedd;color:#17282b;table-layout:fixed;border-top:2px solid #263b3c;border-left:2px solid #263b3c}
+.augustaTable th,.augustaTable td{border-right:1.5px solid #34494a;border-bottom:1.5px solid #34494a;padding:2px;text-align:center;height:30px;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:700;font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2;background-image:linear-gradient(180deg,#ffffff18,#00000008);box-shadow:inset 0 1px 0 #ffffff60}
+.augustaTable thead th{background:#c4d0cf;color:#17282b;font-size:20px;height:28px}
+.augustaTable .augustaName{width:160px;text-align:left;padding-left:7px;position:sticky;left:44px;z-index:1;background:#d4dedd;text-transform:uppercase;font-size:17px;letter-spacing:.6px;box-shadow:2px 0 0 #263b3c;overflow:hidden;text-overflow:ellipsis}
+.augustaTable thead .augustaName{background:#c4d0cf;z-index:2;text-align:center;font-size:21px}
+.augustaTable .augustaTotal{background:#cbd6d4;font-size:20px;position:sticky;left:0;z-index:2;width:44px}
+.augustaTable .augustaTotalLabel{width:44px;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.5px;writing-mode:vertical-rl;text-orientation:upright;position:sticky;left:0;z-index:3}
+.augustaTable .augustaStart{width:44px;background:#cbd6d4}
+.augustaTable th.augustaStart{font-family:Arial,sans-serif;font-size:10px}
+.augustaTable .augustaUnder{color:#ac2229}
+.augustaTable .augustaOver{color:#1b5840}
+.augustaTable .augustaEven{color:#17282b}
+.augustaLegend{color:#e4eee5;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11px;padding:10px 4px 0;letter-spacing:.3px;line-height:1.5}
+.augustaEmpty{padding:25px 12px;background:#d4dedd;color:#17282b;text-align:center;font-size:14px}
+@media(max-width:480px){.augustaBoard{padding:0 4px 24px}.augustaHeading h2{font-size:29px}}
 .dashboardRoundLabel{font-size:13px;font-weight:800;color:#6b7280;margin-bottom:8px}
 .dashboardRounds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .dashboardRoundButton{min-width:0;min-height:56px;padding:10px 4px;background:#f3f4f6;color:#374151;border:2px solid #d1d5db;font-size:13px;line-height:1.25}
@@ -433,6 +459,9 @@ let connected=false;
 let page="dashboard";
 let currentRound=1;
 let dashboardRound=Number(localStorage.getItem("delcoDashboardRound")||1);
+const LEADERBOARD_ROUNDS=[1,2,4];
+let leaderboardRound=Number(localStorage.getItem("delcoLeaderboardRound")||1);
+if(!LEADERBOARD_ROUNDS.includes(leaderboardRound))leaderboardRound=1;
 let saveTimers={};
 let editingPlayerId=null;
 let tournamentUsers=[];
@@ -723,6 +752,7 @@ const tabs=[
 ["live","Live Scoring"],
 ["scats","Scats"],
 ["par3","Par 3’s"],
+["leaderboards","Leaderboards"],
 ["players","Players"],
 ["matchups","Matchups"],
 ["scoring","Scoring"],
@@ -928,6 +958,97 @@ return`
 </div>
 </dl>
 ${schedule.note?`<p class="scheduleNote">${escapeHtml(schedule.note)}</p>`:""}`;
+}
+
+function selectLeaderboardRound(value){
+const round=Number(value);
+if(!LEADERBOARD_ROUNDS.includes(round))return;
+leaderboardRound=round;
+localStorage.setItem("delcoLeaderboardRound",String(round));
+render();
+}
+
+function leaderboardPlayerRound(player,round){
+const playerId=String(player.id);
+const match=(data.matchups[round]||[]).find(m=>m&&[...(m.hackers||[]),...(m.shankers||[])].some(id=>String(id)===playerId));
+const sources=Object.entries(data.scores).filter(([id])=>id.startsWith("R"+round+"M"));
+// Prefer the current matchup; retain entered scores if a player was moved.
+sources.sort(([a],[b])=>Number(b===match?.id)-Number(a===match?.id));
+const card=COURSE_CARDS[round];
+const hcp=Number(courseHandicap(player,round));
+const handicapValid=Number.isFinite(hcp);
+const holes=card.par.map((par,h)=>{
+let gross=null;
+for(const [,score] of sources){
+const raw=score.holes?.[h]?.[playerId];
+const value=Number(raw);
+if(raw!==""&&raw!=null&&Number.isFinite(value)&&value>0){gross=value;break;}
+}
+// Full course handicap, allocated by hole difficulty, including plus handicaps.
+const strokes=handicapValid?Math.floor(hcp/18)+(card.hcp[h]<=((hcp%18+18)%18)?1:0):null;
+return{gross:gross===null?null:gross-par,net:gross===null||strokes===null?null:gross-par-strokes};
+});
+return{holes,match,handicapValid};
+}
+
+function leaderboardRows(round,mode){
+const priorRounds=LEADERBOARD_ROUNDS.filter(id=>id<round);
+return data.players.map(player=>{
+let start=0,priorComplete=true,hasScores=false;
+for(const prior of priorRounds){
+const previous=leaderboardPlayerRound(player,prior);
+for(const hole of previous.holes){
+const value=hole[mode];
+if(value===null)priorComplete=false;
+else{start+=value;hasScores=true;}
+}
+}
+const current=leaderboardPlayerRound(player,round);
+let running=priorComplete?start:null,played=0;
+const cumulative=Array(18).fill(null);
+const startHole=Math.min(18,Math.max(1,parseInt(current.match?.teeStartHole,10)||1));
+for(let n=0;n<18;n++){
+const h=(startHole-1+n)%18,value=current.holes[h][mode];
+if(value===null)continue;
+played++;hasScores=true;
+if(running!==null){running+=value;cumulative[h]=running;}
+}
+const eligible=priorComplete&&(mode!=="net"||current.handicapValid);
+return{player,start:priorComplete?start:null,total:eligible&&hasScores?running:null,cumulative,played,eligible,hasScores};
+}).filter(row=>row.eligible&&row.hasScores)
+.sort((a,b)=>a.total-b.total||b.played-a.played||String(a.player.name).localeCompare(String(b.player.name)))
+.slice(0,10);
+}
+
+function leaderboardValue(value){
+return value===null?"—":value===0?"E":value>0?"+"+value:"−"+Math.abs(value);
+}
+
+function leaderboardCell(value,extra=""){
+const color=value===null?"":value<0?"augustaUnder":value>0?"augustaOver":"augustaEven";
+return`<td class="${extra} ${color}">${leaderboardValue(value)}</td>`;
+}
+
+function augustaLeaderboard(mode){
+const round=ROUNDS.find(r=>r.id===leaderboardRound),card=COURSE_CARDS[round.id];
+const rows=leaderboardRows(round.id,mode),carry=round.id!==1;
+return`<section class="augustaBoard" aria-label="${mode} top ten leaderboard">
+<div class="augustaHeading"><h2>${mode.toUpperCase()} LEADERS</h2><p>ROUND ${round.id} · ${escapeHtml(round.course.toUpperCase())} · TOP 10</p></div>
+${rows.length?`<div class="tablewrap" role="region" aria-label="${mode} scores by hole; swipe for later holes">
+<table class="augustaTable">
+<thead><tr><th class="augustaTotalLabel" scope="col" rowspan="2">TOTAL</th><th class="augustaName">HOLE</th>${carry?'<th class="augustaStart" scope="col" rowspan="2">START</th>':""}${card.par.map((_,i)=>`<th scope="col">${i+1}</th>`).join("")}</tr>
+<tr><th class="augustaName">PAR</th>${card.par.map(par=>`<th>${par}</th>`).join("")}</tr></thead>
+<tbody>${rows.map(row=>`<tr>${leaderboardCell(row.total,"augustaTotal")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${carry?leaderboardCell(row.start,"augustaStart"):""}${row.cumulative.map(value=>leaderboardCell(value)).join("")}</tr>`).join("")}</tbody>
+</table></div>`:`<div class="augustaEmpty">${carry?"Standings appear once all earlier counting rounds have 18 holes entered for a player.":"Standings appear when scores are entered."}</div>`}
+<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>CUMULATIVE AFTER EACH SCORED HOLE</span></div>
+</section>`;
+}
+
+function leaderboardsPage(){
+return`<div class="card leadersControls"><h2 style="margin-top:0">Leaderboards</h2>
+<div class="leadersRounds" role="group" aria-label="Leaderboard round">${LEADERBOARD_ROUNDS.map(id=>{const round=ROUNDS.find(r=>r.id===id);return`<button type="button" aria-pressed="${id===leaderboardRound}" onclick="selectLeaderboardRound(${id})"><span>Round ${id}</span>${escapeHtml(round.course)}</button>`;}).join("")}</div>
+<p class="leadersNote">Combined scores from rounds 1, 2 and 4. Round 2 carries your Round 1 finish; Round 4 carries both earlier rounds. Talamore does not count. Net uses each round’s full course handicap, allocated by hole. Earlier counting rounds must have all 18 scores entered. Swipe the boards for later holes.</p>
+</div>${augustaLeaderboard("gross")}${augustaLeaderboard("net")}`;
 }
 
 function par3PlayerOptions(current){
@@ -2507,6 +2628,7 @@ if(page==="dashboard")html=dashboard();
 else if(page==="live")html=liveScoringPage();
 else if(page==="scats")html=scatsPage();
 else if(page==="par3")html=par3Page();
+else if(page==="leaderboards")html=leaderboardsPage();
 else if(page==="players")html=playersPage();
 else if(page==="matchups")html=matchupPage();
 else if(page==="scoring")html=scoringPage();
@@ -2619,4 +2741,5 @@ render();
 </script>
 </body>
 </html>
+
 
