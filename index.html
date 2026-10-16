@@ -140,6 +140,13 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .liveRoundControl{padding:14px 16px;background:white}
 .liveRoundControl label{font-size:13px}
 .liveRoundControl select{font-weight:800}
+.dashboardRoundLabel{font-size:13px;font-weight:800;color:#6b7280;margin-bottom:8px}
+.dashboardRounds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.dashboardRoundButton{min-width:0;min-height:56px;padding:10px 4px;background:#f3f4f6;color:#374151;border:2px solid #d1d5db;font-size:13px;line-height:1.25}
+.dashboardRoundButton span{display:block}
+.dashboardRoundNumber{font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.dashboardRoundButton[aria-pressed="true"]{background:#111827;color:white;border-color:#111827}
+.dashboardRoundButton:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
 .liveBoard{background:#e5e7eb;padding:14px}
 .liveTitle{background:#e5e7eb;color:#111827;font-size:28px;font-weight:1000;letter-spacing:1px;padding:15px 18px;margin-bottom:14px;text-transform:uppercase;border:1px solid #d1d5db}
 .liveSubtitle{font-size:13px;font-weight:800;margin-top:4px}
@@ -846,13 +853,14 @@ liveRowsHtml=matches.map(renderLiveMatchRow).join("");
 return`
 <div class="card liveCard">
 <div class="liveRoundControl">
-<label>Live Match Board</label>
-<select onchange="setDashboardRound(this.value)">
+<div class="dashboardRoundLabel" id="dashboardRoundLabel">Live Match Board</div>
+<div class="dashboardRounds" role="group" aria-labelledby="dashboardRoundLabel">
 ${ROUNDS.map(x=>`
-<option value="${x.id}" ${x.id===dashboardRound?"selected":""}>
-Round ${x.id} — ${x.course}
-</option>`).join("")}
-</select>
+<button type="button" class="dashboardRoundButton" aria-pressed="${x.id===dashboardRound}" onclick="setDashboardRound(${x.id})">
+<span class="dashboardRoundNumber">Round ${x.id}</span>
+<span>${escapeHtml(x.course)}</span>
+</button>`).join("")}
+</div>
 </div>
 <div class="liveBoard">
 <div class="liveTitle">
