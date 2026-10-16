@@ -1046,7 +1046,6 @@ ${rows.length?`<div class="tablewrap" role="region" tabindex="0" aria-label="${m
 <tr>${card.par.map((par,i)=>`<th${i===9?' class="augustaBackNine"':""} aria-label="Hole ${i+1} par ${par}">${par}</th>`).join("")}</tr></thead>
 <tbody>${rows.map(row=>`<tr>${leaderboardCell(row.start,"augustaPrior")}<th scope="row" class="augustaName" title="${escapeHtml(row.player.name)} · ${row.played===18?"Round complete":row.played+" holes scored"}">${escapeHtml(row.player.name)}</th>${row.cumulative.map((value,i)=>leaderboardCell(value,i===9?"augustaBackNine":"")).join("")}${leaderboardCell(row.total,"augustaFinish")}</tr>`).join("")}</tbody>
 </table></div>`:`<div class="augustaEmpty">${carry?"Standings appear once all earlier counting rounds have 18 holes entered for a player.":"Standings appear when scores are entered."}</div>`}
-<div class="augustaLegend"><span>RED: UNDER PAR · E: EVEN · +: OVER PAR</span><span>PRIOR: CARRIED SCORE · HOLES & TOTAL: CUMULATIVE TO PAR · SECOND HEADER ROW: PAR</span></div>
 </section>`;
 }
 
