@@ -2130,7 +2130,7 @@ margin:Math.abs(value),updated_at:new Date().toISOString()};
 liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";render();
 try{
 await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
-liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.hole)===hole));
+liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.holes_completed)>=completed));
 liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved.";
 const latest=liveStatuses.filter(r=>Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo)
 .sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
