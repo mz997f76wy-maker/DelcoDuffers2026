@@ -804,9 +804,74 @@ const tabs=[
 if(isOwner())tabs.push(["users","Users & Access"]);
 tabs.push(["login",isSignedIn()?"Account ✓":"Sign In"]);
 document.getElementById("nav").innerHTML=tabs.map(t=>`
-<button class="${page===t[0]?"primary":""}" onclick="page='${t[0]}';render();">
+<button class="${page===t[0]?"primary":""}" onclick="navigatePage('${t[0]}')">
 ${t[1]}
 </button>`).join("");
+}
+
+const trackedPages=new Set(["dashboard","live","thursday","scats","par3","leaderboards","players","rules","matchups","scoring","history","login"]);
+let visitorId=null,visitorReport=null,visitorReportError="",visitorReportLoading=false;
+function getVisitorId(){
+if(visitorId)return visitorId;
+try{
+const stored=localStorage.getItem("duffers-visitor-id");
+if(stored&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stored))visitorId=stored;
+}catch{}
+if(!visitorId){
+visitorId=crypto.randomUUID();
+try{localStorage.setItem("duffers-visitor-id",visitorId)}catch{}
+}
+return visitorId;
+}
+async function recordVisitorEvent(kind,tab){
+if(!trackedPages.has(tab))return;
+try{
+await fetch(SUPABASE_URL+"/rest/v1/duffers_visitor_events",{
+method:"POST",keepalive:true,
+headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,
+"Content-Type":"application/json",Prefer:"return=minimal"},
+body:JSON.stringify({visitor_id:getVisitorId(),kind,page:tab})
+});
+}catch(e){console.debug("Visitor tracking unavailable")}
+}
+function navigatePage(next){
+if(next!==page)recordVisitorEvent("tab",next);
+page=next;render();
+if(next==="users"&&isOwner())loadVisitorReport();
+}
+async function loadVisitorReport(){
+if(!isOwner()||visitorReportLoading)return;
+visitorReportLoading=true;visitorReportError="";render();
+const ownerId=currentUser?.id;
+try{
+await refreshSessionIfNeeded();
+const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/duffers_visitor_report",{
+method:"POST",headers:headers(),body:"{}"
+});
+if(!r.ok)throw new Error("Unable to load visitor statistics. Try Refresh.");
+const report=await r.json();
+if(isOwner()&&currentUser?.id===ownerId)visitorReport=report;
+}catch(e){if(isOwner()&&currentUser?.id===ownerId)visitorReportError=e.message}
+finally{
+visitorReportLoading=false;
+if(!isOwner())visitorReport=null;
+if(page==="users"&&isOwner())render();
+}
+}
+function visitorsPage(){
+if(!isOwner())return "";
+const r=visitorReport;
+const labels={dashboard:"Dashboard",live:"Live Scoring",thursday:"Thursday Round",scats:"Scats",par3:"Par 3’s",leaderboards:"Leaderboards",players:"Players",rules:"Rules",matchups:"Matchups",scoring:"Scoring",history:"History",login:"Sign In / Account"};
+return `<div class="card"><div class="row"><h2>Visitors</h2><button class="blue" onclick="loadVisitorReport()" ${visitorReportLoading?"disabled":""}>${visitorReportLoading?"Loading…":"Refresh"}</button></div>
+<p>Private report • Only your owner account can read these statistics.</p>
+<p class="small">Tracking starts with this update. Visitors represent browsers/devices, not named people. Refreshing counts another page view; automatic score updates do not. Dates use Eastern time.</p>
+${visitorReportError?`<p>${escapeHtml(visitorReportError)}</p>`:""}
+${r?`<div class="row"><div class="card"><b>${Number(r.today_visitors)}</b><br>Visitors today</div><div class="card"><b>${Number(r.today_views)}</b><br>Page views today</div><div class="card"><b>${Number(r.visitors)}</b><br>Total visitors</div><div class="card"><b>${Number(r.page_views)}</b><br>Total page views</div></div>
+<h3>Last 14 days</h3><div class="tablewrap"><table><tr><th>Date</th><th>Visitors</th><th>Page views</th></tr>
+${r.daily.map(d=>`<tr><td>${escapeHtml(d.day)}</td><td>${Number(d.visitors)}</td><td>${Number(d.page_views)}</td></tr>`).join("")||'<tr><td colspan="3">No visits recorded yet.</td></tr>'}</table></div>
+<h3>Tab openings</h3><div class="tablewrap"><table><tr><th>Tab</th><th>Openings</th></tr>
+${r.tabs.map(t=>`<tr><td>${escapeHtml(labels[t.page]||t.page)}</td><td>${Number(t.views)}</td></tr>`).join("")||'<tr><td colspan="2">No tab openings recorded yet.</td></tr>'}</table></div>`:""}
+</div>`;
 }
 
 function getPlayer(id){
@@ -2612,11 +2677,11 @@ ${owner?`<b>Owner</b>`:`
 }).join("")}
 </table>
 </div>
-</div>`;
+</div>`+visitorsPage();
 }
 
 async function refreshUsers(){
-await loadTournamentUsers();render();
+await Promise.all([loadTournamentUsers(),loadVisitorReport()]);render();
 }
 
 async function saveUserAccess(userId){
@@ -2748,7 +2813,7 @@ headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}
 }catch{}
 storeSession(null);
 currentUser=null;userRole="viewer";userTeam=null;
-tournamentUsers=[];editingPlayerId=null;page="dashboard";
+tournamentUsers=[];visitorReport=null;visitorReportError="";editingPlayerId=null;page="dashboard";
 await loadSharedData(false);render();
 }
 
@@ -2876,6 +2941,7 @@ return `<tr><td><b>${escapeHtml(name)}</b></td>${cells}
 }
 
 async function start(){
+recordVisitorEvent("visit","dashboard");
 loadStoredSession();
 await refreshSessionIfNeeded();
 await loadCurrentUser();
