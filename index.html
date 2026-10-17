@@ -660,19 +660,50 @@ throw new Error("Database delete failed");
 }
 }
 
+// Cache small stable batches; unchanged polls return no tournament rows.
+const sharedTables=["tournament_players","tournament_matchups","tournament_scores","tournament_results","tournament_round_settings","tournament_par3_results","tournament_live_status","tournament_thursday_scores"];
+let sharedBatches={},sharedHashes={},sharedScope=null;
+let sharedSyncQueue=Promise.resolve();
+function fetchSharedChanges(){
+const task=sharedSyncQueue.then(async()=>{
+await refreshSessionIfNeeded();
+const scope=(currentUser?.id||"public")+":"+userRole;
+if(scope!==sharedScope){
+sharedBatches={};sharedHashes={};sharedScope=scope;
+}
+const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/sync_duffers_changes",{
+method:"POST",headers:headers(),
+body:JSON.stringify({p_tournament_id:TOURNAMENT_ID,p_known:sharedHashes})
+});
+if(!r.ok)throw new Error("Tournament sync failed");
+const response=await r.json();
+if(!Array.isArray(response.patches))throw new Error("Invalid tournament sync");
+// Validate the entire response before advancing any cached fingerprints.
+for(const patch of response.patches){
+if(!sharedTables.includes(patch.table)||!Number.isInteger(patch.bucket)||
+patch.bucket<0||patch.bucket>31||patch.key!==patch.table+":"+patch.bucket||
+typeof patch.hash!=="string"||!Array.isArray(patch.rows)){
+throw new Error("Invalid tournament update");
+}
+}
+for(const patch of response.patches){
+sharedBatches[patch.key]=patch.rows;
+sharedHashes[patch.key]=patch.hash;
+}
+return sharedTables.map(table=>{
+const rows=[];
+for(let bucket=0;bucket<32;bucket++)rows.push(...(sharedBatches[table+":"+bucket]||[]));
+return rows;
+});
+});
+sharedSyncQueue=task.catch(()=>{});
+return task;
+}
+
 let initialConnectionPending=true;
 async function loadSharedData(rerender=true){
 try{
-const [players,matchups,scores,results,settings,par3,live,thursday]=await Promise.all([
-apiGet("tournament_players"),
-apiGet("tournament_matchups"),
-apiGet("tournament_scores"),
-apiGet("tournament_results"),
-apiGet("tournament_round_settings"),
-apiGet("tournament_par3_results"),
-apiGet("tournament_live_status"),
-apiGet("tournament_thursday_scores")
-]);
+const [players,matchups,scores,results,settings,par3,live,thursday]=await fetchSharedChanges();
 liveStatuses=live;
 if(!thursdaySaving)thursdayScores=thursday;
 data.players=players.map(r=>({
@@ -2741,15 +2772,25 @@ else html=loginPage();
 document.getElementById("app").innerHTML=html;
 }
 
-setInterval(async()=>{
+let backgroundSyncRunning=false;
+async function pollSharedData(){
+if(document.hidden||backgroundSyncRunning)return;
 const a=document.activeElement;
 const editing=a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
 if(!editing&&!liveSaving&&!thursdaySaving){
+backgroundSyncRunning=true;
+try{
 await loadSharedData(false);
 if(page==="users"&&isOwner())await loadTournamentUsers();
-render();
+if(!document.hidden)render();
+}finally{backgroundSyncRunning=false}
 }
-},10000);
+}
+setInterval(pollSharedData,10000);
+document.addEventListener("visibilitychange",()=>{
+if(!document.hidden)pollSharedData();
+});
+window.addEventListener("online",pollSharedData);
 
 
 const THURSDAY_GROUPS=[
@@ -2927,6 +2968,7 @@ render();
 </script>
 </body>
 </html>
+
 
 
 
