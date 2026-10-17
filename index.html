@@ -2692,10 +2692,10 @@ render();
 
 
 const THURSDAY_GROUPS=[
-{time:"12:30 PM",players:["Rocco Pace","Justin Stroh","Ross Riley","Jeff Blair"]},
-{time:"12:40 PM",players:["Joe Pace","Jack Kelly","Jim Cap","Rob Sladek"]},
-{time:"12:50 PM",players:["Rob McCabe","Bob Pace","Mookie","Derek"]},
-{time:"1:00 PM",players:["Chuck Stouch","Tony Borsuk","Pat Sweeney","John Blair"]}
+{id:4,time:"12:30 PM",players:["Chuck Stouch","Tony Borsuk","Pat Sweeney","John Blair"]},
+{id:2,time:"12:40 PM",players:["Joe Pace","Jack Kelly","Jim Cap","Rob Sladek"]},
+{id:3,time:"12:50 PM",players:["Rob McCabe","Bob Pace","Mookie","Derek"]},
+{id:1,time:"1:00 PM",players:["Rocco Pace","Justin Stroh","Ross Riley","Jeff Blair"]}
 ];
 let thursdayScores=[],thursdaySaving=0,thursdayNotice="";
 function thursdayValue(g,p,h){
@@ -2745,8 +2745,8 @@ return `<div class="card"><h2>Thursday Round</h2>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
 <div id="thursdayStatus" role="status">${escapeHtml(thursdayNotice)}</div></div>
 ${THURSDAY_GROUPS.map((group,gi)=>{
-const g=gi+1;
-return `<div class="card"><h2>Group ${g} • ${group.time}</h2>
+const g=group.id;
+return `<div class="card"><h2>Group ${gi+1} • ${group.time}</h2>
 <p>${group.players.map(escapeHtml).join(" • ")}</p>
 <div class="tablewrap"><table class="scoretable">${scoreHeader()}
 ${group.players.map((name,pi)=>{
