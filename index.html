@@ -660,16 +660,18 @@ throw new Error("Database delete failed");
 let initialConnectionPending=true;
 async function loadSharedData(rerender=true){
 try{
-const [players,matchups,scores,results,settings,par3,live]=await Promise.all([
+const [players,matchups,scores,results,settings,par3,live,thursday]=await Promise.all([
 apiGet("tournament_players"),
 apiGet("tournament_matchups"),
 apiGet("tournament_scores"),
 apiGet("tournament_results"),
 apiGet("tournament_round_settings"),
 apiGet("tournament_par3_results"),
-apiGet("tournament_live_status")
+apiGet("tournament_live_status"),
+apiGet("tournament_thursday_scores")
 ]);
 liveStatuses=live;
+if(!thursdaySaving)thursdayScores=thursday;
 data.players=players.map(r=>({
 id:r.id,name:r.name,handicap:r.handicap,team:r.team,
 group:r.group_name,
@@ -755,6 +757,7 @@ function drawNav(){
 const tabs=[
 ["dashboard","Dashboard"],
 ["live","Live Scoring"],
+["thursday","Thursday Round"],
 ["scats","Scats"],
 ["par3","Par 3’s"],
 ["leaderboards","Leaderboards"],
@@ -2664,6 +2667,7 @@ drawNav();drawConnectionStatus();
 let html="";
 if(page==="dashboard")html=dashboard();
 else if(page==="live")html=liveScoringPage();
+else if(page==="thursday")html=thursdayPage();
 else if(page==="scats")html=scatsPage();
 else if(page==="par3")html=par3Page();
 else if(page==="leaderboards")html=leaderboardsPage();
@@ -2679,12 +2683,86 @@ document.getElementById("app").innerHTML=html;
 setInterval(async()=>{
 const a=document.activeElement;
 const editing=a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
-if(!editing&&!liveSaving){
+if(!editing&&!liveSaving&&!thursdaySaving){
 await loadSharedData(false);
 if(page==="users"&&isOwner())await loadTournamentUsers();
 render();
 }
 },10000);
+
+
+const THURSDAY_GROUPS=[
+{time:"12:30 PM",players:["Rocco Pace","Justin Stroh","Ross Riley","Jeff Blair"]},
+{time:"12:40 PM",players:["Joe Pace","Jack Kelly","Jim Cap","Rob Sladek"]},
+{time:"12:50 PM",players:["Rob McCabe","Bob Pace","Mookie","Derek"]},
+{time:"1:00 PM",players:["Chuck Stouch","Tony Borsuk","Pat Sweeney","John Blair"]}
+];
+let thursdayScores=[],thursdaySaving=0,thursdayNotice="";
+function thursdayValue(g,p,h){
+return thursdayScores.find(r=>r.group_no===g&&r.player_no===p&&r.hole===h)?.score??"";
+}
+function thursdaySum(g,p,start,end){
+const values=Array.from({length:end-start+1},(_,i)=>thursdayValue(g,p,start+i)).filter(v=>v!=="");
+return values.length?values.reduce((a,b)=>a+Number(b),0):"";
+}
+function thursdayTotals(g,p){
+for(const [label,start,end] of [["out",1,9],["in",10,18],["total",1,18]]){
+const cell=document.getElementById("thursday-"+label+"-"+g+"-"+p);
+if(cell)cell.textContent=thursdaySum(g,p,start,end);
+}
+}
+async function saveThursdayScore(g,p,h,el){
+if(!canScore())return;
+const raw=el.value.trim(),value=Number(raw);
+if(raw!==""&&(!Number.isInteger(value)||value<1||value>20)){
+el.setCustomValidity("Enter a whole number from 1 to 20.");el.reportValidity();return;
+}
+el.setCustomValidity("");
+const previous=thursdayValue(g,p,h);
+thursdayScores=thursdayScores.filter(r=>!(r.group_no===g&&r.player_no===p&&r.hole===h));
+const row={tournament_id:TOURNAMENT_ID,group_no:g,player_no:p,hole:h,score:value};
+if(raw!=="")thursdayScores.push(row);
+thursdayTotals(g,p);thursdaySaving++;el.disabled=true;
+try{
+if(raw==="")await deleteRows("tournament_thursday_scores",{group_no:g,player_no:p,hole:h});
+else await upsert("tournament_thursday_scores",row,"tournament_id,group_no,player_no,hole");
+thursdayNotice="Scores saved.";
+}catch(e){
+thursdayScores=thursdayScores.filter(r=>!(r.group_no===g&&r.player_no===p&&r.hole===h));
+if(previous!=="")thursdayScores.push({...row,score:previous});
+el.value=previous;thursdayTotals(g,p);
+thursdayNotice="Score could not be saved. Please try again.";
+}finally{
+thursdaySaving--;el.disabled=!canScore();
+const status=document.getElementById("thursdayStatus");if(status)status.textContent=thursdayNotice;
+}
+}
+function thursdayPage(){
+return `<div class="card"><h2>Thursday Round</h2>
+<div><b>Whispering Pines - Pines Course</b></div>
+<p class="muted">18-hole individual scores • Separate from the team competition</p>
+<p class="muted">Par and handicap details will be added when the scorecard is available. Totals show strokes entered so far.</p>
+${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
+<div id="thursdayStatus" role="status">${escapeHtml(thursdayNotice)}</div></div>
+${THURSDAY_GROUPS.map((group,gi)=>{
+const g=gi+1;
+return `<div class="card"><h2>Group ${g} • ${group.time}</h2>
+<p>${group.players.map(escapeHtml).join(" • ")}</p>
+<div class="tablewrap"><table class="scoretable">${scoreHeader()}
+${group.players.map((name,pi)=>{
+const p=pi+1;let cells="";
+for(let h=1;h<=18;h++){
+cells+=`<td><input type="number" inputmode="numeric" min="1" max="20" step="1" value="${thursdayValue(g,p,h)}"
+aria-label="${escapeHtml(name)} hole ${h}" ${canScore()?"":"disabled"}
+onfocus="this.select()" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
+if(h===9)cells+=`<td class="summaryCell" id="thursday-out-${g}-${p}">${thursdaySum(g,p,1,9)}</td>`;
+}
+return `<tr><td><b>${escapeHtml(name)}</b></td>${cells}
+<td class="summaryCell" id="thursday-in-${g}-${p}">${thursdaySum(g,p,10,18)}</td>
+<td class="summaryCell" id="thursday-total-${g}-${p}">${thursdaySum(g,p,1,18)}</td></tr>`;
+}).join("")}</table></div></div>`;
+}).join("")}`;
+}
 
 async function start(){
 loadStoredSession();
