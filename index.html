@@ -2737,6 +2737,14 @@ thursdaySaving--;el.disabled=!canScore();
 const status=document.getElementById("thursdayStatus");if(status)status.textContent=thursdayNotice;
 }
 }
+function handleThursdayScoreInput(el){
+clearTimeout(scoreAdvanceTimer);
+const raw=String(el.value??"").trim(),value=Number(raw);
+if(!canScore()||raw===""||!Number.isInteger(value)||value<1||value>20)return;
+scoreAdvanceTimer=setTimeout(()=>{
+if(document.activeElement===el)advanceScoreInput(el);
+},raw==="1"?450:200);
+}
 function thursdayPage(){
 return `<div class="card"><h2>Thursday Round</h2>
 <div><b>Whispering Pines - Pines Course</b></div>
@@ -2752,9 +2760,10 @@ return `<div class="card"><h2>Group ${gi+1} • ${group.time}</h2>
 ${group.players.map((name,pi)=>{
 const p=pi+1;let cells="";
 for(let h=1;h<=18;h++){
-cells+=`<td><input type="number" inputmode="numeric" min="1" max="20" step="1" value="${thursdayValue(g,p,h)}"
+cells+=`<td><input class="scoreInput" type="number" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" min="1" max="20" step="1" value="${thursdayValue(g,p,h)}"
 aria-label="${escapeHtml(name)} hole ${h}" ${canScore()?"":"disabled"}
-onfocus="this.select()" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
+onfocus="selectScoreInput(this)" onclick="selectScoreInput(this)"
+ onkeydown="handleScoreKeydown(event,this)" oninput="handleThursdayScoreInput(this)" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
 if(h===9)cells+=`<td class="summaryCell" id="thursday-out-${g}-${p}">${thursdaySum(g,p,1,9)}</td>`;
 }
 return `<tr><td><b>${escapeHtml(name)}</b></td>${cells}
