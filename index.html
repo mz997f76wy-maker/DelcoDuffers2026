@@ -762,6 +762,7 @@ const tabs=[
 ["par3","Par 3’s"],
 ["leaderboards","Leaderboards"],
 ["players","Players"],
+["rules","Rules"],
 ["matchups","Matchups"],
 ["scoring","Scoring"],
 ["history","History"]
@@ -1186,6 +1187,45 @@ return`
 ${escapeHtml(name)} — ${tee.rating}/${tee.slope}
 </option>`;
 }).join("");
+}
+
+
+function rulesPage(){
+return `
+<div class="card">
+<h2>Delco Duffers 2026 — Tournament Rules</h2>
+<div class="match">
+<h3>Three Individual Scoring Rounds</h3>
+<p>Tobacco Road, Mid South, and Legacy count toward cumulative gross and net scores. Talamore is a separate two-man scramble. Thursday’s round is separate from the team competition.</p>
+</div>
+<div class="match">
+<h3>Lost Balls &amp; Out of Bounds</h3>
+<p>All lost balls and out-of-bounds shots are played as red-stake penalty areas. Drop within <b>two club lengths</b>, no closer to the hole, of where the ball last crossed into the penalty area or where the lost ball is reasonably assumed to be. Add <b>one penalty stroke</b>.</p>
+</div>
+<div class="match">
+<h3>Fairway — Roll the Ball</h3>
+<p>You may roll your ball in the fairway.</p>
+</div>
+<div class="match">
+<h3>Putting</h3>
+<ul style="padding-left:22px;line-height:1.6">
+<li>All putts for <b>par, birdie, or eagle must be holed</b>, regardless of length.</li>
+<li>Other putts may be conceded by an opponent. Keep concessions reasonable—long putts should be holed out, since scores still affect side bets and the gross/net leaderboards. No giving yourself a putt.</li>
+</ul>
+</div>
+<div class="match">
+<h3>Finish Every Hole</h3>
+<p>During all three individual scoring rounds, every player must finish every hole—even after the match has been decided. Record actual strokes, including penalties, for gross, net, and scats.</p>
+</div>
+<div class="match">
+<h3>Talamore Scramble — Lift, Clean &amp; Place</h3>
+<p>Each player may lift, clean, and place their ball within <b>one club length</b> of the selected ball’s spot, no closer to the hole. Keep the same surface and hazard status: fairway stays fairway, rough stays rough, bunker stays bunker, and a ball in a penalty area stays in that penalty area.</p>
+</div>
+<div class="match">
+<h3>Keep Scores Updated</h3>
+<p>Enter scores and update match status after each hole.</p>
+</div>
+</div>`;
 }
 
 function playersPage(){
@@ -2685,6 +2725,7 @@ else if(page==="scats")html=scatsPage();
 else if(page==="par3")html=par3Page();
 else if(page==="leaderboards")html=leaderboardsPage();
 else if(page==="players")html=playersPage();
+else if(page==="rules")html=rulesPage();
 else if(page==="matchups")html=matchupPage();
 else if(page==="scoring")html=scoringPage();
 else if(page==="history")html=historyPage();
