@@ -3171,6 +3171,19 @@ return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
 }
 function thursdayTeam(g,p){return THURSDAY_TEAMS.find(t=>t.members.some(m=>m[0]===g&&m[1]===p))}
 function thursdayPlayerName(g,p){return THURSDAY_GROUPS.find(group=>group.id===g)?.players[p-1]||""}
+// Thursday tee assignments and course handicaps; Stableford remains gross.
+const THURSDAY_TEES={White:{rating:71.1,slope:131},Gold:{rating:68.9,slope:124}};
+function thursdayPlayerHandicap(g,p){
+const name=thursdayPlayerName(g,p);
+const teeName=(name==="Rob McCabe"||name==="John Blair")?"Gold":"White";
+const tee=THURSDAY_TEES[teeName];
+const team=thursdayTeam(g,p),member=team.members.findIndex(m=>m[0]===g&&m[1]===p);
+const player=data.players.find(player=>String(player.name).trim().toLowerCase()===name.toLowerCase());
+const liveIndex=player?.handicap;
+const index=liveIndex!==null&&liveIndex!==undefined&&String(liveIndex).trim()!==""&&Number.isFinite(Number(liveIndex))?Number(liveIndex):team.indices[member];
+const par=THURSDAY_CARD.par.reduce((a,b)=>a+b,0);
+return {tee:teeName,index,handicap:Math.round(index*tee.slope/113+tee.rating-par)};
+}
 function thursdayPoints(g,p,h){
 const score=thursdayValue(g,p,h);
 if(score===""||!thursdayCardReady())return null;
@@ -3278,6 +3291,7 @@ if(document.activeElement===el)advanceScoreInput(el);
 function thursdayPage(){
 return `<div class="card" id="thursdayLeaderboard">${thursdayLeaderboard()}</div><div class="card"><h2>Thursday Round</h2>
 <div><b>Whispering Pines - Pines Course</b></div>
+<p class="muted">White: 71.1 / 131 • Gold: 68.9 / 124 • Par 72</p>
 <p class="muted">18-hole gross Stableford • Four teams of four</p>
 <p class="muted">No handicap strokes are applied. Enter gross strokes above each player’s Stableford points. Points and team totals update automatically when scores change. Foursomes and tee times remain as scheduled.</p>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
@@ -3296,7 +3310,7 @@ onfocus="selectScoreInput(this)" onclick="selectScoreInput(this)"
  onkeydown="handleScoreKeydown(event,this)" oninput="handleThursdayScoreInput(this)" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
 if(h===9)cells+=`<td class="summaryCell" id="thursday-out-${g}-${p}">${thursdaySum(g,p,1,9)}</td>`;
 }
-return `<tr><td><b>${escapeHtml(name)}</b><div class="muted">Team ${thursdayTeam(g,p).id} • Strokes</div></td>${cells}
+return `<tr><td><b>${escapeHtml(name)}</b><div class="muted">HCP ${thursdayPlayerHandicap(g,p).handicap} • ${thursdayPlayerHandicap(g,p).tee}</div><div class="muted">Team ${thursdayTeam(g,p).id} • Strokes</div></td>${cells}
 <td class="summaryCell" id="thursday-in-${g}-${p}">${thursdaySum(g,p,10,18)}</td>
 <td class="summaryCell" id="thursday-total-${g}-${p}">${thursdaySum(g,p,1,18)}</td></tr>${thursdayPointsRow(g,p)}`;
 }).join("")}</table></div></div>`;
