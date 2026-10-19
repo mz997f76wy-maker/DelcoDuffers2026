@@ -552,20 +552,15 @@ method:"POST",
 headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
 body:JSON.stringify({refresh_token:session.refresh_token})
 });
-if(!r.ok)throw new Error("Refresh failed");
+if(!r.ok){if(r.status===400||r.status===401){storeSession(null);currentUser=null;userRole="viewer";userTeam=null;}throw new Error("Refresh failed");}
 const x=await r.json();
 x.expires_at=Math.floor(Date.now()/1000)+Number(x.expires_in||3600);
 storeSession(x);
-}catch{
-storeSession(null);
-currentUser=null;
-userRole="viewer";
-userTeam=null;
-}
+}catch{/* Keep the existing session on a temporary connection failure. */}
 }
 
 async function loadCurrentUser(){
-currentUser=null;
+currentUser=session?.user||null;
 if(!session||!session.access_token)return;
 try{
 const r=await fetch(SUPABASE_URL+"/auth/v1/user",{
@@ -590,6 +585,7 @@ async function loadMyPermissions(){
 userRole="viewer";
 userTeam=null;
 if(!isSignedIn())return;
+try{const cached=JSON.parse(localStorage.getItem("duffers-role:"+currentUser.id)||"null");if(cached){userRole=cached.role;userTeam=cached.team}}catch{}
 await registerCurrentUser();
 try{
 const url=SUPABASE_URL+
@@ -603,6 +599,7 @@ const rows=await r.json();
 if(rows.length){
 userRole=rows[0].role||"viewer";
 userTeam=rows[0].team||null;
+try{localStorage.setItem("duffers-role:"+currentUser.id,JSON.stringify({role:userRole,team:userTeam}))}catch{}
 return;
 }
 }
@@ -676,8 +673,12 @@ if(lastConfirmedSave)parts.push("Saved to database: "+statusTime(lastConfirmedSa
 if(lastConfirmedSync)parts.push("Last synced: "+statusTime(lastConfirmedSync));
 else parts.push("Waiting for first sync…");
 if(!connected)parts.push("Connection unavailable — latest updates may be missing.");
+const pending=pendingChanges();
+if(queueFlushing&&pending.length)parts.unshift("Uploading saved phone entries…");
+if(queueStorageError)parts.unshift(queueStorageError);
 box.textContent=parts.join(" • ");
-box.style.background=failedDatabaseSaves?"#fee2e2":pendingDatabaseSaves?"#fffbeb":"#f3f4f6";
+drawPendingDetails(box,pending);
+box.style.background=(failedDatabaseSaves||queueStorageError||pending.some(x=>x.state!=="pending"))?"#fee2e2":(pendingDatabaseSaves||pending.length)?"#fffbeb":"#f3f4f6";
 }
 const failedSaveKeys=new Set();
 async function trackDatabaseSave(key,operation){
@@ -701,11 +702,161 @@ const fields=["round_no","match_no","hole","scorer_key","group_no","player_no","
 return table+":"+fields.filter(k=>row[k]!==undefined).map(k=>k+"="+row[k]).join("|");
 }
 async function upsert(table,row,conflict){
+if(queuedTables.has(table))return queueDatabaseChange(table,row);
 return trackDatabaseSave(saveIdentity(table,row),()=>upsertRequest(table,row,conflict));
 }
 async function deleteRows(table,filters){
+if((queuedTables.has(table)&&filters.hole!==undefined)||(table==="tournament_results"&&filters.match_no!==undefined))return queueDatabaseChange(table,{tournament_id:TOURNAMENT_ID,...filters},true);
 return trackDatabaseSave(saveIdentity(table,filters),()=>deleteRowsRequest(table,filters));
 }
+
+
+const queuedTables=new Set(["tournament_scores","tournament_thursday_scores","tournament_live_status","tournament_results"]);
+const QUEUE_PREFIX="duffers-unsent-v1:";
+let queueFlushing=false,queueStorageError="",sharedFetchOnline=false;
+let confirmedPhoneChanges=[];
+function queueOwner(){return currentUser?.id||null}
+function pendingChanges(){
+const owner=queueOwner();if(!owner)return [];
+const list=[];
+try{
+for(let i=0;i<localStorage.length;i++){
+const key=localStorage.key(i);
+if(!key?.startsWith(QUEUE_PREFIX+owner+":"))continue;
+const item=JSON.parse(localStorage.getItem(key));
+if(item&&item.owner===owner&&queuedTables.has(item.table)&&item.row?.tournament_id===TOURNAMENT_ID)list.push(item);
+}
+}catch(e){queueStorageError="Phone storage could not be read. Keep this page open and check your scores."}
+return list.sort((a,b)=>a.created-b.created||a.id.localeCompare(b.id));
+}
+function queueStorageKey(item){return QUEUE_PREFIX+item.owner+":"+item.id}
+function putPending(item){localStorage.setItem(queueStorageKey(item),JSON.stringify(item))}
+function rowKey(table,row){
+const fields=table==="tournament_thursday_scores"?["tournament_id","group_no","player_no","hole"]:
+table==="tournament_scores"?["tournament_id","round_no","match_no","hole","scorer_key"]:
+["tournament_id","round_no","match_no"];
+return fields.map(k=>k+"="+row[k]).join("|");
+}
+function cleanQueueRow(row){const copy={...row};delete copy.updated_at;return copy}
+function serverRows(table){
+let rows=Object.entries(sharedBatches).filter(([key])=>key.startsWith(table+":")).flatMap(([,batch])=>batch).map(cleanQueueRow);
+for(const item of confirmedPhoneChanges.filter(x=>x.table===table))rows=applyQueuedRow(rows,item);
+return rows;
+}
+function applyQueuedRow(rows,item){
+const key=rowKey(item.table,item.row);
+if(item.table==="tournament_live_status"){
+if(item.remove)return rows.filter(r=>rowKey(item.table,r)!==key);
+return [...rows.filter(r=>rowKey(item.table,r)!==key||Number(r.holes_completed)<Number(item.row.holes_completed)),item.row];
+}
+return [...rows.filter(r=>rowKey(item.table,r)!==key),...(item.remove?[]:[item.row])];
+}
+function queueLabel(item){
+const r=item.row;
+if(item.table==="tournament_thursday_scores"){
+const group=THURSDAY_GROUPS.find(g=>g.id===Number(r.group_no));
+return "Thursday • "+(group?.players[Number(r.player_no)-1]||"Player "+r.player_no)+" • Hole "+r.hole;
+}
+if(item.table==="tournament_scores")return "Round "+r.round_no+" • "+(getPlayer(r.scorer_key)?.name||"Player "+r.scorer_key)+" • Hole "+r.hole;
+return "Round "+r.round_no+" • Match "+r.match_no+(item.table==="tournament_live_status"?" • Hole "+r.hole:" • Result");
+}
+function queueValue(item){return item.remove?"Clear entry":String(item.row.score??item.row.winner??(item.row.leader+" "+item.row.margin))}
+function drawPendingDetails(box,items){
+if(!items.length)return;
+const note=document.createElement("div");
+note.style.marginTop="6px";
+note.textContent=items.length+" change(s) saved on this phone — waiting to upload. Keep this browser's data; reopen the app with a connection to finish.";
+box.appendChild(note);
+const retry=document.createElement("button");retry.className="blue";retry.style.marginTop="6px";retry.textContent="Retry uploads";
+retry.onclick=()=>{for(const item of pendingChanges())if(item.state==="blocked"){item.state="pending";putPending(item)}flushPendingChanges();};
+box.appendChild(retry);
+for(const item of items.filter(x=>x.state==="conflict"||x.state==="blocked")){
+const line=document.createElement("div");line.style.marginTop="8px";
+line.textContent=queueLabel(item)+" • On this phone: "+queueValue(item)+" • "+(item.state==="conflict"?"Changed online; upload paused.":"Upload needs attention: "+(item.message||"Check scoring access."));
+if(item.state==="conflict"){
+const online=document.createElement("div");online.textContent="Online: "+((item.current||[]).map(row=>queueValue({...item,row,remove:false})).join(", ")||"No entry");line.appendChild(online);
+}
+const discard=document.createElement("button");discard.className="danger";discard.textContent="Discard this phone's pending entry";
+discard.onclick=()=>discardPendingGroup(item.id);line.appendChild(discard);box.appendChild(line);
+}
+}
+async function discardPendingGroup(id){
+const item=pendingChanges().find(x=>x.id===id);if(!item)return;
+if(!confirm("Discard the pending changes for "+queueLabel(item)+" on this phone and use the online value? You can then enter a correction again."))return;
+for(const x of pendingChanges())if(x.table===item.table&&rowKey(x.table,x.row)===rowKey(item.table,item.row))localStorage.removeItem(queueStorageKey(x));
+await loadSharedData(false);render();
+}
+function queueDatabaseChange(table,row,remove=false){
+if(!queueOwner())throw new Error("Sign in before saving scores.");
+let rows=serverRows(table);
+for(const item of pendingChanges().filter(x=>x.table===table&&x.state!=="conflict"))rows=applyQueuedRow(rows,item);
+const key=rowKey(table,row);
+const item={id:crypto.randomUUID(),owner:queueOwner(),table,row:cleanQueueRow(row),remove,
+expected:rows.filter(r=>rowKey(table,r)===key).map(cleanQueueRow),created:Math.max(Date.now(),...pendingChanges().map(x=>x.created+1)),state:"pending"};
+try{putPending(item);queueStorageError=""}catch(error){
+queueStorageError="NOT saved on this phone: storage is unavailable or full. Keep this page open and record the score elsewhere.";
+drawSaveSyncStatus();throw error;
+}
+drawSaveSyncStatus();flushPendingChanges();
+return Promise.resolve({queued:true});
+}
+async function flushPendingChanges(){
+if(queueFlushing||!queueOwner()||navigator.onLine===false)return;
+queueFlushing=true;drawSaveSyncStatus();
+try{
+const work=async()=>{
+const owner=queueOwner();
+for(const item of pendingChanges()){
+if(queueOwner()!==owner||document.hidden)break;
+const earlier=pendingChanges().filter(x=>x.table===item.table&&rowKey(x.table,x.row)===rowKey(item.table,item.row)&&x.created<=item.created);
+if(item.state!=="pending"||earlier.some(x=>x.state==="conflict"||x.state==="blocked"))continue;
+try{
+await refreshSessionIfNeeded();
+if(queueOwner()!==owner||!session?.access_token)break;
+const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/save_duffers_queued_change",{
+method:"POST",headers:headers(),signal:AbortSignal.timeout(12000),
+body:JSON.stringify({p_table:item.table,p_row:item.row,p_expected:item.expected,p_delete:item.remove})
+});
+if(!response.ok){
+if(response.status>=500||response.status===408||response.status===429)break;
+item.state="blocked";item.message=response.status===401?"Sign in again to upload.":response.status===403?"Scoring access or an open round is required.":"Entry could not be accepted. Check the score.";
+putPending(item);continue;
+}
+const result=await response.json();
+if(queueOwner()!==owner)break;
+if(result.status==="conflict"){item.state="conflict";item.current=result.current;putPending(item);continue}
+if(result.status!=="saved")break;
+localStorage.removeItem(queueStorageKey(item));lastConfirmedSave=Date.now();
+// Update the confirmed baseline immediately; the next sync refreshes server fingerprints.
+confirmedPhoneChanges.push({...item,confirmedAt:Date.now()});
+cacheSharedData();
+}catch(error){console.debug("Score kept on phone; upload will retry.");break}
+}
+};
+if(navigator.locks?.request)await navigator.locks.request("duffers-score-upload",work);else await work();
+}finally{queueFlushing=false;drawSaveSyncStatus()}
+}
+function overlayPendingRows(batches){
+const copy=batches.map(rows=>rows.map(r=>({...r})));
+for(const item of [...confirmedPhoneChanges,...pendingChanges()]){
+if(item.state==="conflict")continue;
+const index=sharedTables.indexOf(item.table);
+if(index>=0)copy[index]=applyQueuedRow(copy[index],item);
+}
+return copy;
+}
+function cacheSharedData(){
+try{localStorage.setItem("duffers-cache:"+sharedScope,JSON.stringify({batches:sharedBatches,hashes:sharedHashes,time:lastConfirmedSync,confirmed:confirmedPhoneChanges}))}catch{}
+}
+function restoreSharedCache(scope){
+try{const cache=JSON.parse(localStorage.getItem("duffers-cache:"+scope)||"null");
+if(cache?.batches&&cache?.hashes){sharedBatches=cache.batches;sharedHashes=cache.hashes;lastConfirmedSync=cache.time||null;confirmedPhoneChanges=cache.confirmed||[];}
+}catch{}
+}
+window.addEventListener("online",()=>flushPendingChanges());
+window.addEventListener("storage",event=>{if(event.key?.startsWith(QUEUE_PREFIX))drawSaveSyncStatus()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)flushPendingChanges()});
+setInterval(()=>{if(!document.hidden)flushPendingChanges()},15000);
 
 // Cache small stable batches; unchanged polls return no tournament rows.
 const sharedTables=["tournament_players","tournament_matchups","tournament_scores","tournament_results","tournament_round_settings","tournament_par3_results","tournament_live_status","tournament_thursday_scores"];
@@ -716,10 +867,14 @@ const task=sharedSyncQueue.then(async()=>{
 await refreshSessionIfNeeded();
 const scope=(currentUser?.id||"public")+":"+userRole;
 if(scope!==sharedScope){
-sharedBatches={};sharedHashes={};sharedScope=scope;
+sharedBatches={};sharedHashes={};confirmedPhoneChanges=[];lastConfirmedSync=null;lastConfirmedSave=null;sharedScope=scope;restoreSharedCache(scope);
 }
+sharedFetchOnline=false;
+const syncStartedAt=Date.now();
+try{
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/sync_duffers_changes",{
 method:"POST",headers:headers(),
+signal:AbortSignal.timeout(12000),
 body:JSON.stringify({p_tournament_id:TOURNAMENT_ID,p_known:sharedHashes})
 });
 if(!r.ok)throw new Error("Tournament sync failed");
@@ -737,11 +892,14 @@ for(const patch of response.patches){
 sharedBatches[patch.key]=patch.rows;
 sharedHashes[patch.key]=patch.hash;
 }
-return sharedTables.map(table=>{
+confirmedPhoneChanges=confirmedPhoneChanges.filter(x=>x.confirmedAt>=syncStartedAt);
+sharedFetchOnline=true;
+}catch(error){if(!Object.keys(sharedBatches).length)throw error;}
+return overlayPendingRows(sharedTables.map(table=>{
 const rows=[];
 for(let bucket=0;bucket<32;bucket++)rows.push(...(sharedBatches[table+":"+bucket]||[]));
 return rows;
-});
+}));
 });
 sharedSyncQueue=task.catch(()=>{});
 return task;
@@ -792,8 +950,8 @@ roundSettings={1:true,2:true,3:true,4:true};
 settings.forEach(r=>{
 roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
-connected=true;
-lastConfirmedSync=Date.now();
+connected=sharedFetchOnline;
+if(sharedFetchOnline){lastConfirmedSync=Date.now();cacheSharedData();}
 drawSaveSyncStatus();
 initialConnectionPending=false;
 drawConnectionStatus();
@@ -2119,6 +2277,7 @@ render();
 
 async function resetAllScores(){
 if(!isOwner())return;
+if(pendingChanges().length){alert("Upload or discard pending phone entries before resetting scores.");return;}
 const first=confirm(
 "RESET ALL SCORES & RESULTS?\n\n"+
 "This will permanently erase:\n"+
@@ -2337,14 +2496,14 @@ liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";render();
 try{
 await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
 liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.holes_completed)>=completed));
-liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved.";
+liveStatuses.push(row);liveDraft=null;liveNotice="Match status saved on this phone; see upload status above.";
 const latest=liveStatuses.filter(r=>Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo)
 .sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
 const finish=liveFinish(latest);
 if(finish){
 // The live-status database trigger saves the result in the same transaction.
 data.results[match.id]={winner:finish.winner};
-liveNotice=finish.winner==="Halved"?"Match halved — half a point awarded to each team.":finish.winner+" win "+finish.label+" — 1 point awarded.";
+liveNotice="Pending upload • "+(finish.winner==="Halved"?"Match halved — half a point awarded to each team.":finish.winner+" win "+finish.label+" — 1 point awarded.");
 }else if(data.results[match.id]){
 delete data.results[match.id];
 liveNotice="Match status corrected — match is in progress and the final point was removed.";
@@ -2433,11 +2592,7 @@ if(!canScoreRound(round))return;
 const score=getScore(matchId);
 score.holes[holeIndex][scorer]=value===""?"":Number(value);
 updateScoreTotals(matchId,scorer);
-const key=round+"-"+matchNo+"-"+holeIndex+"-"+scorer;
-clearTimeout(saveTimers[key]);
-saveTimers[key]=setTimeout(
-()=>saveScoreOnline(round,matchNo,holeIndex+1,scorer,value),350
-);
+saveScoreOnline(round,matchNo,holeIndex+1,scorer,value);
 }
 
 async function saveScoreDirect(round,matchNo,hole,scorer,value){
@@ -2943,7 +3098,7 @@ thursdayTotals(g,p);thursdaySaving++;el.disabled=true;
 try{
 if(raw==="")await deleteRows("tournament_thursday_scores",{group_no:g,player_no:p,hole:h});
 else await upsert("tournament_thursday_scores",row,"tournament_id,group_no,player_no,hole");
-thursdayNotice="Scores saved.";
+thursdayNotice="Saved on this phone. Upload status is shown above.";
 }catch(e){
 thursdayScores=thursdayScores.filter(r=>!(r.group_no===g&&r.player_no===p&&r.hole===h));
 if(previous!=="")thursdayScores.push({...row,score:previous});
@@ -2999,6 +3154,7 @@ if(isSignedIn())await loadMyPermissions();
 await loadSharedData(false);
 if(isOwner())await loadTournamentUsers();
 render();
+flushPendingChanges();
 }
 
 start();
