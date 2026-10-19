@@ -279,7 +279,7 @@ header h1{font-size:25px}
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
 <style>
 /* Keep saving messages and team ranking changes from moving the active scorecard. */
-body.thursdayPageActive #saveSyncStatus{height:94px;overflow:auto;overflow-anchor:none}
+body.thursdayPageActive #saveSyncStatus,body.livePageActive #saveSyncStatus{height:94px;overflow:auto;overflow-anchor:none}
 #thursdayStatus{height:44px;font-size:13px;line-height:20px;overflow:auto;overflow-anchor:none}
 .thursdayTeamTable{table-layout:fixed;width:100%;min-width:0}
 .thursdayTeamTable th:nth-child(1){width:26px}
@@ -2521,9 +2521,8 @@ ${option(0,"Tied (All Square)")}
 ${Array.from({length:completed},(_,i)=>option(i+1,"Hackers "+(i+1)+" UP")).join("")}
 ${Array.from({length:completed},(_,i)=>option(-(i+1),"Shankers "+(i+1)+" UP")).join("")}
 </select></div></div>
-${editable?`<button class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
-${liveSaving?'<p role="status">Saving match status…</p>':""}
-${liveNotice?`<p role="status">${escapeHtml(liveNotice)}</p>`:""}
+${editable?`<button id="liveSaveButton" class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
+<p id="liveSaveStatus" role="status" style="height:44px;overflow:auto;overflow-anchor:none;font-size:13px;line-height:20px">${liveSaving?"Saving match status…":escapeHtml(liveNotice)}</p>
 <p class="muted" style="font-size:12px">Saving a lead greater than the holes remaining automatically records the win and team point. Tied finishes award half a point each.</p>
 ${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
 ${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
@@ -2548,7 +2547,11 @@ if(!completed||!Number.isInteger(value)||Math.abs(value)>completed)return;
 const row={tournament_id:TOURNAMENT_ID,round_no:roundNo,match_no:matchNo,hole,
 holes_completed:completed,leader:value===0?"All square":value>0?"Hackers":"Shankers",
 margin:Math.abs(value),updated_at:new Date().toISOString()};
-liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";render();
+liveDraft={matchNo,hole,value};liveSaving=true;liveNotice="";
+const saveButton=document.getElementById("liveSaveButton");
+if(saveButton){saveButton.disabled=true;saveButton.setAttribute("aria-busy","true")}
+const saveStatus=document.getElementById("liveSaveStatus");
+if(saveStatus)saveStatus.textContent="Saving match status…";
 try{
 await upsert("tournament_live_status",row,"tournament_id,round_no,match_no,hole");
 liveStatuses=liveStatuses.filter(r=>!(Number(r.round_no)===roundNo&&Number(r.match_no)===matchNo&&Number(r.holes_completed)>=completed));
@@ -3089,7 +3092,12 @@ await loadSharedData(false);render();
 }
 
 function render(){
+// Preserve the live scorecard position across status updates and background refreshes.
+const liveApp=document.getElementById("app");
+const preserveLive=page==="live"&&!!liveApp?.querySelector("#liveRoundSelect");
+const livePosition=preserveLive?{x:window.scrollX,y:window.scrollY,tables:Array.from(liveApp.querySelectorAll(".tablewrap"),el=>el.scrollLeft),details:Array.from(liveApp.querySelectorAll("details"),el=>el.open),focus:document.activeElement?.id}:null;
 document.body.classList.toggle("thursdayPageActive",page==="thursday");
+document.body.classList.toggle("livePageActive",page==="live");
 if(page==="users"&&!isOwner())page="dashboard";
 drawNav();drawConnectionStatus();drawSaveSyncStatus();drawOfflineReadyStatus();
 let html="";
@@ -3107,6 +3115,13 @@ else if(page==="history")html=historyPage();
 else if(page==="users")html=usersPage();
 else html=loginPage();
 document.getElementById("app").innerHTML=html;
+if(livePosition){
+Array.from(liveApp.querySelectorAll(".tablewrap")).forEach((el,i)=>{el.scrollLeft=livePosition.tables[i]||0});
+Array.from(liveApp.querySelectorAll("details")).forEach((el,i)=>{el.open=!!livePosition.details[i]});
+const focused=livePosition.focus&&document.getElementById(livePosition.focus);
+if(focused&&!focused.disabled)focused.focus({preventScroll:true});
+window.scrollTo({left:livePosition.x,top:livePosition.y,behavior:"instant"});
+}
 }
 
 let backgroundSyncRunning=false;
