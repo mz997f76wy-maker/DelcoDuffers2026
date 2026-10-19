@@ -277,7 +277,18 @@ header h1{font-size:25px}
 }
 </style>
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
-<style>.thursdayPointsRow td{background:#ecfdf5;color:#065f46;font-weight:800;border-bottom:3px solid #07513d}.thursdayPointsRow td:first-child{background:#ecfdf5;font-size:12px}.thursdayTeamTable th{text-align:left}.thursdayTeamTable td{padding:12px 8px}.thursdayTeamTable .muted{font-size:12px;line-height:1.6;margin-top:4px}.thursdayLeader td{background:#ecfdf5;color:#065f46}</style>
+<style>
+/* Keep saving messages and team ranking changes from moving the active scorecard. */
+body.thursdayPageActive #saveSyncStatus{height:94px;overflow:auto;overflow-anchor:none}
+#thursdayStatus{height:44px;font-size:13px;line-height:20px;overflow:auto;overflow-anchor:none}
+.thursdayTeamTable{table-layout:fixed;min-width:520px}
+.thursdayTeamTable th:nth-child(1){width:55px}
+.thursdayTeamTable th:nth-child(2){width:295px}
+.thursdayTeamTable th:nth-child(3){width:75px}
+.thursdayTeamTable th:nth-child(4){width:95px}
+.thursdayTeamMember{display:block;white-space:nowrap}
+.thursdayTeamTable td{vertical-align:top}
+.thursdayPointsRow td{background:#ecfdf5;color:#065f46;font-weight:800;border-bottom:3px solid #07513d}.thursdayPointsRow td:first-child{background:#ecfdf5;font-size:12px}.thursdayTeamTable th{text-align:left}.thursdayTeamTable td{padding:12px 8px}.thursdayTeamTable .muted{font-size:12px;line-height:1.6;margin-top:4px}.thursdayLeader td{background:#ecfdf5;color:#065f46}</style>
 </head>
 <body>
 <header>
@@ -3070,6 +3081,7 @@ await loadSharedData(false);render();
 }
 
 function render(){
+document.body.classList.toggle("thursdayPageActive",page==="thursday");
 if(page==="users"&&!isOwner())page="dashboard";
 drawNav();drawConnectionStatus();drawSaveSyncStatus();drawOfflineReadyStatus();
 let html="";
@@ -3172,7 +3184,7 @@ const tied=t.points!==null&&teams.filter(x=>x.points===t.points).length>1;
 const winner=complete&&t.points===teams[0].points;
 return '<tr'+(i===0&&t.points!==null?' class="thursdayLeader"':'')+'><td>'+rank+(tied?'T':'')+'</td><td><b>Team '+t.id+
 (winner?(tied?' • Tied winners':' • Winner'):'')+'</b><div class="muted">'+
-t.members.map(([g,p],j)=>escapeHtml(thursdayPlayerName(g,p))+' ('+t.indices[j]+')').join(' • ')+
+t.members.map(([g,p],j)=>'<span class="thursdayTeamMember">'+escapeHtml(thursdayPlayerName(g,p))+' ('+t.indices[j]+')</span>').join('')+
 '</div><div class="muted">Combined Handicap Index: '+t.indices.reduce((a,b)=>a+b,0).toFixed(1)+'</div></td><td style="font-size:24px;font-weight:900">'+
 (t.points??"—")+'</td><td>'+t.entered+'/72</td></tr>';
 }).join("")+'</tbody></table></div><p class="muted">Gross points: double bogey or worse 0 • bogey 1 • par 2 • birdie 3 • eagle 4 • albatross 5. Blank holes earn no points yet.</p>';
@@ -3216,7 +3228,9 @@ const previous=thursdayValue(g,p,h);
 thursdayScores=thursdayScores.filter(r=>!(r.group_no===g&&r.player_no===p&&r.hole===h));
 const row={tournament_id:TOURNAMENT_ID,group_no:g,player_no:p,hole:h,score:value};
 if(raw!=="")thursdayScores.push(row);
-thursdayTotals(g,p);thursdaySaving++;el.disabled=true;
+thursdayTotals(g,p);thursdaySaving++;
+// Keep inputs enabled so saving never dismisses the mobile keyboard.
+el.setAttribute("aria-busy","true");
 try{
 if(raw==="")await deleteRows("tournament_thursday_scores",{group_no:g,player_no:p,hole:h});
 else await upsert("tournament_thursday_scores",row,"tournament_id,group_no,player_no,hole");
@@ -3227,7 +3241,7 @@ if(previous!=="")thursdayScores.push({...row,score:previous});
 el.value=previous;thursdayTotals(g,p);
 thursdayNotice="Score could not be saved. Please try again.";
 }finally{
-thursdaySaving--;el.disabled=!canScore();
+thursdaySaving--;el.removeAttribute("aria-busy");
 const status=document.getElementById("thursdayStatus");if(status)status.textContent=thursdayNotice;
 }
 }
