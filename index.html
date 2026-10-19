@@ -1071,6 +1071,11 @@ method:"POST",headers:headers(),body:"{}"
 });
 if(!r.ok)throw new Error("Unable to load visitor statistics. Try Refresh.");
 const report=await r.json();
+const accountsResponse=await fetch(SUPABASE_URL+"/rest/v1/rpc/duffers_signed_in_accounts",{
+method:"POST",headers:headers(),body:"{}"
+});
+if(!accountsResponse.ok)throw new Error("Unable to load signed-in emails. Try Refresh.");
+report.signed_in_accounts=await accountsResponse.json();
 if(isOwner()&&currentUser?.id===ownerId)visitorReport=report;
 }catch(e){if(isOwner()&&currentUser?.id===ownerId)visitorReportError=e.message}
 finally{
@@ -1088,6 +1093,10 @@ return `<div class="card"><div class="row"><h2>Visitors</h2><button class="blue"
 <p class="small">Tracking starts with this update. Visitors represent browsers/devices, not named people. Refreshing counts another page view; automatic score updates do not. Dates use Eastern time.</p>
 ${visitorReportError?`<p>${escapeHtml(visitorReportError)}</p>`:""}
 ${r?`<div class="row"><div class="card"><b>${Number(r.today_visitors)}</b><br>Visitors today</div><div class="card"><b>${Number(r.today_views)}</b><br>Page views today</div><div class="card"><b>${Number(r.visitors)}</b><br>Total visitors</div><div class="card"><b>${Number(r.page_views)}</b><br>Total page views</div></div>
+<h3>Emails that have logged in</h3>
+<p class="muted">Latest successful sign-in for each tournament account, in Eastern time. Includes earlier sign-ins. Visitors who browse without signing in cannot be identified by email.</p>
+<div class="tablewrap"><table><tr><th>Email</th><th>Last sign-in (Eastern)</th></tr>
+${(r.signed_in_accounts||[]).map(u=>`<tr><td>${escapeHtml(u.email||"")}</td><td>${escapeHtml(new Date(u.last_sign_in_at).toLocaleString("en-US",{timeZone:"America/New_York",dateStyle:"medium",timeStyle:"short"}))}</td></tr>`).join("")||'<tr><td colspan="2">No signed-in accounts yet.</td></tr>'}</table></div>
 <h3>Last 14 days</h3><div class="tablewrap"><table><tr><th>Date</th><th>Visitors</th><th>Page views</th></tr>
 ${r.daily.map(d=>`<tr><td>${escapeHtml(d.day)}</td><td>${Number(d.visitors)}</td><td>${Number(d.page_views)}</td></tr>`).join("")||'<tr><td colspan="3">No visits recorded yet.</td></tr>'}</table></div>
 <h3>Tab openings</h3><div class="tablewrap"><table><tr><th>Tab</th><th>Openings</th></tr>
