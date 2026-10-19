@@ -3164,7 +3164,7 @@ const THURSDAY_TEAMS=[
 {id:4,members:[[2,4],[1,2],[1,3],[1,4]],indices:[17.9,4.8,22,15]}
 ];
 // Hole pars supplied by Rocco. Thursday uses gross Stableford, without handicap strokes.
-const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4]};
+const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4],hcp:[11,17,9,7,1,13,3,15,5,4,2,16,8,6,10,18,14,12]};
 function thursdayCardReady(){
 const c=THURSDAY_CARD;
 return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
@@ -3286,7 +3286,7 @@ ${THURSDAY_GROUPS.map((group,gi)=>{
 const g=group.id;
 return `<div class="card"><h2>Group ${gi+1} • ${group.time}</h2>
 <p>${group.players.map(escapeHtml).join(" • ")}</p>
-<div class="tablewrap"><table class="scoretable">${scoreHeader()}${thursdayCardReady()?scoreReferenceRow(THURSDAY_CARD.par,"PAR",true):""}
+<div class="tablewrap"><table class="scoretable">${scoreHeader()}${thursdayCardReady()?scoreReferenceRow(THURSDAY_CARD.par,"PAR",true):""}${scoreReferenceRow(THURSDAY_CARD.hcp,"HCP")}
 ${group.players.map((name,pi)=>{
 const p=pi+1;let cells="";
 for(let h=1;h<=18;h++){
