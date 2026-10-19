@@ -286,6 +286,7 @@ header h1{font-size:25px}
 <div class="captains">Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers</div>
 </header>
 <main>
+<div id="offlineReadyStatus" role="status" style="font-size:12px;margin-bottom:8px;color:#4b5563"></div>
 <div id="connectionStatus"></div><div id="saveSyncStatus" role="status" aria-live="polite" style="font-size:13px;line-height:1.5;margin-bottom:12px;padding:10px;border-radius:9px;background:#f3f4f6"></div>
 <div class="navWrap">
 <div class="nav" id="nav"></div>
@@ -873,9 +874,9 @@ setInterval(()=>{if(!document.hidden)flushPendingChanges()},15000);
 const sharedTables=["tournament_players","tournament_matchups","tournament_scores","tournament_results","tournament_round_settings","tournament_par3_results","tournament_live_status","tournament_thursday_scores"];
 let sharedBatches={},sharedHashes={},sharedScope=null;
 let sharedSyncQueue=Promise.resolve();
-function fetchSharedChanges(){
+function fetchSharedChanges(cacheOnly=false){
 const task=sharedSyncQueue.then(async()=>{
-await refreshSessionIfNeeded();
+if(!cacheOnly)await refreshSessionIfNeeded();
 const scope=(currentUser?.id||"public")+":"+userRole;
 if(scope!==sharedScope){
 sharedBatches={};sharedHashes={};confirmedPhoneChanges=[];lastConfirmedSync=null;lastConfirmedSave=null;sharedScope=scope;restoreSharedCache(scope);
@@ -883,6 +884,7 @@ sharedBatches={};sharedHashes={};confirmedPhoneChanges=[];lastConfirmedSync=null
 sharedFetchOnline=false;
 const syncStartedAt=Date.now();
 try{
+if(cacheOnly||navigator.onLine===false)throw new Error("Using saved phone data");
 const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/sync_duffers_changes",{
 method:"POST",headers:headers(),
 signal:AbortSignal.timeout(12000),
@@ -917,9 +919,9 @@ return task;
 }
 
 let initialConnectionPending=true;
-async function loadSharedData(rerender=true){
+async function loadSharedData(rerender=true,cacheOnly=false){
 try{
-const [players,matchups,scores,results,settings,par3,live,thursday]=await fetchSharedChanges();
+const [players,matchups,scores,results,settings,par3,live,thursday]=await fetchSharedChanges(cacheOnly);
 liveStatuses=live;
 if(!thursdaySaving)thursdayScores=thursday;
 data.players=players.map(r=>({
@@ -984,7 +986,7 @@ box.innerHTML=`<div class="viewer">⏳ Loading tournament data…</div>`;
 return;
 }
 if(!connected){
-box.innerHTML=`<div class="offline">⚠️ Unable to reach shared tournament database</div>`;
+box.innerHTML=`<div class="offline">📴 Offline mode — scores stay on this phone and upload when signal returns. Other players’ latest changes may be missing.</div>`;
 return;
 }
 if(isOwner()){
@@ -3045,7 +3047,7 @@ await loadSharedData(false);render();
 
 function render(){
 if(page==="users"&&!isOwner())page="dashboard";
-drawNav();drawConnectionStatus();drawSaveSyncStatus();
+drawNav();drawConnectionStatus();drawSaveSyncStatus();drawOfflineReadyStatus();
 let html="";
 if(page==="dashboard")html=dashboard();
 else if(page==="live")html=liveScoringPage();
@@ -3081,7 +3083,11 @@ setInterval(pollSharedData,10000);
 document.addEventListener("visibilitychange",()=>{
 if(!document.hidden)pollSharedData();
 });
-window.addEventListener("online",pollSharedData);
+window.addEventListener("online",async()=>{
+await refreshSessionIfNeeded();await loadCurrentUser();
+if(isSignedIn())await loadMyPermissions();
+await pollSharedData();flushPendingChanges();
+});
 
 
 const THURSDAY_GROUPS=[
@@ -3166,15 +3172,55 @@ return `<tr><td><b>${escapeHtml(name)}</b></td>${cells}
 }).join("")}`;
 }
 
+let offlinePageReady=false;
+function drawOfflineReadyStatus(){
+const box=document.getElementById("offlineReadyStatus");
+if(!box)return;
+const hasData=Object.keys(sharedBatches).length>0;
+box.textContent=offlinePageReady?(hasData?(canScore()?"✓ Offline scoring ready on this phone":"✓ Offline page ready • Sign in with scoring access before losing signal"):
+"Offline page ready • Connect to download the tournament before playing"):
+"Preparing offline access — keep this page open while online.";
+}
+async function prepareOfflinePage(){
+if(!('serviceWorker' in navigator)){
+const box=document.getElementById("offlineReadyStatus");
+if(box)box.textContent="This browser does not support reopening the app offline.";
+return;
+}
+try{
+const existing=await navigator.serviceWorker.getRegistration('./');
+if(existing?.active){offlinePageReady=true;drawOfflineReadyStatus()}
+await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+await navigator.serviceWorker.ready;
+offlinePageReady=true;drawOfflineReadyStatus();
+}catch{
+const box=document.getElementById("offlineReadyStatus");
+if(box)box.textContent="Offline page is not ready yet. Open again with signal before playing.";
+}
+}
+function restorePhoneAccess(){
+currentUser=session?.user||null;userRole="viewer";userTeam=null;
+if(!currentUser)return;
+try{const cached=JSON.parse(localStorage.getItem("duffers-role:"+currentUser.id)||"null");
+if(cached){userRole=cached.role;userTeam=cached.team}}catch{}
+if(String(currentUser.email||"").toLowerCase()===OWNER_EMAIL){userRole="owner";userTeam=null}
+}
 async function start(){
-recordVisitorEvent("visit","dashboard");
-loadStoredSession();
+loadStoredSession();restorePhoneAccess();
+const offlineLaunch=navigator.onLine===false||window.__duffersOfflineLaunch===true;
+if(offlineLaunch)page="live";
+// Render saved matchups and pending scores before waiting for any network request.
+await loadSharedData(false,true);
+render();prepareOfflinePage();
+if(offlineLaunch)return;
 await refreshSessionIfNeeded();
 await loadCurrentUser();
 if(isSignedIn())await loadMyPermissions();
 await loadSharedData(false);
-if(isOwner())await loadTournamentUsers();
+if(!connected)page="live";
+if(connected&&isOwner())await loadTournamentUsers();
 render();
+recordVisitorEvent("visit",page);
 flushPendingChanges();
 }
 
