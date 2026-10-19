@@ -1049,7 +1049,7 @@ if(!trackedPages.has(tab))return;
 try{
 await fetch(SUPABASE_URL+"/rest/v1/duffers_visitor_events",{
 method:"POST",keepalive:true,
-headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,
+headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+(session?.access_token||SUPABASE_KEY),
 "Content-Type":"application/json",Prefer:"return=minimal"},
 body:JSON.stringify({visitor_id:getVisitorId(),kind,page:tab})
 });
@@ -1076,6 +1076,11 @@ method:"POST",headers:headers(),body:"{}"
 });
 if(!accountsResponse.ok)throw new Error("Unable to load signed-in emails. Try Refresh.");
 report.signed_in_accounts=await accountsResponse.json();
+const tabsResponse=await fetch(SUPABASE_URL+"/rest/v1/rpc/duffers_user_tab_report",{
+method:"POST",headers:headers(),body:"{}"
+});
+if(!tabsResponse.ok)throw new Error("Unable to load user tab activity. Try Refresh.");
+report.user_tabs=await tabsResponse.json();
 if(isOwner()&&currentUser?.id===ownerId)visitorReport=report;
 }catch(e){if(isOwner()&&currentUser?.id===ownerId)visitorReportError=e.message}
 finally{
@@ -2874,6 +2879,14 @@ if(u.role==="scorer")return"Scorer";
 return"View Only";
 }
 
+
+function userTabActivity(userId){
+const labels={dashboard:"Dashboard",live:"Live Scoring",thursday:"Thursday Round",scats:"Scats",par3:"Par 3’s",leaderboards:"Leaderboards",players:"Players",rules:"Rules",matchups:"Matchups",scoring:"Scoring",history:"History",login:"Account"};
+if(!visitorReport)return visitorReportLoading?"Loading…":"Press Refresh to load activity";
+const rows=(visitorReport.user_tabs||[]).filter(t=>t.user_id===userId);
+return rows.map(t=>'<div style="margin-bottom:8px"><b>'+escapeHtml(labels[t.page]||t.page)+'</b> · '+Number(t.views)+' openings<br><span class="muted">'+escapeHtml(new Date(t.last_viewed_at).toLocaleString("en-US",{timeZone:"America/New_York",dateStyle:"medium",timeStyle:"short"}))+' Eastern</span></div>').join("")||'<span class="muted">No signed-in tab views recorded yet</span>';
+}
+
 function usersPage(){
 if(!isOwner())return`<div class="viewer">Owner access required.</div>`;
 return`
@@ -2881,13 +2894,13 @@ return`
 <div class="roundnav">
 <div>
 <h2>Users & Access</h2>
-<div class="muted">Anyone who creates an account will appear here.</div>
+<div class="muted">Anyone who creates an account will appear here. Tab activity is recorded from this update while signed in and online; earlier anonymous views cannot be linked to accounts.</div>
 </div>
 <button class="blue" onclick="refreshUsers()">Refresh</button>
 </div>
 <div class="tablewrap">
 <table>
-<tr><th>Email</th><th>Current Access</th><th>Change Access</th></tr>
+<tr><th>Email</th><th>Tabs viewed</th><th>Current Access</th><th>Change Access</th></tr>
 ${tournamentUsers.slice()
 .sort((a,b)=>String(a.email||"").localeCompare(String(b.email||"")))
 .map(u=>{
@@ -2899,6 +2912,7 @@ if(u.role==="captain"&&u.team==="Shankers")selected="captain_shankers";
 return`
 <tr>
 <td><b>${escapeHtml(u.email||"")}</b></td>
+<td>${userTabActivity(u.user_id)}</td>
 <td>${escapeHtml(accessLabel(u))}</td>
 <td>
 ${owner?`<b>Owner</b>`:`
@@ -3008,7 +3022,7 @@ await loadCurrentUser();
 await loadMyPermissions();
 await loadSharedData(false);
 if(isOwner())await loadTournamentUsers();
-page="dashboard";render();
+page="dashboard";render();recordVisitorEvent("tab",page);
 }catch(e){alert(e.message)}
 }
 
@@ -3033,7 +3047,7 @@ storeSession(x);
 await loadCurrentUser();
 await loadMyPermissions();
 await loadSharedData(false);
-page="dashboard";render();return;
+page="dashboard";render();recordVisitorEvent("tab",page);return;
 }
 alert("Account created. Check your email for the confirmation message, then come back and sign in.");
 }catch(e){alert(e.message)}
