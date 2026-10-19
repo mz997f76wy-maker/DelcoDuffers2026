@@ -3128,24 +3128,18 @@ const THURSDAY_TEAMS=[
 {id:3,members:[[2,2],[2,3],[3,1],[3,3]],indices:[13.1,21.4,19.7,6]},
 {id:4,members:[[2,4],[1,2],[1,3],[1,4]],indices:[17.9,4.8,22,15]}
 ];
-// Populate only from the confirmed Thursday scorecard:
-// {par:[18 hole pars],hcp:[18 men's stroke indexes],playingHandicaps:{"group-player":integer,...}}
-// Playing handicaps require confirmed tees, ratings/slope and handicap allowance.
-const THURSDAY_CARD=null;
+// Hole pars supplied by Rocco. Thursday uses gross Stableford, without handicap strokes.
+const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4]};
 function thursdayCardReady(){
 const c=THURSDAY_CARD;
-return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6)&&
-c.hcp?.length===18&&new Set(c.hcp).size===18&&c.hcp.every(v=>Number.isInteger(v)&&v>=1&&v<=18)&&
-THURSDAY_TEAMS.every(t=>t.members.every(([g,p])=>Number.isInteger(c.playingHandicaps?.[g+"-"+p])));
+return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
 }
 function thursdayTeam(g,p){return THURSDAY_TEAMS.find(t=>t.members.some(m=>m[0]===g&&m[1]===p))}
 function thursdayPlayerName(g,p){return THURSDAY_GROUPS.find(group=>group.id===g)?.players[p-1]||""}
 function thursdayPoints(g,p,h){
 const score=thursdayValue(g,p,h);
 if(score===""||!thursdayCardReady())return null;
-const handicap=THURSDAY_CARD.playingHandicaps[g+"-"+p];
-const strokes=Math.floor(handicap/18)+(THURSDAY_CARD.hcp[h-1]<=((handicap%18+18)%18)?1:0);
-return Math.max(0,2+THURSDAY_CARD.par[h-1]-(Number(score)-strokes));
+return Math.max(0,2+THURSDAY_CARD.par[h-1]-Number(score));
 }
 function thursdayPointSum(g,p,start=1,end=18){
 const points=Array.from({length:end-start+1},(_,i)=>thursdayPoints(g,p,start+i)).filter(v=>v!==null);
@@ -3169,8 +3163,8 @@ const points=t.members.map(([g,p])=>thursdayPointSum(g,p));
 return {...t,entered,points:points.every(v=>v===null)?null:points.reduce((a,b)=>a+(b??0),0)};
 }).sort((a,b)=>(b.points??-1)-(a.points??-1)||a.id-b.id);
 const complete=ready&&teams.every(t=>t.entered===72);
-return '<h2>Thursday Stableford • Team Leaderboard</h2><p class="muted">All four players count. Highest combined net Stableford points wins. Separate from Hackers vs. Shankers.</p>'+
-(!ready?'<div class="notice">Awaiting the Thursday scorecard and tees to calculate net points. Gross scores can still be entered.</div>':'')+
+return '<h2>Thursday Stableford • Team Leaderboard</h2><p class="muted">All four players count. Highest combined gross Stableford points wins. Separate from Hackers vs. Shankers.</p>'+
+(!ready?'<div class="notice">Awaiting hole pars to calculate points. Gross scores can still be entered.</div>':'')+
 '<div class="tablewrap"><table class="thursdayTeamTable"><thead><tr><th>Place</th><th>Team / Players</th><th>Points</th><th>Holes entered</th></tr></thead><tbody>'+
 teams.map((t,i)=>{
 const rank=t.points===null?"—":(teams.findIndex(x=>x.points===t.points)+1);
@@ -3181,7 +3175,7 @@ return '<tr'+(i===0&&t.points!==null?' class="thursdayLeader"':'')+'><td>'+rank+
 t.members.map(([g,p],j)=>escapeHtml(thursdayPlayerName(g,p))+' ('+t.indices[j]+')').join(' • ')+
 '</div><div class="muted">Combined Handicap Index: '+t.indices.reduce((a,b)=>a+b,0).toFixed(1)+'</div></td><td style="font-size:24px;font-weight:900">'+
 (t.points??"—")+'</td><td>'+t.entered+'/72</td></tr>';
-}).join("")+'</tbody></table></div><p class="muted">Net points: double bogey or worse 0 • bogey 1 • par 2 • birdie 3 • eagle 4 • albatross 5. Blank holes earn no points yet.</p>';
+}).join("")+'</tbody></table></div><p class="muted">Gross points: double bogey or worse 0 • bogey 1 • par 2 • birdie 3 • eagle 4 • albatross 5. Blank holes earn no points yet.</p>';
 }
 function refreshThursdayPoints(g,p){
 for(let h=1;h<=18;h++){
@@ -3248,15 +3242,15 @@ if(document.activeElement===el)advanceScoreInput(el);
 function thursdayPage(){
 return `<div class="card" id="thursdayLeaderboard">${thursdayLeaderboard()}</div><div class="card"><h2>Thursday Round</h2>
 <div><b>Whispering Pines - Pines Course</b></div>
-<p class="muted">18-hole net Stableford • Four teams of four</p>
-<p class="muted">Enter gross strokes above each player’s Stableford points. Points and team totals update automatically when scores change. Foursomes and tee times remain as scheduled.</p>
+<p class="muted">18-hole gross Stableford • Four teams of four</p>
+<p class="muted">No handicap strokes are applied. Enter gross strokes above each player’s Stableford points. Points and team totals update automatically when scores change. Foursomes and tee times remain as scheduled.</p>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
 <div id="thursdayStatus" role="status">${escapeHtml(thursdayNotice)}</div></div>
 ${THURSDAY_GROUPS.map((group,gi)=>{
 const g=group.id;
 return `<div class="card"><h2>Group ${gi+1} • ${group.time}</h2>
 <p>${group.players.map(escapeHtml).join(" • ")}</p>
-<div class="tablewrap"><table class="scoretable">${scoreHeader()}${thursdayCardReady()?scoreReferenceRow(THURSDAY_CARD.par,"PAR",true)+scoreReferenceRow(THURSDAY_CARD.hcp,"MEN'S HCP",false):""}
+<div class="tablewrap"><table class="scoretable">${scoreHeader()}${thursdayCardReady()?scoreReferenceRow(THURSDAY_CARD.par,"PAR",true):""}
 ${group.players.map((name,pi)=>{
 const p=pi+1;let cells="";
 for(let h=1;h<=18;h++){
