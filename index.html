@@ -57,10 +57,21 @@ input:disabled,select:disabled{background:#f3f4f6;color:#374151;opacity:1}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .scoretable{min-width:1280px}
+.scorePlayerDetails{display:none}
+
 .scoretable th,.scoretable td{text-align:center;border:1px solid #d1d5db;padding:5px;white-space:nowrap}
 .scoretable th:first-child,.scoretable td:first-child{position:sticky;left:0;background:white;z-index:3;min-width:155px;text-align:left}
 .scoretable input{width:46px;text-align:center;padding:8px 3px;border-radius:6px}
 .scoretable input.scoreInput:focus{outline:3px solid #9ca3af;outline-offset:1px;border-color:#111827;background:white}
+@media(max-width:650px){
+.scoretable{width:max-content;min-width:0}
+.scoretable th,.scoretable td{min-width:54px}
+.scoretable th:first-child,.scoretable td:first-child{width:112px;min-width:112px;max-width:112px;white-space:normal;overflow-wrap:anywhere;font-size:13px;line-height:1.25}
+.scoretable .scorePlayerMeta{display:none}
+.scorePlayerDetails{display:block;font-size:12px;margin:8px 0;color:#4b5563}
+.scorePlayerDetails summary{cursor:pointer;font-weight:700;padding:6px 0}
+.scorePlayerDetails ul{padding-left:18px;line-height:1.6}
+}
 .coursePar td{font-weight:900;background:#7f1d1d;color:white}
 .coursePar td:first-child{background:#7f1d1d}
 .courseHcp td{font-weight:800;background:#f3f4f6}
@@ -2124,7 +2135,7 @@ let scoreAdvanceTimer=null;
 function selectScoreInput(el){
 if(!el||el.disabled)return;
 clearTimeout(scoreAdvanceTimer);
-setTimeout(()=>{try{el.select()}catch(e){}},0);
+setTimeout(()=>{try{el.select()}catch(e){};revealScoreInput(el)},0);
 }
 
 function handleScoreKeydown(event,el){
@@ -2160,18 +2171,26 @@ const next=inputs[currentIndex+1];
 if(!next){el.blur();return}
 try{next.focus({preventScroll:true})}catch(e){next.focus()}
 try{next.select()}catch(e){}
-const wrapper=next.closest(".tablewrap"),cell=next.closest("td");
-if(wrapper&&cell){
-const wrapperRect=wrapper.getBoundingClientRect();
-const cellRect=cell.getBoundingClientRect();
-const stickyWidth=155;
-const leftLimit=wrapperRect.left+stickyWidth+8,rightLimit=wrapperRect.right-8;
+revealScoreInput(next);
+}
+
+function revealScoreInput(el){
+const wrapper=el.closest(".tablewrap"),cell=el.closest("td");
+if(!wrapper||!cell)return;
+const wrapperRect=wrapper.getBoundingClientRect(),cellRect=cell.getBoundingClientRect();
+const stickyWidth=el.closest("table").rows[0].cells[0].getBoundingClientRect().width;
+const leftLimit=wrapperRect.left+stickyWidth+6,rightLimit=wrapperRect.right-6;
 if(cellRect.left<leftLimit||cellRect.right>rightLimit){
-const desiredLeft=wrapper.scrollLeft+(cellRect.left-wrapperRect.left)-
-(wrapper.clientWidth/2)+(cellRect.width/2);
-wrapper.scrollTo({left:Math.max(0,desiredLeft),behavior:"smooth"});
+const availableWidth=wrapper.clientWidth-stickyWidth;
+const desiredLeft=wrapper.scrollLeft+cellRect.left-wrapperRect.left-stickyWidth-
+Math.max(6,(availableWidth-cellRect.width)/2);
+wrapper.scrollTo({left:Math.max(0,desiredLeft),behavior:"auto"});
 }
 }
+
+function scorePlayerDetails(players,round){
+return `<details class="scorePlayerDetails"><summary>Player handicaps &amp; tees</summary><ul>${players.map(p=>
+`<li><b>${escapeHtml(p.name)}</b> — ${escapeHtml(handicapDisplay(p,round))}</li>`).join("")}</ul></details>`;
 }
 
 function playerScoreRow(p,score,round,matchNo,matchId){
@@ -2211,7 +2230,7 @@ const playerHandicap=round===1||round===2||round===4?
 handicapDisplay(p,round):`HCP ${p.handicap} • Group ${p.group}`;
 return`
 <tr class="${cls}">
-<td>${escapeHtml(p.name)}<br><span class="muted">${escapeHtml(playerHandicap)}</span></td>
+<td>${escapeHtml(p.name)}<br class="scorePlayerMeta"><span class="muted scorePlayerMeta">${escapeHtml(playerHandicap)}</span></td>
 ${cells}
 </tr>`;
 }
@@ -2413,6 +2432,7 @@ if(round.id===3)return "";
 const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
 const score=getScore(match.id),course=COURSE_CARDS[round.id];
 return `<div style="margin-top:16px"><h3>Hole Scores</h3>
+${scorePlayerDetails(players,round.id)}
 <div class="tablewrap"><table class="scoretable">
 ${scoreHeader()}
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
@@ -2575,6 +2595,7 @@ const score=getScore(match.id),course=COURSE_CARDS[r.id];
 return`
 <div class="match">
 <h3>Match ${i+1}</h3>
+${scorePlayerDetails(players,r.id)}
 <div class="tablewrap">
 <table class="scoretable">
 ${scoreHeader()}
@@ -3240,6 +3261,7 @@ render();
 </script>
 </body>
 </html>
+
 
 
 
