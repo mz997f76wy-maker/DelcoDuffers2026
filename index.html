@@ -3163,7 +3163,7 @@ const THURSDAY_TEAMS=[
 {id:3,members:[[2,2],[2,3],[3,1],[3,3]],indices:[13.1,21.4,19.7,6]},
 {id:4,members:[[2,4],[1,2],[1,3],[1,4]],indices:[17.9,4.8,22,15]}
 ];
-// Thursday net Stableford uses an 80% handicap allowance and hole stroke indexes.
+// Thursday net Stableford uses an 85% handicap allowance and hole stroke indexes.
 const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4],hcp:[11,17,9,7,1,13,3,15,5,4,2,16,8,6,10,18,14,12]};
 function thursdayCardReady(){
 const c=THURSDAY_CARD;
@@ -3171,7 +3171,7 @@ return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
 }
 function thursdayTeam(g,p){return THURSDAY_TEAMS.find(t=>t.members.some(m=>m[0]===g&&m[1]===p))}
 function thursdayPlayerName(g,p){return THURSDAY_GROUPS.find(group=>group.id===g)?.players[p-1]||""}
-// Apply the 80% allowance to the unrounded tee-specific course handicap, then round.
+// Apply the 85% allowance to the unrounded tee-specific course handicap, then round.
 const THURSDAY_TEES={White:{rating:71.1,slope:131},Gold:{rating:68.9,slope:124}};
 function thursdayPlayerHandicap(g,p){
 const name=thursdayPlayerName(g,p);
@@ -3183,7 +3183,7 @@ const liveIndex=player?.handicap;
 const index=liveIndex!==null&&liveIndex!==undefined&&String(liveIndex).trim()!==""&&Number.isFinite(Number(liveIndex))?Number(liveIndex):team.indices[member];
 const par=THURSDAY_CARD.par.reduce((a,b)=>a+b,0);
 const courseHandicap=index*tee.slope/113+tee.rating-par;
-return {tee:teeName,index,handicap:Math.round(courseHandicap),playingHandicap:Math.round(courseHandicap*0.8)};
+return {tee:teeName,index,handicap:Math.round(courseHandicap),playingHandicap:Math.round(courseHandicap*0.85)};
 }
 function thursdayHandicapStrokes(g,p,h){
 const handicap=thursdayPlayerHandicap(g,p).playingHandicap;
@@ -3229,7 +3229,7 @@ return '<tr'+(i===0&&t.points!==null?' class="thursdayLeader"':'')+'><td>'+rank+
 (winner?(tied?' • Tied winners':' • Winner'):'')+'</b><div class="muted">'+
 [t.members.slice(0,2),t.members.slice(2)].map(pair=>'<span class="thursdayTeamMember">'+pair.map(([g,p])=>escapeHtml(thursdayPlayerName(g,p))).join(' · ')+'</span>').join('')+
 '</div></td><td class="thursdayTeamPoints">'+(t.points??"—")+'<span class="thursdayTeamProgress">'+t.entered+'/72 holes</span></td></tr>';
-}).join("")+'</tbody></table></div><p class="thursdayBoardKey">Net points (80% HCP): Double+ 0 · Bogey 1 · Par 2 · Birdie 3 · Eagle 4 · Albatross 5</p>';
+}).join("")+'</tbody></table></div><p class="thursdayBoardKey">Net points (85% HCP): Double+ 0 · Bogey 1 · Par 2 · Birdie 3 · Eagle 4 · Albatross 5</p>';
 }
 function refreshThursdayPoints(g,p){
 for(let h=1;h<=18;h++){
@@ -3299,8 +3299,8 @@ function thursdayPage(){
 return `<div class="card" id="thursdayLeaderboard">${thursdayLeaderboard()}</div><div class="card"><h2>Thursday Round</h2>
 <div><b>Whispering Pines - Pines Course</b></div>
 <p class="muted">White: 71.1 / 131 • Gold: 68.9 / 124 • Par 72</p>
-<p class="muted">18-hole net Stableford • 80% handicaps • Four teams of four</p>
-<p class="muted">Enter gross strokes. Net Stableford points use 80% of each player’s tee-specific course handicap, rounded to a whole stroke and allocated by the hole handicap rankings. Points and team totals update automatically.</p>
+<p class="muted">18-hole net Stableford • 85% handicaps • Four teams of four</p>
+<p class="muted">Enter gross strokes. Net Stableford points use 85% of each player’s tee-specific course handicap, rounded to a whole stroke and allocated by the hole handicap rankings. Points and team totals update automatically.</p>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
 <div id="thursdayStatus" role="status">${escapeHtml(thursdayNotice)}</div></div>
 ${THURSDAY_GROUPS.map((group,gi)=>{
@@ -3317,7 +3317,7 @@ onfocus="selectScoreInput(this)" onclick="selectScoreInput(this)"
  onkeydown="handleScoreKeydown(event,this)" oninput="handleThursdayScoreInput(this)" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
 if(h===9)cells+=`<td class="summaryCell" id="thursday-out-${g}-${p}">${thursdaySum(g,p,1,9)}</td>`;
 }
-return `<tr><td><b>${escapeHtml(name)}</b><div class="muted">80% HCP ${thursdayPlayerHandicap(g,p).playingHandicap} • ${thursdayPlayerHandicap(g,p).tee}</div><div class="muted">Team ${thursdayTeam(g,p).id} • Strokes</div></td>${cells}
+return `<tr><td><b>${escapeHtml(name)}</b><div class="muted">85% HCP ${thursdayPlayerHandicap(g,p).playingHandicap} • ${thursdayPlayerHandicap(g,p).tee}</div><div class="muted">Team ${thursdayTeam(g,p).id} • Strokes</div></td>${cells}
 <td class="summaryCell" id="thursday-in-${g}-${p}">${thursdaySum(g,p,10,18)}</td>
 <td class="summaryCell" id="thursday-total-${g}-${p}">${thursdaySum(g,p,1,18)}</td></tr>${thursdayPointsRow(g,p)}`;
 }).join("")}</table></div></div>`;
