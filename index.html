@@ -275,7 +275,7 @@ header h1{font-size:25px}
 <div class="captains">Captain Howells — Hackers &nbsp;•&nbsp; Captain Parsons — Shankers</div>
 </header>
 <main>
-<div id="connectionStatus"></div>
+<div id="connectionStatus"></div><div id="saveSyncStatus" role="status" aria-live="polite" style="font-size:13px;line-height:1.5;margin-bottom:12px;padding:10px;border-radius:9px;background:#f3f4f6"></div>
 <div class="navWrap">
 <div class="nav" id="nav"></div>
 <div class="navScrollCue">SWIPE FOR MORE →</div>
@@ -631,7 +631,7 @@ if(!r.ok)throw new Error("Database read failed: "+table);
 return await r.json();
 }
 
-async function upsert(table,row,conflict){
+async function upsertRequest(table,row,conflict){
 await refreshSessionIfNeeded();
 const url=SUPABASE_URL+"/rest/v1/"+table+
 "?on_conflict="+encodeURIComponent(conflict);
@@ -646,7 +646,7 @@ throw new Error("Database save failed");
 }
 }
 
-async function deleteRows(table,filters){
+async function deleteRowsRequest(table,filters){
 await refreshSessionIfNeeded();
 let url=SUPABASE_URL+"/rest/v1/"+table+
 "?tournament_id=eq."+encodeURIComponent(TOURNAMENT_ID);
@@ -658,6 +658,53 @@ if(!r.ok){
 console.error(await r.text());
 throw new Error("Database delete failed");
 }
+}
+
+
+let pendingDatabaseSaves=0,lastConfirmedSave=null,lastConfirmedSync=null;
+let failedDatabaseSaves=0;
+function statusTime(value){
+return new Date(value).toLocaleTimeString([], {hour:"numeric",minute:"2-digit",second:"2-digit"});
+}
+function drawSaveSyncStatus(){
+const box=document.getElementById("saveSyncStatus");
+if(!box)return;
+const parts=[];
+if(pendingDatabaseSaves)parts.push("Saving… ("+pendingDatabaseSaves+")");
+if(failedDatabaseSaves)parts.push("⚠️ A change could not be saved. Check your entries and enter the failed change again.");
+if(lastConfirmedSave)parts.push("Saved to database: "+statusTime(lastConfirmedSave));
+if(lastConfirmedSync)parts.push("Last synced: "+statusTime(lastConfirmedSync));
+else parts.push("Waiting for first sync…");
+if(!connected)parts.push("Connection unavailable — latest updates may be missing.");
+box.textContent=parts.join(" • ");
+box.style.background=failedDatabaseSaves?"#fee2e2":pendingDatabaseSaves?"#fffbeb":"#f3f4f6";
+}
+const failedSaveKeys=new Set();
+async function trackDatabaseSave(key,operation){
+pendingDatabaseSaves++;drawSaveSyncStatus();
+try{
+const result=await operation();
+lastConfirmedSave=Date.now();
+failedSaveKeys.delete(key);
+return result;
+}catch(error){
+failedSaveKeys.add(key);
+throw error;
+}finally{
+pendingDatabaseSaves--;
+failedDatabaseSaves=failedSaveKeys.size;
+drawSaveSyncStatus();
+}
+}
+function saveIdentity(table,row){
+const fields=["round_no","match_no","hole","scorer_key","group_no","player_no","id"];
+return table+":"+fields.filter(k=>row[k]!==undefined).map(k=>k+"="+row[k]).join("|");
+}
+async function upsert(table,row,conflict){
+return trackDatabaseSave(saveIdentity(table,row),()=>upsertRequest(table,row,conflict));
+}
+async function deleteRows(table,filters){
+return trackDatabaseSave(saveIdentity(table,filters),()=>deleteRowsRequest(table,filters));
 }
 
 // Cache small stable batches; unchanged polls return no tournament rows.
@@ -746,12 +793,15 @@ settings.forEach(r=>{
 roundSettings[Number(r.round_no)]=r.scoring_open!==false;
 });
 connected=true;
+lastConfirmedSync=Date.now();
+drawSaveSyncStatus();
 initialConnectionPending=false;
 drawConnectionStatus();
 if(rerender)render();
 }catch(e){
 console.error(e);
 connected=false;
+drawSaveSyncStatus();
 initialConnectionPending=false;
 drawConnectionStatus();
 }
@@ -2819,7 +2869,7 @@ await loadSharedData(false);render();
 
 function render(){
 if(page==="users"&&!isOwner())page="dashboard";
-drawNav();drawConnectionStatus();
+drawNav();drawConnectionStatus();drawSaveSyncStatus();
 let html="";
 if(page==="dashboard")html=dashboard();
 else if(page==="live")html=liveScoringPage();
