@@ -275,6 +275,7 @@ header h1{font-size:25px}
 .par3Hole{grid-template-columns:68px minmax(0,1fr);gap:9px;padding:12px 10px}
 .par3HoleNumber{width:60px;height:52px}
 }
+.thursdayScoreBox{position:relative;display:inline-block}.thursdayStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.scoretable .thursdayScoreBox input{padding-top:12px;padding-bottom:4px}
 </style>
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
 <style>
@@ -3191,6 +3192,11 @@ if(handicap>=0)return Math.floor(handicap/18)+(THURSDAY_CARD.hcp[h-1]<=handicap%
 const given=-handicap;
 return -(Math.floor(given/18)+(THURSDAY_CARD.hcp[h-1]>18-given%18?1:0));
 }
+function thursdayStrokeDots(g,p,h){
+const strokes=thursdayHandicapStrokes(g,p,h);
+if(strokes<=0)return "";
+return '<span class="thursdayStrokeDots" aria-hidden="true">'+("•".repeat(strokes))+'</span>';
+}
 function thursdayPoints(g,p,h){
 const score=thursdayValue(g,p,h);
 if(score===""||!thursdayCardReady())return null;
@@ -3300,7 +3306,7 @@ return `<div class="card" id="thursdayLeaderboard">${thursdayLeaderboard()}</div
 <div><b>Whispering Pines - Pines Course</b></div>
 <p class="muted">White: 71.1 / 131 • Gold: 68.9 / 124 • Par 72</p>
 <p class="muted">18-hole net Stableford • 85% handicaps • Four teams of four</p>
-<p class="muted">Enter gross strokes. Net Stableford points use 85% of each player’s tee-specific course handicap, rounded to a whole stroke and allocated by the hole handicap rankings. Points and team totals update automatically.</p>
+<p class="muted">Enter gross strokes. Net Stableford points use 85% of each player’s tee-specific course handicap, rounded to a whole stroke and allocated by the hole handicap rankings. Points and team totals update automatically. • = 1 handicap stroke; •• = 2 strokes.</p>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
 <div id="thursdayStatus" role="status">${escapeHtml(thursdayNotice)}</div></div>
 ${THURSDAY_GROUPS.map((group,gi)=>{
@@ -3311,10 +3317,10 @@ return `<div class="card"><h2>Group ${gi+1} • ${group.time}</h2>
 ${group.players.map((name,pi)=>{
 const p=pi+1;let cells="";
 for(let h=1;h<=18;h++){
-cells+=`<td><input class="scoreInput" type="number" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" min="1" max="20" step="1" value="${thursdayValue(g,p,h)}"
-aria-label="${escapeHtml(name)} hole ${h}" ${canScore()?"":"disabled"}
+cells+=`<td><span class="thursdayScoreBox">${thursdayStrokeDots(g,p,h)}<input class="scoreInput" type="number" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" min="1" max="20" step="1" value="${thursdayValue(g,p,h)}"
+aria-label="${escapeHtml(name)} hole ${h}, ${thursdayHandicapStrokes(g,p,h)} handicap strokes" ${canScore()?"":"disabled"}
 onfocus="selectScoreInput(this)" onclick="selectScoreInput(this)"
- onkeydown="handleScoreKeydown(event,this)" oninput="handleThursdayScoreInput(this)" onchange="saveThursdayScore(${g},${p},${h},this)"></td>`;
+ onkeydown="handleScoreKeydown(event,this)" oninput="handleThursdayScoreInput(this)" onchange="saveThursdayScore(${g},${p},${h},this)"></span></td>`;
 if(h===9)cells+=`<td class="summaryCell" id="thursday-out-${g}-${p}">${thursdaySum(g,p,1,9)}</td>`;
 }
 return `<tr><td><b>${escapeHtml(name)}</b><div class="muted">85% HCP ${thursdayPlayerHandicap(g,p).playingHandicap} • ${thursdayPlayerHandicap(g,p).tee}</div><div class="muted">Team ${thursdayTeam(g,p).id} • Strokes</div></td>${cells}
