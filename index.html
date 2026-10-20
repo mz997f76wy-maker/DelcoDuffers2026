@@ -277,6 +277,7 @@ header h1{font-size:25px}
 }
 .thursdayScoreBox{position:relative;display:inline-block}.thursdayStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.scoretable .thursdayScoreBox input{padding-top:12px;padding-bottom:4px}
 .matchScoreBox{position:relative;display:inline-block}.matchStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.matchScoreBox:has(.matchStrokeDots) input{padding-top:12px;padding-bottom:4px}
+.automaticMatchRow td{font-weight:900;font-size:12px;text-align:center;background:#f3f4f6}.automaticMatchRow td.matchStatusHackers{background:#dc2626;color:white}.automaticMatchRow td.matchStatusShankers{background:#2563eb;color:white}.automaticMatchRow td.matchStatusTied{background:#e5e7eb;color:#374151}
 </style>
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
 <style>
@@ -1145,7 +1146,13 @@ function roundInfo(){return ROUNDS[currentRound-1]}
 
 function teamPoints(){
 let hackers=0,shankers=0,completed=0;
-Object.values(data.results).forEach(r=>{
+const results={...data.results};
+for(const round of [1,2,4]){
+for(const match of data.matchups[round]||[]){
+if(match)results[match.id]={winner:effectiveMatchResult(round,match)};
+}
+}
+Object.values(results).forEach(r=>{
 if(!r)return;
 if(r.winner==="Hackers"){hackers++;completed++}
 else if(r.winner==="Shankers"){shankers++;completed++}
@@ -1180,8 +1187,9 @@ ${escapeHtml(p.name)}
 }
 
 function renderLiveMatchRow(match){
-const result=data.results[match.id]?.winner||"";
-const latest=liveStatuses.filter(r=>Number(r.round_no)===dashboardRound&&Number(r.match_no)===Number(match.matchNo))
+const auto=automaticMatch(dashboardRound,match);
+const result=effectiveMatchResult(dashboardRound,match);
+const latest=auto.active?auto.latest:liveStatuses.filter(r=>Number(r.round_no)===dashboardRound&&Number(r.match_no)===Number(match.matchNo))
 .sort((a,b)=>Number(b.holes_completed)-Number(a.holes_completed))[0];
 let rowClass="",centerClass="",center="";
 const leader=result||latest?.leader||"";
@@ -2231,8 +2239,83 @@ return `<details class="scorePlayerDetails"><summary>Player handicaps &amp; tees
 `<li><b>${escapeHtml(p.name)}</b> — ${escapeHtml(handicapDisplay(p,round))}</li>`).join("")}</ul></details>`;
 }
 
+// Match status is derived from the shared gross scores, so every device recalculates corrections.
+function automaticMatch(round,match){
+round=Number(round);
+const empty={active:false,history:[],latest:null,finish:null};
+if(![1,2,4].includes(round)||!match)return empty;
+const needed=round===4?1:2;
+const sides=[match.hackers||[],match.shankers||[]];
+if(sides.some(ids=>ids.length!==needed||ids.some(id=>!getPlayer(id))))return empty;
+const players=sides.flat().map(getPlayer),score=data.scores[match.id];
+if(!score)return empty;
+const valid=v=>v!==""&&v!=null&&Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=20;
+const active=(score.holes||[]).some(h=>players.some(p=>valid(h?.[p.id])));
+let lead=0;const history=[];
+for(const entry of liveHoleOrder(match)){
+const h=entry.hole-1,hole=score.holes?.[h]||{};
+if(players.some(p=>!valid(hole[p.id])))break;
+const best=sides.map(ids=>Math.min(...ids.map(id=>{
+const p=getPlayer(id),handicap=matchStrokeHandicap(p,round,match);
+return Number(hole[id])-matchHoleStrokes(handicap,round,h);
+})));
+lead+=best[0]<best[1]?1:best[0]>best[1]?-1:0;
+const row={round_no:round,match_no:match.matchNo,hole:entry.hole,holes_completed:entry.completed,
+leader:lead===0?"All square":lead>0?"Hackers":"Shankers",margin:Math.abs(lead)};
+history.push(row);
+if(liveFinish(row))break;
+}
+const latest=history.at(-1)||null;
+return {active,history,latest,finish:liveFinish(latest)};
+}
+function effectiveMatchResult(round,match){
+const auto=automaticMatch(round,match);
+return auto.active?(auto.finish?.winner||""):(data.results[match.id]?.winner||"");
+}
+function matchStatusCell(row){
+if(!row)return '<td>—</td>';
+const finish=liveFinish(row),label=finish?.label||(row.leader==="All square"?"A/S":row.margin+" UP");
+const cls=row.leader==="Hackers"?"matchStatusHackers":row.leader==="Shankers"?"matchStatusShankers":"matchStatusTied";
+const title=liveStatusText(row)+" after hole "+row.hole;
+return '<td class="'+cls+'" title="'+escapeHtml(title)+'">'+escapeHtml(label)+'</td>';
+}
+function matchStatusRow(round,match){
+if(![1,2,4].includes(Number(round)))return "";
+const auto=automaticMatch(round,match);
+const byHole=new Map(auto.history.map(row=>[Number(row.hole),row]));
+let cells="";
+for(let h=1;h<=18;h++){
+cells+=matchStatusCell(byHole.get(h));
+if(h===9)cells+=matchStatusCell(byHole.get(h));
+}
+cells+=matchStatusCell(byHole.get(18))+matchStatusCell(auto.latest);
+return '<tr class="automaticMatchRow" id="match-status-'+match.id+'"><td><b>Match status</b></td>'+cells+'</tr>';
+}
+function refreshAutomaticMatch(round,matchId){
+const match=(data.matchups[round]||[]).find(m=>m?.id===matchId);
+if(!match||![1,2,4].includes(Number(round)))return;
+const row=document.getElementById("match-status-"+matchId);
+if(row)row.outerHTML=matchStatusRow(round,match);
+const auto=automaticMatch(round,match);
+const banner=document.getElementById("liveCurrentMatchBanner");
+if(banner&&page==="live"&&Number(liveRound)===Number(round)&&liveRoundMatches()[liveMatchNo-1]?.id===matchId){
+const latest=auto.active?auto.latest:liveHistory(liveMatchNo)[0];
+banner.className="resultBanner "+(latest?.leader==="Hackers"?"resultHackers":latest?.leader==="Shankers"?"resultShankers":"resultHalved");
+banner.innerHTML=latest?escapeHtml(liveStatusText(latest))+'<div style="font-size:13px;margin-top:5px">After hole '+latest.hole+' • '+latest.holes_completed+' holes played</div>':"Waiting for all player scores on the opening hole";
+}
+const result=document.getElementById("automatic-result-"+matchId);
+if(result)result.innerHTML=automaticResultSummary(round,match);
+}
+function automaticResultSummary(round,match){
+const auto=automaticMatch(round,match);
+if(!auto.active)return "";
+if(!auto.latest)return '<p class="muted">Waiting for all player scores on the opening hole.</p>';
+return '<div class="resultBanner '+(auto.latest.leader==="Hackers"?"resultHackers":auto.latest.leader==="Shankers"?"resultShankers":"resultHalved")+'">'+escapeHtml(liveStatusText(auto.latest))+
+(auto.finish?" • FINAL":" • Thru "+auto.latest.holes_completed)+'</div>';
+}
+
 function matchStrokeHandicap(player,round,match){
-if(![1,2].includes(Number(round)))return null;
+if(![1,2,4].includes(Number(round)))return null;
 const players=[...(match?.hackers||[]),...(match?.shankers||[])].map(getPlayer).filter(Boolean);
 const handicaps=players.map(p=>Number(courseHandicap(p,round))).filter(Number.isFinite);
 const own=Number(courseHandicap(player,round));
@@ -2248,7 +2331,7 @@ const strokes=matchHoleStrokes(handicap,round,holeIndex);
 return strokes>0?'<span class="matchStrokeDots" aria-hidden="true">'+("•".repeat(strokes))+'</span>':"";
 }
 function matchStrokeNote(round){
-return [1,2].includes(Number(round))?'<p class="muted" style="font-size:12px">Match strokes play off the lowest course handicap in this foursome. • = 1 stroke; •• = 2 strokes. Enter gross scores.</p>':"";
+return [1,2,4].includes(Number(round))?'<p class="muted" style="font-size:12px">Match strokes play off the lowest course handicap in this match. • = 1 stroke; •• = 2 strokes. Enter gross scores.</p>':"";
 }
 function playerScoreRow(p,score,round,matchNo,matchId,matchContext){
 const match=matchContext||(data.matchups[round]||[]).find(m=>m?.id===matchId);
@@ -2393,6 +2476,7 @@ alert("Reset could not be completed. No other tournament settings were changed."
 }
 
 function resultControls(match,i){
+if([1,2,4].includes(Number(currentRound)))return `<div id="automatic-result-${match.id}">${automaticResultSummary(currentRound,match)}</div><p class="muted" style="font-size:12px">Match status and team points calculate automatically from net hole scores. Red = Hackers; blue = Shankers. Correct a gross score to update the result.</p>`;
 const saved=data.results[match.id]?data.results[match.id].winner:"";
 let banner="";
 if(saved==="Hackers"){
@@ -2430,6 +2514,9 @@ function liveNames(ids){
 return (ids||[]).map(getPlayer).filter(Boolean).map(p=>p.name).join(" & ")||"Players not assigned";
 }
 function liveHistory(matchNo){
+const match=(data.matchups[liveRound]||[])[matchNo-1];
+const auto=automaticMatch(liveRound,match);
+if(auto.active)return [...auto.history].reverse();
 return liveStatuses.filter(r=>Number(r.round_no)===liveRound&&Number(r.match_no)===matchNo)
 .sort((a,b)=>b.holes_completed-a.holes_completed);
 }
@@ -2497,7 +2584,8 @@ ${scoreHeader()}
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
 ${scoreReferenceRow(course.par,"PAR",true)}
 ${players.map(p=>playerScoreRow(p,score,round.id,match.matchNo,match.id,match)).join("")}
-</table></div><p class="muted" style="font-size:12px">Scores save automatically. Update match status below after each hole.</p></div>`;
+${matchStatusRow(round.id,match)}
+</table></div><p class="muted" style="font-size:12px">Scores save automatically. For rounds 1, 2 and 4, match status and dashboard results calculate from completed hole scores.</p></div>`;
 }
 function liveScoringPage(){
 const round=liveRoundInfo(),matches=liveRoundMatches();
@@ -2528,12 +2616,12 @@ ${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>
 <div><div class="hackerLabel">HACKERS</div><b>${escapeHtml(liveNames(match.hackers))}</b></div>
 <div><div class="shankerLabel">SHANKERS</div><b>${escapeHtml(liveNames(match.shankers))}</b></div>
 </div>
-<div class="resultBanner ${latest?.leader==="Hackers"?"resultHackers":latest?.leader==="Shankers"?"resultShankers":"resultHalved"}">
+<div id="liveCurrentMatchBanner" class="resultBanner ${latest?.leader==="Hackers"?"resultHackers":latest?.leader==="Shankers"?"resultShankers":"resultHalved"}">
 ${latest?escapeHtml(liveStatusText(latest))+`<div style="font-size:13px;margin-top:5px">After hole ${latest.hole} • ${latest.holes_completed} holes played</div>`:"No update yet"}
 </div>
 ${ready?liveHoleScores(round,match):""}
 ${!ready?'<div class="notice">Set this matchup in the Matchups tab first.</div>':!canScore()?'<div class="viewer" style="margin-top:12px">Sign in with scoring access to update your match.</div>':!isScoringOpen(liveRound)?`<div class="scoringLockedNotice">${escapeHtml(round.course)} scoring is locked.</div>`:""}
-<div class="row" style="margin-top:16px">
+${round.id===3?`<div class="row" style="margin-top:16px">
 <div class="field"><label for="liveHole">Hole just completed</label>
 <select id="liveHole" onchange="editLiveHole(this.value)" ${!editable?"disabled":""}>
 ${order.map(x=>`<option value="${x.hole}" ${draft.hole===x.hole?"selected":""}>Hole ${x.hole}${Number(match.teeStartHole)>1?` (${x.completed} played)`:""}</option>`).join("")}
@@ -2547,6 +2635,7 @@ ${Array.from({length:completed},(_,i)=>option(-(i+1),"Shankers "+(i+1)+" UP")).j
 ${editable?`<button id="liveSaveButton" class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
 <p id="liveSaveStatus" role="status" style="height:44px;overflow:auto;overflow-anchor:none;font-size:13px;line-height:20px">${liveSaving?"Saving match status…":escapeHtml(liveNotice)}</p>
 <p class="muted" style="font-size:12px">Saving a lead greater than the holes remaining automatically records the win and team point. Tied finishes award half a point each.</p>
+`:`<p class="muted" style="font-size:13px;margin-top:16px">Match status updates automatically when all ${round.id===4?"two":"four"} player scores are entered for each hole. Correct a score to recalculate the match and dashboard.</p>`}
 ${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
 ${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
 </div>
@@ -2664,6 +2753,7 @@ ${scoreHeader()}
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
 ${scoreReferenceRow(course.par,"PAR",true)}
 ${players.map(p=>playerScoreRow(p,score,currentRound,i+1,match.id,match)).join("")}
+${matchStatusRow(r.id,match)}
 </table>
 </div>
 ${resultControls(match,i)}
@@ -2675,6 +2765,7 @@ if(!canScoreRound(round))return;
 const score=getScore(matchId);
 score.holes[holeIndex][scorer]=value===""?"":Number(value);
 updateScoreTotals(matchId,scorer);
+refreshAutomaticMatch(round,matchId);
 saveScoreOnline(round,matchNo,holeIndex+1,scorer,value);
 }
 
