@@ -276,6 +276,7 @@ header h1{font-size:25px}
 .par3HoleNumber{width:60px;height:52px}
 }
 .thursdayScoreBox{position:relative;display:inline-block}.thursdayStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.scoretable .thursdayScoreBox input{padding-top:12px;padding-bottom:4px}
+.matchScoreBox{position:relative;display:inline-block}.matchStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.matchScoreBox:has(.matchStrokeDots) input{padding-top:12px;padding-bottom:4px}
 </style>
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
 <style>
@@ -2230,13 +2231,34 @@ return `<details class="scorePlayerDetails"><summary>Player handicaps &amp; tees
 `<li><b>${escapeHtml(p.name)}</b> — ${escapeHtml(handicapDisplay(p,round))}</li>`).join("")}</ul></details>`;
 }
 
-function playerScoreRow(p,score,round,matchNo,matchId){
+function matchStrokeHandicap(player,round,match){
+if(![1,2].includes(Number(round)))return null;
+const players=[...(match?.hackers||[]),...(match?.shankers||[])].map(getPlayer).filter(Boolean);
+const handicaps=players.map(p=>Number(courseHandicap(p,round))).filter(Number.isFinite);
+const own=Number(courseHandicap(player,round));
+if(!handicaps.length||!Number.isFinite(own))return null;
+return Math.max(0,own-Math.min(...handicaps));
+}
+function matchHoleStrokes(handicap,round,holeIndex){
+if(handicap===null)return 0;
+return Math.floor(handicap/18)+(COURSE_CARDS[round].hcp[holeIndex]<=handicap%18?1:0);
+}
+function matchStrokeDots(handicap,round,holeIndex){
+const strokes=matchHoleStrokes(handicap,round,holeIndex);
+return strokes>0?'<span class="matchStrokeDots" aria-hidden="true">'+("•".repeat(strokes))+'</span>':"";
+}
+function matchStrokeNote(round){
+return [1,2].includes(Number(round))?'<p class="muted" style="font-size:12px">Match strokes play off the lowest course handicap in this foursome. • = 1 stroke; •• = 2 strokes. Enter gross scores.</p>':"";
+}
+function playerScoreRow(p,score,round,matchNo,matchId,matchContext){
+const match=matchContext||(data.matchups[round]||[]).find(m=>m?.id===matchId);
+const matchHandicap=matchStrokeHandicap(p,round,match);
 const cls=p.team==="Hackers"?"hackerScoreRow":"shankerScoreRow";
 let cells="";
 for(let h=0;h<9;h++){
 const value=(score.holes[h]||{})[p.id]??"";
 cells+=`
-<td><input class="scoreInput" type="number" inputmode="numeric"
+<td><span class="matchScoreBox">${matchStrokeDots(matchHandicap,round,h)}<input class="scoreInput" aria-label="${escapeHtml(p.name)} hole ${h+1}${matchHandicap===null?'':', '+matchHoleStrokes(matchHandicap,round,h)+' match handicap strokes'}" type="number" inputmode="numeric"
 pattern="[0-9]*" enterkeyhint="next" min="1" max="20"
 ${canScoreRound(round)?"":"disabled"}
 value="${value}"
@@ -2244,13 +2266,13 @@ onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
-</td>`;
+</span></td>`;
 }
 cells+=`<td class="summaryCell" id="out-${matchId}-${p.id}">${enteredNine(score,p.id,0)}</td>`;
 for(let h=9;h<18;h++){
 const value=(score.holes[h]||{})[p.id]??"";
 cells+=`
-<td><input class="scoreInput" type="number" inputmode="numeric"
+<td><span class="matchScoreBox">${matchStrokeDots(matchHandicap,round,h)}<input class="scoreInput" aria-label="${escapeHtml(p.name)} hole ${h+1}${matchHandicap===null?'':', '+matchHoleStrokes(matchHandicap,round,h)+' match handicap strokes'}" type="number" inputmode="numeric"
 pattern="[0-9]*" enterkeyhint="next" min="1" max="20"
 ${canScoreRound(round)?"":"disabled"}
 value="${value}"
@@ -2258,7 +2280,7 @@ onfocus="selectScoreInput(this)"
 onclick="selectScoreInput(this)"
 onkeydown="handleScoreKeydown(event,this)"
 oninput="handleScoreInput(${round},${matchNo},'${matchId}',${h},'${p.id}',this)">
-</td>`;
+</span></td>`;
 }
 cells+=`
 <td class="summaryCell" id="in-${matchId}-${p.id}">${enteredNine(score,p.id,9)}</td>
@@ -2267,7 +2289,7 @@ const playerHandicap=round===1||round===2||round===4?
 handicapDisplay(p,round):`HCP ${p.handicap} • Group ${p.group}`;
 return`
 <tr class="${cls}">
-<td>${escapeHtml(p.name)}<br class="scorePlayerMeta"><span class="muted scorePlayerMeta">${escapeHtml(playerHandicap)}</span></td>
+<td>${escapeHtml(p.name)}<br class="scorePlayerMeta"><span class="muted scorePlayerMeta">${escapeHtml(playerHandicap)}${matchHandicap===null?"":` • Match strokes ${matchHandicap}`}</span></td>
 ${cells}
 </tr>`;
 }
@@ -2469,12 +2491,12 @@ if(round.id===3)return "";
 const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
 const score=getScore(match.id),course=COURSE_CARDS[round.id];
 return `<div style="margin-top:16px"><h3>Hole Scores</h3>
-${scorePlayerDetails(players,round.id)}
+${scorePlayerDetails(players,round.id)}${matchStrokeNote(round.id)}
 <div class="tablewrap"><table class="scoretable">
 ${scoreHeader()}
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
 ${scoreReferenceRow(course.par,"PAR",true)}
-${players.map(p=>playerScoreRow(p,score,round.id,match.matchNo,match.id)).join("")}
+${players.map(p=>playerScoreRow(p,score,round.id,match.matchNo,match.id,match)).join("")}
 </table></div><p class="muted" style="font-size:12px">Scores save automatically. Update match status below after each hole.</p></div>`;
 }
 function liveScoringPage(){
@@ -2635,13 +2657,13 @@ const score=getScore(match.id),course=COURSE_CARDS[r.id];
 return`
 <div class="match">
 <h3>Match ${i+1}</h3>
-${scorePlayerDetails(players,r.id)}
+${scorePlayerDetails(players,r.id)}${matchStrokeNote(r.id)}
 <div class="tablewrap">
 <table class="scoretable">
 ${scoreHeader()}
 ${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}
 ${scoreReferenceRow(course.par,"PAR",true)}
-${players.map(p=>playerScoreRow(p,score,currentRound,i+1,match.id)).join("")}
+${players.map(p=>playerScoreRow(p,score,currentRound,i+1,match.id,match)).join("")}
 </table>
 </div>
 ${resultControls(match,i)}
