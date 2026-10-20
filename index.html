@@ -2245,7 +2245,7 @@ round=Number(round);
 const empty={active:false,history:[],latest:null,finish:null};
 if(![1,2,4].includes(round)||!match)return empty;
 const needed=round===4?1:2;
-const sides=[match.hackers||[],match.shankers||[]];
+const sides=[(match.hackers||[]).filter(Boolean),(match.shankers||[]).filter(Boolean)];
 if(sides.some(ids=>ids.length!==needed||ids.some(id=>!getPlayer(id))))return empty;
 const players=sides.flat().map(getPlayer),score=data.scores[match.id];
 if(!score)return empty;
@@ -2595,7 +2595,7 @@ const order=liveHoleOrder(match);
 const draft=liveDraft?.matchNo===liveMatchNo?liveDraft:liveNextEntry(match,history);
 const completed=order.find(x=>x.hole===draft.hole).completed;
 const required=round.type==="singles"?1:2;
-const ready=match.hackers.length===required&&match.shankers.length===required;
+const ready=[match.hackers,match.shankers].every(ids=>(ids||[]).filter(id=>getPlayer(id)).length===required);
 const editable=canScoreRound(liveRound)&&ready&&!liveSaving;
 const option=(value,label)=>`<option value="${value}" ${Number(draft.value)===value?"selected":""}>${label}</option>`;
 return `
@@ -2651,7 +2651,7 @@ async function saveLiveStatus(){
 if(liveSaving||!canScoreRound(liveRound))return;
 const roundNo=liveRound,matchNo=liveMatchNo,match=liveRoundMatches()[matchNo-1];
 const required=liveRoundInfo().type==="singles"?1:2;
-if(match.hackers.length!==required||match.shankers.length!==required)return;
+if(![match.hackers,match.shankers].every(ids=>(ids||[]).filter(id=>getPlayer(id)).length===required))return;
 const hole=Number(document.getElementById("liveHole").value);
 const value=Number(document.getElementById("liveStatus").value);
 const completed=liveHoleOrder(match).find(x=>x.hole===hole)?.completed;
