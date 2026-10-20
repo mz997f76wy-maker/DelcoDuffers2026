@@ -2606,7 +2606,7 @@ return `
 ${ROUNDS.map(r=>`<option value="${r.id}" ${r.id===liveRound?"selected":""}>Round ${r.id} — ${escapeHtml(r.course)}</option>`).join("")}
 </select>
 <p class="muted">${escapeHtml(round.course)} • ${escapeHtml(round.format)}</p>
-<p class="muted">${round.id===3?"Update your match status after each hole.":"Enter hole scores and update your match status after each hole."}</p>
+<p class="muted">${round.id===3?"Update your match status after each hole.":"Enter gross hole scores. Match status updates automatically."}</p>
 <label for="liveMatchSelect">Choose your matchup</label>
 <select id="liveMatchSelect" onchange="selectLiveMatch(this.value)" ${liveSaving?"disabled":""}>
 ${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>Match ${i+1}: ${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</option>`).join("")}
