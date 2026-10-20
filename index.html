@@ -530,16 +530,14 @@ const course=COURSE_HANDICAP_DATA[Number(roundId)];
 if(!course)return player.handicap;
 const teeName=playerTee(player,roundId);
 const tee=course.tees[teeName]||course.tees[course.defaultTee];
-const allowance=[1,2].includes(Number(roundId))?0.9:1;
-return Math.round((index*(tee.slope/113)+(tee.rating-course.par))*allowance);
+return Math.round(index*(tee.slope/113)+(tee.rating-course.par));
 }
 
 function handicapDisplay(player,roundId){
 if(!player)return"";
 const hcp=courseHandicap(player,roundId);
 const tee=playerTee(player,roundId);
-const label=[1,2].includes(Number(roundId))?"90% HCP":"HCP";
-return tee?`${label} ${hcp} • ${tee}`:`${label} ${hcp}`;
+return tee?`HCP ${hcp} • ${tee}`:`HCP ${hcp}`;
 }
 
 function isSignedIn(){return !!(session&&session.access_token&&currentUser)}
@@ -1458,7 +1456,7 @@ ${rows.length?`<div class="tablewrap" role="region" tabindex="0" aria-label="${m
 function leaderboardsPage(){
 return`<div class="card leadersControls"><h2 style="margin-top:0">Leaderboards</h2>
 <div class="leadersRounds" role="group" aria-label="Leaderboard round">${LEADERBOARD_ROUNDS.map(id=>{const round=ROUNDS.find(r=>r.id===id);return`<button type="button" aria-pressed="${id===leaderboardRound}" onclick="selectLeaderboardRound(${id})"><span>Round ${id}</span>${escapeHtml(round.course)}</button>`;}).join("")}</div>
-<p class="leadersNote">Combined scores from rounds 1, 2 and 4. Round 2 carries your Round 1 finish; Round 4 carries both earlier rounds. Talamore does not count. Net uses 90% handicaps for Tobacco Road and Mid South and full handicaps for Legacy, allocated by hole. Earlier counting rounds must have all 18 scores entered. Swipe the boards for later holes.</p>
+<p class="leadersNote">Combined scores from rounds 1, 2 and 4. Round 2 carries your Round 1 finish; Round 4 carries both earlier rounds. Talamore does not count. Net uses each round’s full course handicap, allocated by hole. Earlier counting rounds must have all 18 scores entered. Swipe the boards for later holes.</p>
 </div>${augustaLeaderboard("gross")}${augustaLeaderboard("net")}`;
 }
 
