@@ -123,6 +123,10 @@ th,td{padding:8px;border-bottom:1px solid #e5e7eb}
 .par3WinnerName{font-size:18px;font-weight:900}
 .par3WinnerPending{color:#9ca3af;font-weight:800}
 .par3Select{font-weight:800}
+.par3Distance{display:flex;align-items:center;gap:5px;margin-top:5px;height:30px;font-size:12px;color:#6b7280}
+.par3Distance input{width:48px;min-width:0;height:30px;padding:3px 5px;text-align:center;border-radius:6px;font-size:16px}
+.par3Distance input::-webkit-inner-spin-button{appearance:none}
+.par3DistanceValue{font-size:13px;font-weight:800;color:#374151;margin-top:5px}
 .par3Saved{font-size:12px;font-weight:900;color:#065f46;margin-top:5px}
 .loginBox{max-width:500px;margin:auto}
 .loading{text-align:center;padding:40px;font-size:18px;font-weight:bold}
@@ -979,8 +983,10 @@ results.forEach(r=>{
 data.results["R"+r.round_no+"M"+r.match_no]={winner:r.winner};
 });
 data.par3Results={};
+data.par3Distances={};
 par3.forEach(r=>{
 data.par3Results["R"+r.round_no+"H"+r.hole]=r.player_id||"";
+data.par3Distances["R"+r.round_no+"H"+r.hole]={feet:r.distance_feet??"",inches:r.distance_inches??""};
 });
 roundSettings={1:true,2:true,3:true,4:true};
 settings.forEach(r=>{
@@ -1505,15 +1511,48 @@ ${canEditPar3(r.round)?`
 <select class="par3Select" onchange="savePar3Winner(${r.round},${hole},this.value)">
 ${par3PlayerOptions(playerId)}
 </select>
-${winner?`<div class="par3Saved">✓ ${escapeHtml(winner.name)}</div>`:""}
+${par3DistanceFields(r.round,hole,true)}
 `:winner?`<div class="par3WinnerName">${escapeHtml(winner.name)}</div>`
 :`<div class="par3WinnerPending">Winner not selected yet</div>`}
+${!canEditPar3(r.round)?par3DistanceFields(r.round,hole,false):""}
 </div>
 </div>`;
 }).join("")}
 </div>`).join("")}`;
 }
 
+function par3DistanceFields(round,hole,editable){
+const distance=data.par3Distances?.["R"+round+"H"+hole]||{feet:"",inches:""};
+if(!editable)return distance.feet===""&&distance.inches===""?"":'<div class="par3DistanceValue">'+(distance.feet||0)+'′ '+(distance.inches||0)+'″</div>';
+return '<div class="par3Distance" role="group" aria-label="Hole '+hole+' distance"><span>Distance</span>'+
+'<input type="number" inputmode="numeric" min="0" step="1" placeholder="—" aria-label="Hole '+hole+' feet" value="'+distance.feet+'" onchange="savePar3Distance('+round+','+hole+',\'feet\',this)"><span>ft</span>'+
+'<input type="number" inputmode="numeric" min="0" max="11" step="1" placeholder="—" aria-label="Hole '+hole+' inches" value="'+distance.inches+'" onchange="savePar3Distance('+round+','+hole+',\'inches\',this)"><span>in</span></div>';
+}
+async function savePar3Distance(round,hole,unit,el){
+if(!canEditPar3(round))return;
+const raw=el.value.trim(),value=Number(raw);
+if(raw!==""&&(!Number.isInteger(value)||value<0||(unit==="inches"&&value>11))){
+el.setCustomValidity(unit==="inches"?"Enter inches from 0 to 11.":"Enter whole feet, 0 or more.");el.reportValidity();return;
+}
+el.setCustomValidity("");
+const key="R"+round+"H"+hole;
+data.par3Distances??={};
+const old={...(data.par3Distances[key]||{feet:"",inches:""})};
+const distance={...old,[unit]:raw===""?"":value};
+data.par3Distances[key]=distance;
+try{
+await upsert("tournament_par3_results",{
+tournament_id:TOURNAMENT_ID,round_no:Number(round),hole:Number(hole),
+player_id:data.par3Results[key]||null,
+distance_feet:distance.feet===""?null:distance.feet,
+distance_inches:distance.inches===""?null:distance.inches,
+updated_at:new Date().toISOString()
+},"tournament_id,round_no,hole");
+}catch(e){
+data.par3Distances[key]=old;el.value=old[unit];
+alert("Distance could not be saved. Please try again.");
+}
+}
 async function savePar3Winner(round,hole,playerId){
 if(!canEditPar3(round)){
 alert("You do not have access to change this result.");
@@ -1521,22 +1560,28 @@ render();return;
 }
 const key="R"+round+"H"+hole;
 const old=data.par3Results[key]||"";
+const oldDistance=data.par3Distances?.[key];
 data.par3Results[key]=playerId||"";
 render();
 try{
 if(!playerId){
 await deleteRows("tournament_par3_results",{round_no:round,hole:hole});
 delete data.par3Results[key];
+if(data.par3Distances)delete data.par3Distances[key];
 }else{
 await upsert("tournament_par3_results",{
 tournament_id:TOURNAMENT_ID,
 round_no:Number(round),hole:Number(hole),
-player_id:String(playerId),updated_at:new Date().toISOString()
+player_id:String(playerId),
+distance_feet:data.par3Distances?.[key]?.feet===""?null:(data.par3Distances?.[key]?.feet??null),
+distance_inches:data.par3Distances?.[key]?.inches===""?null:(data.par3Distances?.[key]?.inches??null),
+updated_at:new Date().toISOString()
 },"tournament_id,round_no,hole");
 }
 render();
 }catch(e){
-console.error(e);data.par3Results[key]=old;render();
+console.error(e);data.par3Results[key]=old;
+if(oldDistance){data.par3Distances??={};data.par3Distances[key]=oldDistance}render();
 alert("Closest-to-the-pin winner could not be saved.");
 }
 }
