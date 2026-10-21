@@ -282,6 +282,35 @@ header h1{font-size:25px}
 .thursdayScoreBox{position:relative;display:inline-block}.thursdayStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.scoretable .thursdayScoreBox input{padding-top:12px;padding-bottom:4px}
 .matchScoreBox{position:relative;display:inline-block}.matchStrokeDots{position:absolute;top:1px;right:4px;font-size:12px;line-height:12px;letter-spacing:1px;color:#07513d;pointer-events:none}.matchScoreBox:has(.matchStrokeDots) input{padding-top:12px;padding-bottom:4px}
 .automaticMatchRow td{font-weight:900;font-size:12px;text-align:center;background:#f3f4f6}.automaticMatchRow td.matchStatusHackers{background:#dc2626;color:white}.automaticMatchRow td.matchStatusShankers{background:#2563eb;color:white}.automaticMatchRow td.matchStatusTied{background:#e5e7eb;color:#374151}
+
+.scatsColumns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.scatsColumns>.card{min-width:0}
+.scatGroupHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:3px solid #07513d;padding-bottom:9px;margin-bottom:6px}
+.scatGroupHeading h3{margin:0;font-size:20px;color:#07513d}
+.scatGroupHeading span{font-size:12px;font-weight:800;color:#6b7280}
+.scatWinnerRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb}
+.scatWinnerRow:last-child{border-bottom:0}
+.scatWinnerRow b{display:block;font-size:17px}
+.scatWinList{font-size:12px;color:#6b7280;line-height:1.5;margin-top:3px}
+.scatWinCount{flex-shrink:0;background:#ecfdf5;color:#065f46;border-radius:9px;padding:5px 10px;text-align:center;font-size:23px;font-weight:900;min-width:48px}
+.scatWinCount small{display:block;font-size:10px;text-transform:uppercase}
+.scatsIntro h2{margin:0 0 5px}
+.scatsIntro p{margin:0;font-size:12px;line-height:1.5;color:#6b7280}
+.scatsRoundButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.scatsRoundButtons button{padding:10px 4px;min-width:0;min-height:53px;font-size:14px;border:2px solid #d1d5db;background:#fff;color:#374151}
+.scatsRoundButtons button span{display:block;font-size:10px;margin-bottom:4px;text-transform:uppercase}
+.scatsRoundButtons button[aria-pressed="true"]{background:#07513d;border-color:#07513d;color:white}
+.scatsRoundButtons button:focus-visible{outline:3px solid #07513d;outline-offset:3px}
+.scatHoleRow{display:grid;grid-template-columns:43px minmax(0,1fr) 40px;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;padding:9px 6px;font-size:13px;line-height:1.35}
+.scatHoleRow:last-child{border-bottom:0}
+.scatHoleRow.won{background:#ecfdf5;color:#065f46}
+.scatHoleRow .scatHoleScore{text-align:right;font-weight:900}
+.scatHoleRow small{display:block;font-size:11px;color:#6b7280}
+.scatHoleRow.none{color:#9ca3af}
+.scatsCourseHeading{margin:14px 0 10px;font-size:20px}
+.scatsSectionTitle{margin:0 0 10px;font-size:21px}
+@media(max-width:650px){.scatsColumns{grid-template-columns:1fr;gap:0}.scatsRoundButtons button{font-size:12px}.scatWinnerRow{padding:8px 0}}
+
 </style>
 <style>.villaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.villaRoom{border:1px solid #d1d5db;border-radius:12px;padding:14px;background:#f9fafb}.villaRoom h3{margin:0 0 7px;font-size:19px}.villaRoom a{display:block;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNav summary{cursor:pointer;color:#1d4ed8;font-size:14px;font-weight:800;margin-bottom:10px}.villaNavChoices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.villaNavChoices a{display:inline-block;background:#e5edff;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}.villaGuests{font-size:15px;font-weight:650;line-height:1.8}@media(max-width:600px){.villaGrid{grid-template-columns:1fr;gap:9px}.villaRoom{padding:12px}}</style>
 <style>
@@ -2900,101 +2929,56 @@ counts[id].count++;
 return Object.values(counts).sort((a,b)=>b.count-a.count);
 }
 
+
 function scatGroupCard(round,group){
 const results=getScatResults(round.id,group);
-const summary=scatSummary(round.id,group);
 const won=results.filter(r=>r.status==="scat").length;
-return`
-<div class="card">
-<h2>Group ${group}</h2>
-<div class="scatCount">${won} scats won</div>
-${summary.length?`
-<h3>Scat Leaders</h3>
-${summary.map(x=>`
-<span class="pill"><b>${escapeHtml(x.name)}</b> —
-${x.count} ${x.count===1?"scat":"scats"}</span>`).join("")}`:""}
-<h3>Hole-by-Hole</h3>
-${results.map(r=>r.status==="scat"?`
-<div class="scatWinner">
-<b>Hole ${r.hole} — SCAT</b><br>
-${escapeHtml(r.winner.name)} — ${r.score}<br>
-<span class="muted">${r.entered} entered score${r.entered===1?"":"s"}</span>
-</div>`:r.status==="tie"?`
-<div class="scatTie">
-<b>Hole ${r.hole} — NO SCAT</b><br>
-Tie at ${r.score}<br>
-${r.winners.map(p=>escapeHtml(p.name)).join(", ")}
-</div>`:`
-<div class="scatNone">
-<b>Hole ${r.hole}</b> — No scores entered
-</div>`).join("")}
-</div>`;
+return `<section class="card"><div class="scatGroupHeading"><h3>Group ${group}</h3><span>${won} ${won===1?"scat":"scats"}</span></div>
+${results.map(r=>`<div class="scatHoleRow ${r.status==="scat"?"won":r.status==="none"?"none":""}">
+<b>H${r.hole}</b><div>${r.status==="scat"?
+`<b>${escapeHtml(r.winner.name)}</b><small>Scat • ${r.entered} scores entered</small>`:
+r.status==="tie"?`<b>No scat — tied</b><small>${r.winners.map(p=>escapeHtml(p.name)).join(", ")}</small>`:
+"No scores entered"}</div><span class="scatHoleScore">${r.score??"—"}</span></div>`).join("")}</section>`;
 }
 
 function allScatWinners(){
+return '<div class="scatsColumns">'+["A","B"].map(group=>{
 const players={};
-ROUNDS.filter(r=>r.scats).forEach(r=>{
-["A","B"].forEach(group=>{
-getScatResults(r.id,group).forEach(result=>{
+ROUNDS.filter(r=>r.scats).forEach(round=>{
+getScatResults(round.id,group).forEach(result=>{
 if(result.status!=="scat")return;
 const id=String(result.winner.id);
-if(!players[id]){
-players[id]={id,name:result.winner.name,group,wins:[]};
-}
-players[id].wins.push({
-round:r.id,course:r.course,hole:result.hole,score:result.score,group
+if(!players[id])players[id]={name:result.winner.name,wins:[]};
+players[id].wins.push({course:round.course,hole:result.hole,score:result.score});
 });
 });
-});
-});
-const sorted=Object.values(players)
-.map(p=>({...p,wins:p.wins.sort((a,b)=>a.round!==b.round?a.round-b.round:a.hole-b.hole)}))
-.sort((a,b)=>{
-if(b.wins.length!==a.wins.length)return b.wins.length-a.wins.length;
-return String(a.name).localeCompare(String(b.name));
-});
-if(!sorted.length){
-return`
-<div class="card">
-<h2>All Scat Winners</h2>
-<div class="muted">No scats have been won yet.</div>
-</div>`;
-}
-return`
-<div class="card">
-<h2>All Scat Winners</h2>
-${sorted.map(p=>`
-<div class="allScatPlayer">
-<div class="allScatPlayerName">${escapeHtml(p.name)}</div>
-<div class="allScatTotal">
-${p.wins.length} ${p.wins.length===1?"scat":"scats"} • Group ${escapeHtml(p.group)}
-</div>
-${p.wins.map(w=>`
-<div class="allScatWin">
-<b>${escapeHtml(w.course)}</b> • Hole ${w.hole} • Score ${w.score}
-</div>`).join("")}
-</div>`).join("")}
-</div>`;
+const sorted=Object.values(players).sort((a,b)=>b.wins.length-a.wins.length||a.name.localeCompare(b.name));
+const total=sorted.reduce((n,p)=>n+p.wins.length,0);
+return `<section class="card" aria-label="Group ${group} scat winners"><div class="scatGroupHeading"><h3>Group ${group} Winners</h3><span>${total} ${total===1?"scat":"scats"}</span></div>
+${sorted.length?sorted.map(p=>`<div class="scatWinnerRow"><div><b>${escapeHtml(p.name)}</b><div class="scatWinList">${ROUNDS.filter(r=>r.scats).map(round=>{
+const wins=p.wins.filter(w=>w.course===round.course);
+return wins.length?escapeHtml(round.course)+" · "+wins.map(w=>"H"+w.hole+" ("+w.score+")").join(", "):"";
+}).filter(Boolean).join("<br>")}</div></div><div class="scatWinCount">${p.wins.length}<small>${p.wins.length===1?"scat":"scats"}</small></div></div>`).join(""):'<p class="muted">No scats yet.</p>'}</section>`;
+}).join("")+'</div>';
 }
 
-function scatsPage(){
+let scatsRound=1;
+function selectScatsRound(roundId){
+if(!ROUNDS.some(r=>r.scats&&r.id===Number(roundId)))return;
+scatsRound=Number(roundId);
+const panel=document.getElementById("scatsRoundPanel");
+if(panel)panel.innerHTML=scatsRoundPanel();
+}
+function scatsRoundPanel(){
 const rounds=ROUNDS.filter(r=>r.scats);
-return`
-<div class="card">
-<h2>Scats</h2>
-<div class="muted">
-Gross scores • lowest unique score wins a scat • ties = no scat • no carryovers
-</div>
-</div>
-${allScatWinners()}
-${rounds.map(r=>`
-<div class="card">
-<h2>Round ${r.id} — ${r.course}</h2>
-<div class="muted">${r.format}</div>
-</div>
-${scatGroupCard(r,"A")}
-${scatGroupCard(r,"B")}
-`).join("")}`;
+const round=rounds.find(r=>r.id===scatsRound)||rounds[0];
+return `<div class="card"><h2 class="scatsSectionTitle">Hole-by-Hole</h2>
+<div class="scatsRoundButtons" aria-label="Scats round">${rounds.map(r=>`<button type="button" aria-pressed="${round.id===r.id}" onclick="selectScatsRound(${r.id})"><span>Round ${r.id}</span>${escapeHtml(r.course)}</button>`).join("")}</div></div>
+<h2 class="scatsCourseHeading">${escapeHtml(round.course)}</h2><div class="scatsColumns">${scatGroupCard(round,"A")}${scatGroupCard(round,"B")}</div>`;
+}
+function scatsPage(){
+return `<div class="card scatsIntro"><h2>Scat Winners</h2><p>All scoring rounds • Gross scores • Lowest unique score wins • Ties: no scat • No carryovers</p><p>Results update as scores are entered.</p></div>
+${allScatWinners()}<div id="scatsRoundPanel">${scatsRoundPanel()}</div>`;
 }
 
 function historyResults(list){
