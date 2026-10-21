@@ -551,6 +551,8 @@ function isSignedIn(){return !!(session&&session.access_token&&currentUser)}
 function isOwner(){return userRole==="owner"}
 function isCaptain(){return userRole==="captain"}
 function isScorer(){return userRole==="scorer"}
+function canViewManagementTabs(){return isOwner()||isCaptain()}
+function isManagementPage(value){return ["players","matchups","scoring"].includes(value)}
 function canScore(){return userRole==="owner"||userRole==="captain"||userRole==="scorer"}
 function canEditPlayers(){return isOwner()}
 function isScoringOpen(roundId){return roundSettings[Number(roundId)]!==false}
@@ -1045,14 +1047,12 @@ const tabs=[
 ["scats","Scats"],
 ["par3","Par 3’s"],
 ["leaderboards","Leaderboards"],
-["players","Players"],
 ["rules","Rules"],
-["matchups","Matchups"],
-["scoring","Scoring"],
 ["history","History"]
 ];
 if(isOwner())tabs.push(["users","Users & Access"]);
 tabs.push(["login",isSignedIn()?"Account ✓":"Sign In"]);
+if(canViewManagementTabs())tabs.push(["players","Players"],["matchups","Matchups"],["scoring","Scoring"]);
 document.getElementById("nav").innerHTML=tabs.map(t=>`
 <button class="${page===t[0]?"primary":""}" onclick="navigatePage('${t[0]}')">
 ${t[1]}
@@ -1085,6 +1085,7 @@ body:JSON.stringify({visitor_id:getVisitorId(),kind,page:tab})
 }catch(e){console.debug("Visitor tracking unavailable")}
 }
 function navigatePage(next){
+if(isManagementPage(next)&&!canViewManagementTabs())next="dashboard";
 if(next!==page)recordVisitorEvent("tab",next);
 page=next;render();
 if(next==="users"&&isOwner())loadVisitorReport();
@@ -3258,6 +3259,7 @@ const livePosition=preserveLive?{x:window.scrollX,y:window.scrollY,tables:Array.
 document.body.classList.toggle("thursdayPageActive",page==="thursday");
 document.body.classList.toggle("livePageActive",page==="live");
 if(page==="users"&&!isOwner())page="dashboard";
+if(isManagementPage(page)&&!canViewManagementTabs())page="dashboard";
 drawNav();drawConnectionStatus();drawSaveSyncStatus();drawOfflineReadyStatus();
 let html="";
 if(page==="dashboard")html=dashboard();
