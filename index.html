@@ -3284,7 +3284,7 @@ const THURSDAY_TEAMS=[
 {id:4,members:[[2,4],[1,2],[1,3],[1,4]],indices:[17.9,4.8,22,15]}
 ];
 // Thursday net Stableford uses an 85% handicap allowance and hole stroke indexes.
-const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4],hcp:[11,17,9,7,1,13,3,15,5,4,2,16,8,6,10,18,14,12]};
+const THURSDAY_CARD={par:[4,3,4,4,5,4,5,3,4,4,5,3,4,4,5,3,4,4],hcp:[5,15,9,13,1,7,3,17,11,4,2,18,14,8,6,16,10,12]};
 function thursdayCardReady(){
 const c=THURSDAY_CARD;
 return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
