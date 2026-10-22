@@ -3292,10 +3292,10 @@ return !!c&&c.par?.length===18&&c.par.every(v=>Number.isInteger(v)&&v>=3&&v<=6);
 function thursdayTeam(g,p){return THURSDAY_TEAMS.find(t=>t.members.some(m=>m[0]===g&&m[1]===p))}
 function thursdayPlayerName(g,p){return THURSDAY_GROUPS.find(group=>group.id===g)?.players[p-1]||""}
 // Apply the 85% allowance to the unrounded tee-specific course handicap, then round.
-const THURSDAY_TEES={White:{rating:71.1,slope:131},Gold:{rating:68.9,slope:124}};
+const THURSDAY_TEES={"White/Green":{rating:70.2,slope:135},Green:{rating:69.0,slope:130}};
 function thursdayPlayerHandicap(g,p){
 const name=thursdayPlayerName(g,p);
-const teeName=(name==="Rob McCabe"||name==="John Blair")?"Gold":"White";
+const teeName=(name==="Rob McCabe"||name==="John Blair")?"Green":"White/Green";
 const tee=THURSDAY_TEES[teeName];
 const team=thursdayTeam(g,p),member=team.members.findIndex(m=>m[0]===g&&m[1]===p);
 const player=data.players.find(player=>String(player.name).trim().toLowerCase()===name.toLowerCase());
@@ -3423,7 +3423,7 @@ if(document.activeElement===el)advanceScoreInput(el);
 function thursdayPage(){
 return `<div class="card" id="thursdayLeaderboard">${thursdayLeaderboard()}</div><div class="card"><h2>Thursday Round</h2>
 <div><b>Whispering Pines - Pines Course</b></div>
-<p class="muted">White: 71.1 / 131 • Gold: 68.9 / 124 • Par 72</p>
+<p class="muted">White/Green: 70.2 / 135 • Green: 69.0 / 130 • Par 72</p>
 <p class="muted">18-hole net Stableford • 85% handicaps • Four teams of four</p>
 <p class="muted">Enter gross strokes. Net Stableford points use 85% of each player’s tee-specific course handicap, rounded to a whole stroke and allocated by the hole handicap rankings. Points and team totals update automatically. • = 1 handicap stroke; •• = 2 strokes.</p>
 ${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':""}
