@@ -2318,11 +2318,11 @@ return `<details class="scorePlayerDetails"><summary>Player handicaps &amp; tees
 function automaticMatch(round,match){
 round=Number(round);
 const empty={active:false,history:[],latest:null,finish:null};
-if(![1,2,4].includes(round)||!match)return empty;
+if(![1,2,3,4].includes(round)||!match)return empty;
 const needed=round===4?1:2;
 const sides=[(match.hackers||[]).filter(Boolean),(match.shankers||[]).filter(Boolean)];
 if(sides.some(ids=>ids.length!==needed||ids.some(id=>!getPlayer(id))))return empty;
-const players=sides.flat().map(getPlayer),score=data.scores[match.id];
+const players=round===3?scramblePlayers(match):sides.flat().map(getPlayer),score=data.scores[match.id];
 if(!score)return empty;
 const valid=v=>v!==""&&v!=null&&Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=20;
 const active=(score.holes||[]).some(h=>players.some(p=>valid(h?.[p.id])));
@@ -2330,7 +2330,7 @@ let lead=0;const history=[];
 for(const entry of liveHoleOrder(match)){
 const h=entry.hole-1,hole=score.holes?.[h]||{};
 if(players.some(p=>!valid(hole[p.id])))break;
-const best=sides.map(ids=>Math.min(...ids.map(id=>{
+const best=round===3?players.map(p=>Number(hole[p.id])):sides.map(ids=>Math.min(...ids.map(id=>{
 const p=getPlayer(id),handicap=matchStrokeHandicap(p,round,match);
 return Number(hole[id])-matchHoleStrokes(handicap,round,h);
 })));
@@ -2355,7 +2355,7 @@ const title=liveStatusText(row)+" after hole "+row.hole;
 return '<td class="'+cls+'" title="'+escapeHtml(title)+'">'+escapeHtml(label)+'</td>';
 }
 function matchStatusRow(round,match){
-if(![1,2,4].includes(Number(round)))return "";
+if(![1,2,3,4].includes(Number(round)))return "";
 const auto=automaticMatch(round,match);
 const byHole=new Map(auto.history.map(row=>[Number(row.hole),row]));
 let cells="";
@@ -2368,7 +2368,7 @@ return '<tr class="automaticMatchRow" id="match-status-'+match.id+'"><td><b>Matc
 }
 function refreshAutomaticMatch(round,matchId){
 const match=(data.matchups[round]||[]).find(m=>m?.id===matchId);
-if(!match||![1,2,4].includes(Number(round)))return;
+if(!match||![1,2,3,4].includes(Number(round)))return;
 const row=document.getElementById("match-status-"+matchId);
 if(row)row.outerHTML=matchStatusRow(round,match);
 const auto=automaticMatch(round,match);
@@ -2444,7 +2444,7 @@ cells+=`
 <td class="summaryCell" id="in-${matchId}-${p.id}">${enteredNine(score,p.id,9)}</td>
 <td class="summaryCell" id="total-${matchId}-${p.id}">${enteredTotal(score,p.id)}</td>`;
 const playerHandicap=round===1||round===2||round===4?
-handicapDisplay(p,round):`HCP ${p.handicap} • Group ${p.group}`;
+handicapDisplay(p,round):"2-man scramble • Team score";
 return`
 <tr class="${cls}">
 <td>${escapeHtml(p.name)}<br class="scorePlayerMeta"><span class="muted scorePlayerMeta">${escapeHtml(playerHandicap)}${matchHandicap===null?"":` • Match strokes ${matchHandicap}`}</span></td>
@@ -2551,7 +2551,7 @@ alert("Reset could not be completed. No other tournament settings were changed."
 }
 
 function resultControls(match,i){
-if([1,2,4].includes(Number(currentRound)))return `<div id="automatic-result-${match.id}">${automaticResultSummary(currentRound,match)}</div><p class="muted" style="font-size:12px">Match status and team points calculate automatically from net hole scores. Red = Hackers; blue = Shankers. Correct a gross score to update the result.</p>`;
+if([1,2,3,4].includes(Number(currentRound)))return `<div id="automatic-result-${match.id}">${automaticResultSummary(currentRound,match)}</div><p class="muted" style="font-size:12px">Match status and team points calculate automatically from ${Number(currentRound)===3?"scramble team":"net hole"} scores. Red = Hackers; blue = Shankers. Correct a gross score to update the result.</p>`;
 const saved=data.results[match.id]?data.results[match.id].winner:"";
 let banner="";
 if(saved==="Hackers"){
@@ -2648,8 +2648,18 @@ const selected=saved?liveStatusValue(saved):previous;
 liveDraft={matchNo:liveMatchNo,hole,value:Math.sign(selected)*Math.min(Math.abs(selected),completed)};
 liveNotice="";render();
 }
+function scramblePlayers(match){
+return ["Hackers","Shankers"].map((team,i)=>({id:i===0?"scramble_hackers":"scramble_shankers",team,
+name:liveNames(i===0?match.hackers:match.shankers)}));
+}
+function scrambleScorecard(match){
+const score=getScore(match.id);
+return `<div class="tablewrap"><table class="scoretable">${scoreHeader().replace("PLAYER","TEAM")}
+${scramblePlayers(match).map(p=>playerScoreRow(p,score,3,match.matchNo,match.id,match)).join("")}
+${matchStatusRow(3,match)}</table></div>`;
+}
 function liveHoleScores(round,match){
-if(round.id===3)return "";
+if(round.id===3)return `<div style="margin-top:16px"><h3>Scramble Hole Scores</h3><p class="muted">One score per pair per hole. Lower score wins the hole. Scores save automatically and update the match and dashboard. Excluded from leaderboards and scats.</p>${scrambleScorecard(match)}</div>`;
 const players=[...match.hackers,...match.shankers].map(getPlayer).filter(Boolean);
 const score=getScore(match.id),course=COURSE_CARDS[round.id];
 return `<div style="margin-top:16px"><h3>Hole Scores</h3>
@@ -2681,7 +2691,7 @@ return `
 ${ROUNDS.map(r=>`<option value="${r.id}" ${r.id===liveRound?"selected":""}>Round ${r.id} — ${escapeHtml(r.course)}</option>`).join("")}
 </select>
 <p class="muted">${escapeHtml(round.course)} • ${escapeHtml(round.format)}</p>
-<p class="muted">${round.id===3?"Update your match status after each hole.":"Enter gross hole scores. Match status updates automatically."}</p>
+<p class="muted">${round.id===3?"Enter one scramble score per pair per hole. Match status updates automatically.":"Enter gross hole scores. Match status updates automatically."}</p>
 <label for="liveMatchSelect">Choose your matchup</label>
 <select id="liveMatchSelect" onchange="selectLiveMatch(this.value)" ${liveSaving?"disabled":""}>
 ${matches.map((m,i)=>`<option value="${i+1}" ${liveMatchNo===i+1?"selected":""}>Match ${i+1}: ${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</option>`).join("")}
@@ -2696,21 +2706,7 @@ ${latest?escapeHtml(liveStatusText(latest))+`<div style="font-size:13px;margin-t
 </div>
 ${ready?liveHoleScores(round,match):""}
 ${!ready?'<div class="notice">Set this matchup in the Matchups tab first.</div>':!canScore()?'<div class="viewer" style="margin-top:12px">Sign in with scoring access to update your match.</div>':!isScoringOpen(liveRound)?`<div class="scoringLockedNotice">${escapeHtml(round.course)} scoring is locked.</div>`:""}
-${round.id===3?`<div class="row" style="margin-top:16px">
-<div class="field"><label for="liveHole">Hole just completed</label>
-<select id="liveHole" onchange="editLiveHole(this.value)" ${!editable?"disabled":""}>
-${order.map(x=>`<option value="${x.hole}" ${draft.hole===x.hole?"selected":""}>Hole ${x.hole}${Number(match.teeStartHole)>1?` (${x.completed} played)`:""}</option>`).join("")}
-</select></div>
-<div class="field"><label for="liveStatus">Match status after this hole</label>
-<select id="liveStatus" onchange="liveDraft={matchNo:liveMatchNo,hole:Number(document.getElementById('liveHole').value),value:Number(this.value)}" ${!editable?"disabled":""}>
-${option(0,"Tied (All Square)")}
-${Array.from({length:completed},(_,i)=>option(i+1,"Hackers "+(i+1)+" UP")).join("")}
-${Array.from({length:completed},(_,i)=>option(-(i+1),"Shankers "+(i+1)+" UP")).join("")}
-</select></div></div>
-${editable?`<button id="liveSaveButton" class="good" style="width:100%;margin-top:12px" onclick="saveLiveStatus()">Save Match Status</button>`:""}
-<p id="liveSaveStatus" role="status" style="height:44px;overflow:auto;overflow-anchor:none;font-size:13px;line-height:20px">${liveSaving?"Saving match status…":escapeHtml(liveNotice)}</p>
-<p class="muted" style="font-size:12px">Saving a lead greater than the holes remaining automatically records the win and team point. Tied finishes award half a point each.</p>
-`:`<p class="muted" style="font-size:13px;margin-top:16px">Match status updates automatically when all ${round.id===4?"two":"four"} player scores are entered for each hole. Correct a score to recalculate the match and dashboard.</p>`}
+<p class="muted" style="font-size:13px;margin-top:16px">Match status updates automatically when ${round.id===3?"both team scores":round.id===4?"both player scores":"all four player scores"} are entered for each hole. Correct a score to recalculate the match and dashboard.</p>
 ${history.length?`<details><summary style="font-weight:800;cursor:pointer">Hole-by-hole updates</summary>
 ${history.map(r=>`<div style="padding:10px 0;border-bottom:1px solid #e5e7eb">Hole ${r.hole} • ${escapeHtml(liveStatusText(r))}</div>`).join("")}</details>`:""}
 </div>
@@ -2779,8 +2775,7 @@ ${isScoringOpen(r.id)?
 ${!canScore()?`<div class="viewer">Scores are read-only for your account.</div>`:""}
 ${r.id===3?`
 <div class="notice">
-Talamore is result-only.
-Select Hackers, Shankers or Halved for each match.
+Talamore is a two-man scramble. Enter one score per pair per hole. Match status and team points update automatically. These scores do not count toward leaderboards or scats.
 </div>`:""}
 ${m.map((match,i)=>scoreCard(r,match,i)).join("")}
 </div>`;
@@ -2796,27 +2791,7 @@ return`
 <div class="notice">Matchup not set.</div>
 </div>`;
 }
-if(r.id===3){
-return`
-<div class="match resultOnly">
-<h3>Match ${i+1}</h3>
-<div class="players">
-<div>
-<div class="hackerLabel">HACKERS</div>
-${match.hackers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
-<div class="pill">${escapeHtml(p.name)} • HCP ${escapeHtml(p.handicap)}</div>
-`).join("<br>")}
-</div>
-<div>
-<div class="shankerLabel">SHANKERS</div>
-${match.shankers.map(id=>getPlayer(id)).filter(Boolean).map(p=>`
-<div class="pill">${escapeHtml(p.name)} • HCP ${escapeHtml(p.handicap)}</div>
-`).join("<br>")}
-</div>
-</div>
-${resultControls(match,i)}
-</div>`;
-}
+if(r.id===3)return `<div class="match"><h3>Match ${i+1}</h3>${scrambleScorecard(match)}${resultControls(match,i)}</div>`;
 const score=getScore(match.id),course=COURSE_CARDS[r.id];
 return`
 <div class="match">
@@ -3609,8 +3584,3 @@ render();
 </script>
 </body>
 </html>
-
-
-
-
-
