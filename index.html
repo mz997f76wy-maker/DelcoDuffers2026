@@ -1184,7 +1184,7 @@ function roundInfo(){return ROUNDS[currentRound-1]}
 function teamPoints(){
 let hackers=0,shankers=0,completed=0;
 const results={...data.results};
-for(const round of [1,2,4]){
+for(const round of [1,2,3,4]){
 for(const match of data.matchups[round]||[]){
 if(match)results[match.id]={winner:effectiveMatchResult(round,match)};
 }
