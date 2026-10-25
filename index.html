@@ -2371,7 +2371,7 @@ function refreshAutomaticMatch(round,matchId){
 const match=(data.matchups[round]||[]).find(m=>m?.id===matchId);
 if(!match||![1,2,3,4].includes(Number(round)))return;
 const row=document.getElementById("match-status-"+matchId);
-if(row)row.outerHTML=matchStatusRow(round,match);
+if(row)row.outerHTML=matchStatusRow(round,match).replace("<b>Match status</b>",Number(round)===4&&page==="live"?"<b>Match "+match.matchNo+" status</b>":"<b>Match status</b>");
 const auto=automaticMatch(round,match);
 const banner=document.getElementById("liveCurrentMatchBanner");
 if(banner&&page==="live"&&Number(liveRound)===Number(round)&&liveRoundMatches()[liveMatchNo-1]?.id===matchId){
@@ -2673,7 +2673,31 @@ ${players.map(p=>playerScoreRow(p,score,round.id,match.matchNo,match.id,match)).
 ${matchStatusRow(round.id,match)}
 </table></div><p class="muted" style="font-size:12px">Scores save automatically. For rounds 1, 2 and 4, match status and dashboard results calculate from completed hole scores.</p></div>`;
 }
+function legacyLiveScoringPage(){
+const matches=liveRoundMatches(),groupIndex=Math.floor((liveMatchNo-1)/2);
+const groups=Array.from({length:8},(_,i)=>({index:i,pair:matches.slice(i*2,i*2+2)}));
+const groupLabel=g=>`Foursome ${g.index+1}${g.pair[0]?.teeTime?' • '+g.pair[0].teeTime:''}: `+g.pair.map(m=>liveNames(m.hackers)+' vs '+liveNames(m.shankers)).join(' / ');
+const pair=groups[groupIndex].pair,course=COURSE_CARDS[4];
+return `<div class="card"><h2 style="margin-top:0">Live Scoring</h2>
+<label for="liveRoundSelect">Choose your round</label>
+<select id="liveRoundSelect" onchange="selectLiveRound(this.value)">${ROUNDS.map(r=>`<option value="${r.id}" ${r.id===4?'selected':''}>Round ${r.id} — ${escapeHtml(r.course)}</option>`).join('')}</select>
+<p class="muted">Legacy • 1v1 Match Play</p>
+<label for="liveMatchSelect">Choose your foursome</label>
+<select id="liveMatchSelect" onchange="selectLiveMatch(this.value)">${groups.map(g=>`<option value="${g.index*2+1}" ${g.index===groupIndex?'selected':''}>${escapeHtml(groupLabel(g))}</option>`).join('')}</select>
+<p class="muted">One person can enter all four players’ gross scores here. Each singles match keeps its own handicap strokes, status and point.</p>
+${pair.map(m=>`<div><b>Match ${m.matchNo}: ${escapeHtml(liveNames(m.hackers))} vs ${escapeHtml(liveNames(m.shankers))}</b><div id="automatic-result-${m.id}">${automaticResultSummary(4,m)}</div></div>`).join('')}
+${matchStrokeNote(4)}
+<div class="tablewrap"><table class="scoretable">${scoreHeader()}${scoreReferenceRow(course.hcp,"MEN'S HCP",false)}${scoreReferenceRow(course.par,"PAR",true)}
+${pair.map(m=>{
+const players=[...m.hackers,...m.shankers].map(getPlayer).filter(Boolean);
+return players.map(p=>playerScoreRow(p,getScore(m.id),4,m.matchNo,m.id,m)).join('')+matchStatusRow(4,m).replace('<b>Match status</b>','<b>Match '+m.matchNo+' status</b>');
+}).join('')}</table></div>
+${!canScore()?'<div class="viewer">Sign in with scoring access to enter scores.</div>':!isScoringOpen(4)?'<div class="scoringLockedNotice">Legacy scoring is locked.</div>':''}
+<p class="muted" style="font-size:13px">Scores save automatically. Each match updates when both opponents’ scores are entered for a hole.</p>
+</div><div class="card"><h2>All Legacy Foursomes</h2>${groups.map(g=>`<button style="display:block;width:100%;text-align:left;margin:8px 0;white-space:normal" onclick="selectLiveMatch(${g.index*2+1})">${escapeHtml(groupLabel(g))}</button>`).join('')}</div>`;
+}
 function liveScoringPage(){
+if(Number(liveRound)===4)return legacyLiveScoringPage();
 const round=liveRoundInfo(),matches=liveRoundMatches();
 if(!(liveMatchNo>=1&&liveMatchNo<=round.matches))liveMatchNo=1;
 const match=matches[liveMatchNo-1],history=liveHistory(liveMatchNo),latest=history[0];
