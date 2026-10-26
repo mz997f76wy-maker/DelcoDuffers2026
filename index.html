@@ -1179,13 +1179,13 @@ box.innerHTML=`<div class="viewer">👀 VIEWER MODE — Read only</div>`;
 function drawNav(){
 const tabs=[
 ["dashboard","Dashboard"],
+["history","History"],
 ["live","Live Scoring"],
 ["thursday","Thursday Round"],
 ["scats","Scats"],
 ["par3","Par 3’s"],
 ["leaderboards","Leaderboards"],
-["rules","Rules"],
-["history","History"]
+["rules","Rules"]
 ];
 if(isOwner())tabs.push(["users","Users & Access"]);
 tabs.push(["login",isSignedIn()?"Account ✓":"Sign In"]);
