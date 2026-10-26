@@ -3137,15 +3137,16 @@ ${item.wins>1?` ×${item.wins}`:""}
 </div>
 </div>
 </div>
-</div>`).join("")}
-<section class="card historyAce" aria-labelledby="historyAceTitle">
+${year.year===2026?`<section class="card historyAce" aria-labelledby="historyAceTitle">
 <h2 id="historyAceTitle">⛳ 2026 Hole-in-One — Rob McCabe</h2>
 <p>Rob McCabe made a hole-in-one on the 12th hole at Whispering Pines during Thursday’s round.</p>
 <div class="historyAcePhotos">
 <a href="images/2026-thursday-celebration.webp" target="_blank" rel="noopener"><img src="images/2026-thursday-celebration.webp" width="1200" height="900" loading="lazy" decoding="async" alt="Delco Duffers group photo from the 2026 trip"></a>
 <a href="images/2026-rob-mccabe-hole-in-one.webp" target="_blank" rel="noopener"><img src="images/2026-rob-mccabe-hole-in-one.webp" width="933" height="1200" loading="lazy" decoding="async" alt="Rob McCabe holding his golf ball beside the flag after his hole-in-one at Whispering Pines"></a>
 </div>
-</section>`;
+</section>`:""}
+</div>`).join("")}
+`;
 }
 
 async function loadTournamentUsers(){
