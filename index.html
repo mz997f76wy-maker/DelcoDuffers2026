@@ -448,6 +448,107 @@ tees:{
 
 const HISTORY=[
 {
+  "year": 2026,
+  "winner": "PARSONS / SHANKERS",
+  "score": "21–19",
+  "roster": [
+    "Bob Pace",
+    "Cole Parsons",
+    "Jake Cislo",
+    "Jeff Blair",
+    "Jim Capitanos",
+    "Joe Pace",
+    "Joe Stratton",
+    "John Blair",
+    "John Schneider",
+    "Ken Travetti",
+    "Mike Cislo",
+    "Rob Sladek",
+    "Rocco Pace",
+    "Stephen Dougherty",
+    "Steve Parsons",
+    "Tony Borsuk"
+  ],
+  "lowGross": [
+    {
+      "name": "Justin Stroh",
+      "score": "240 (+26)"
+    },
+    {
+      "name": "John DiDonato",
+      "score": "251 (+37)"
+    },
+    {
+      "name": "Mookie Moyer",
+      "score": "253 (+39)"
+    }
+  ],
+  "lowNet": [
+    {
+      "name": "John DiDonato",
+      "score": "217 (+3)"
+    },
+    {
+      "name": "Ken Travetti",
+      "score": "218 (+4)"
+    },
+    {
+      "name": "Chuck Stouch",
+      "score": "221 (+7)"
+    },
+    {
+      "name": "Ryan Gamble",
+      "score": "221 (+7)"
+    }
+  ],
+  "ctp": [
+    {
+      "name": "John DiDonato",
+      "wins": 2
+    },
+    {
+      "name": "Mike Cislo",
+      "wins": 2
+    },
+    {
+      "name": "Andy Repetto",
+      "wins": 1
+    },
+    {
+      "name": "Chuck Stouch",
+      "wins": 1
+    },
+    {
+      "name": "Derek Stupak",
+      "wins": 1
+    },
+    {
+      "name": "Jack Kelly",
+      "wins": 1
+    },
+    {
+      "name": "Joe Stratton",
+      "wins": 1
+    },
+    {
+      "name": "John Blair",
+      "wins": 1
+    },
+    {
+      "name": "John Schneider",
+      "wins": 1
+    },
+    {
+      "name": "Rocco Pace",
+      "wins": 1
+    },
+    {
+      "name": "Tony Borsuk",
+      "wins": 1
+    }
+  ]
+},
+{
 year:2025,
 winner:"PARSONS / SHANKERS",
 score:"19.5–15.5",
@@ -2984,7 +3085,7 @@ ${allScatWinners()}<div id="scatsRoundPanel">${scatsRoundPanel()}</div>`;
 function historyResults(list){
 return list.map((item,index)=>`
 <div class="historyResult">
-<div class="historyPlace">${index+1}.</div>
+<div class="historyPlace">${list.findIndex(result=>result.score===item.score)+1}.</div>
 <div class="historyPlayer">${escapeHtml(item.name)}</div>
 <div class="historyScore">${escapeHtml(item.score)}</div>
 </div>`).join("");
